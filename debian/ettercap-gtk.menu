@@ -1,0 +1,7 @@
+?package(ettercap-gtk):needs="X11" section="Apps/Net" \
+  title="ettercap" command="/usr/sbin/ettercap --gtk" \
+  longtitle="Multipurpose sniffer/interceptor/logger"
+
+?package(ettercap-gtk):needs="X11" section="Apps/Net" \
+  title="ettercap (as root)" command="gksu -u root \"/usr/sbin/ettercap --gtk\"" \
+  longtitle="Multipurpose sniffer/interceptor/logger"

@@ -1,7 +1,7 @@
 /*
-    ettercap -- fingerprinter
+    ettercap -- passive TCP finterprint module
 
-    Copyright (C) 2001  ALoR <alor@users.sourceforge.net>, NaGA <crwm@freemail.it>
+    Copyright (C) ALoR & NaGA
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,482 +17,354 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_fingerprint.c,v 1.8 2002/02/10 10:07:49 alor Exp $
+    $Id: ec_fingerprint.c,v 1.23 2004/06/25 14:24:29 alor Exp $
+
 */
 
-#include "include/ec_main.h"
+#include <ec.h>
+#include <ec_file.h>
+#include <ec_socket.h>
+#include <ec_fingerprint.h>
 
-#include <fcntl.h>
+#define LOAD_ENTRY(p,h,v) do {                                 \
+   SAFE_CALLOC((p), 1, sizeof(struct entry));                  \
+   memcpy((p)->finger, h, FINGER_LEN);                         \
+   (p)->finger[FINGER_LEN] = '\0';                             \
+   (p)->os = strdup (v);                                       \
+   (p)->os[strlen(p->os)-1] = '\0';                            \
+} while (0)
 
-#include "include/ec_inet_structures.h"
-#include "include/ec_inet.h"
-#include "include/ec_inet_forge.h"
-#include "include/ec_decodedata.h"
-#include "include/ec_error.h"
+/* globals */
 
-#ifdef HAVE_SYS_UTSNAME_H
-   #include <sys/utsname.h>
-#endif
+static SLIST_HEAD(, entry) finger_head;
 
-#define NUM_TESTS 7
-#define NUM_CONDS 6
+struct entry {
+   char finger[FINGER_LEN+1];
+   char *os;
+   SLIST_ENTRY(entry) next;
+};
 
-#define MSS 265
+/* protos */
 
-// global data...
+static void fingerprint_discard(void);
+int fingerprint_init(void);
+int fingerprint_search(const char *f, char *dst);
 
-typedef struct
+void fingerprint_default(char *finger);
+void fingerprint_push(char *finger, int param, int value);
+u_int8 TTL_PREDICTOR(u_int8 x);
+int fingerprint_submit(char *finger, char *os);
+   
+/*****************************************/
+
+
+static void fingerprint_discard(void)
 {
-   char mac[9];
-   char vendor[60];
-   struct mac_database *next;
-} mac_database;
+   struct entry *l;
 
-mac_database *mac_list = NULL;
+   while (SLIST_FIRST(&finger_head) != NULL) {
+      l = SLIST_FIRST(&finger_head);
+      SLIST_REMOVE_HEAD(&finger_head, next);
+      SAFE_FREE(l->os);
+      SAFE_FREE(l);
+   }
 
-int IPS, IPD, sock, MTU;
-u_short open_port=0, closed_port=0, PORTS;
-long SYN_SEQ;
-unsigned short IP_ID;
-unsigned char MACS[6];
-unsigned char MACD[6];
-// Static arrays? bleah...
-char packet_stamp[NUM_TESTS][NUM_CONDS][10];
-char test_name[NUM_CONDS][10];
-
-// protos....
-
-char * Fingerprint_OS(char *IP);
-char * Fingerprint_MAC(char *MAC);
-char *Fingerprint_Make_Finger_print(void);
-int Fingerprint_Match(char *mycond, char *fpcond);
-void Fingerprint_send_probes(void);
-void Fingerprint_parse_probes(void);
-void Fingerprint_Init_Test(void);
-void Fingerprint_Simple_Scan(void);
-void Fingerprint_Parse_packet(char *buffer);
-
-//--------------------------
+   DEBUG_MSG("ATEXIT: fingerprint_discard");
+   
+   return;
+}
 
 
-int Fingerprint_Match(char *mycond, char *fpcond)
+int fingerprint_init(void)
 {
-   int matched=0; char *single_cond, *deadend=NULL, temp=0;
+   struct entry *p;
+   struct entry *last = NULL;
+   
+   int i;
 
-   deadend=fpcond+strlen(fpcond);
-   if (deadend==fpcond) matched=1;
-   while( !matched && (unsigned long)fpcond<(unsigned long)deadend )
-   {
-      single_cond=(char *)strtok(fpcond,"|");
-      if (!single_cond) // Simple workaround for initial '|'
-      {                 // Arghhh someone wrote down terrible fingerprints
-         if (temp) break;
-         fpcond++;
-         temp=1;
+   char line[128];
+   char os[OS_LEN+1];
+   char finger[FINGER_LEN+1];
+   char *ptr;
+
+   FILE *f;
+
+   i = 0;
+
+   f = open_data("share", TCP_FINGERPRINTS, FOPEN_READ_TEXT);
+   ON_ERROR(f, NULL, "Cannot open %s", TCP_FINGERPRINTS);
+
+   while (fgets(line, 128, f) != 0) {
+      
+      if ( (ptr = strchr(line, '#')) )
+         *ptr = 0;
+
+      /*  skip 0 length line */
+      if (!strlen(line))  
          continue;
-      }
-     if (!strcmp(mycond,single_cond)) matched=1;
-     fpcond+=strlen(single_cond)+1;
-     temp=0;
-   }
-   return matched;
-}
+        
+      strncpy(finger, line, FINGER_LEN);
+      strncpy(os, line + FINGER_LEN + 1, OS_LEN);
 
-void Fingerprint_send_probes()
-{
-   char *probe_pck;
+      LOAD_ENTRY(p, finger, os);
 
-#define TH_BOGUS 64
-#define OPTIONS "\003\003\012\001\002\004\001\011\010\012\077\077\077\077\000\000\000\000\000\000"
-#define OPT_LEN 20
-
-   PORTS++;
-   probe_pck=(char *)Inet_Forge_packet(ETH_HEADER + IP_HEADER + TCP_HEADER + OPT_LEN);
-   Inet_Forge_ethernet( probe_pck, MACS, MACD, ETH_P_IP );
-
-   Inet_Forge_ip( probe_pck + ETH_HEADER, IPS, IPD, TCP_HEADER, IP_ID++, 0, IPPROTO_TCP);
-   Inet_Forge_tcp( probe_pck + ETH_HEADER + IP_HEADER, PORTS, open_port,  SYN_SEQ, 0, TH_BOGUS|TH_SYN, 0, 0);
-   Inet_Forge_Insert_TCPOpt( probe_pck + ETH_HEADER + IP_HEADER, OPTIONS , OPT_LEN);
-   Inet_SendRawPacket(sock, probe_pck, ETH_HEADER + IP_HEADER + TCP_HEADER + OPT_LEN);
-
-   Inet_Forge_ip( probe_pck + ETH_HEADER, IPS, IPD, TCP_HEADER, IP_ID++, 0, IPPROTO_TCP);
-   Inet_Forge_tcp( probe_pck + ETH_HEADER + IP_HEADER, PORTS+1, open_port,  SYN_SEQ, 0, 0, 0, 0);
-   Inet_Forge_Insert_TCPOpt( probe_pck + ETH_HEADER + IP_HEADER, OPTIONS ,OPT_LEN );
-   Inet_SendRawPacket(sock, probe_pck, ETH_HEADER + IP_HEADER + TCP_HEADER + OPT_LEN);
-
-   Inet_Forge_ip( probe_pck + ETH_HEADER, IPS, IPD, TCP_HEADER, IP_ID++, 0, IPPROTO_TCP);
-   Inet_Forge_tcp( probe_pck + ETH_HEADER + IP_HEADER, PORTS+2, open_port,  SYN_SEQ, 0, TH_SYN|TH_FIN|TH_URG|TH_PSH, 0, 0);
-   Inet_Forge_Insert_TCPOpt( probe_pck + ETH_HEADER + IP_HEADER, OPTIONS ,OPT_LEN );
-   Inet_SendRawPacket(sock, probe_pck, ETH_HEADER + IP_HEADER + TCP_HEADER + OPT_LEN);
-
-   Inet_Forge_ip( probe_pck + ETH_HEADER, IPS, IPD, TCP_HEADER, IP_ID++, 0, IPPROTO_TCP);
-   Inet_Forge_tcp( probe_pck + ETH_HEADER + IP_HEADER, PORTS+3, open_port,  SYN_SEQ, 0, TH_ACK, 0, 0);
-   Inet_Forge_Insert_TCPOpt( probe_pck + ETH_HEADER + IP_HEADER, OPTIONS ,OPT_LEN );
-   Inet_SendRawPacket(sock, probe_pck, ETH_HEADER + IP_HEADER + TCP_HEADER + OPT_LEN );
-
-   Inet_Forge_ip( probe_pck + ETH_HEADER, IPS, IPD, TCP_HEADER, IP_ID++, 0, IPPROTO_TCP);
-   Inet_Forge_tcp( probe_pck + ETH_HEADER + IP_HEADER, PORTS+4, closed_port,  SYN_SEQ, 0, TH_SYN, 0, 0);
-   Inet_Forge_Insert_TCPOpt( probe_pck + ETH_HEADER + IP_HEADER, OPTIONS ,OPT_LEN );
-   Inet_SendRawPacket(sock, probe_pck, ETH_HEADER + IP_HEADER + TCP_HEADER + OPT_LEN );
-
-   Inet_Forge_ip( probe_pck + ETH_HEADER, IPS, IPD, TCP_HEADER, IP_ID++, 0, IPPROTO_TCP);
-   Inet_Forge_tcp( probe_pck + ETH_HEADER + IP_HEADER, PORTS+5, closed_port,  SYN_SEQ, 0, TH_ACK, 0, 0);
-   Inet_Forge_Insert_TCPOpt( probe_pck + ETH_HEADER + IP_HEADER, OPTIONS ,OPT_LEN );
-   Inet_SendRawPacket(sock, probe_pck, ETH_HEADER + IP_HEADER + TCP_HEADER + OPT_LEN );
-
-   Inet_Forge_ip( probe_pck + ETH_HEADER, IPS, IPD, TCP_HEADER, IP_ID++, 0, IPPROTO_TCP);
-   Inet_Forge_tcp( probe_pck + ETH_HEADER + IP_HEADER, PORTS+6, closed_port,  SYN_SEQ, 0, TH_FIN|TH_PSH|TH_URG, 0, 0);
-   Inet_Forge_Insert_TCPOpt( probe_pck + ETH_HEADER + IP_HEADER, OPTIONS ,OPT_LEN );
-   Inet_SendRawPacket(sock, probe_pck, ETH_HEADER + IP_HEADER + TCP_HEADER + OPT_LEN );
-
-   Inet_Forge_packet_destroy( probe_pck );
-}
-
-void Fingerprint_parse_probes()
-{
-   ETH_header *eth;
-   IP_header *ip;
-   TCP_header *tcp;
-   short type;
-   int len;
-   char *probe_pck;
-
-   TIME_DECLARE;
-   TIME_START;
-   probe_pck=(char *)Inet_Forge_packet(MTU);
-
-   do
-   {
-   len=Inet_GetRawPacket(sock,probe_pck,MTU,&type);
-   TIME_FINISH;
-
-   if (len>0 && type==PACKET_HOST)
-   {
-      eth=(ETH_header *)probe_pck;
-      if (ntohs(eth->type)==ETH_P_IP)
-      {
-      ip=(IP_header *)(probe_pck+ETH_HEADER);
-      if (ip->proto==IPPROTO_TCP && ip->source_ip==IPD)
-      {
-         tcp=(TCP_header *)(probe_pck+ETH_HEADER+IP_HEADER);
-
-         if ( (u_short)ntohs(tcp->dest)>=PORTS && (u_short)ntohs(tcp->dest)<PORTS+NUM_TESTS)
-         {
-         char *p, *q, *arrive;
-         unsigned int num_test;
-
-         num_test=ntohs(tcp->dest)-PORTS;
-
-         // Replied
-         strcpy(&packet_stamp[num_test][0][0],"Y");
-            // DF flag
-         if(ntohs(ip->frag_and_flags) & 0x4000)
-         {
-            strcpy(&packet_stamp[num_test][1][0],"Y");
-         }
-         else strcpy(&packet_stamp[num_test][1][0], "N");
-         // Window Size
-         sprintf(&packet_stamp[num_test][2][0],"%hX",ntohs(tcp->window));
-         // ACK Sequence
-         if (ntohl(tcp->ack_seq) == SYN_SEQ+1)
-            strcpy(&packet_stamp[num_test][3][0],"S++");
-         else if (ntohl(tcp->ack_seq) == SYN_SEQ)
-            strcpy(&packet_stamp[num_test][3][0],"S");
-         else
-            strcpy(&packet_stamp[num_test][3][0],"O");
-         // Flags
-         p=&packet_stamp[num_test][4][0];
-         *p='\0';
-         if (tcp->flags & 0x40)   *p++='B'; // BOGUS
-         if (tcp->flags & TH_URG) *p++='U';
-         if (tcp->flags & TH_ACK) *p++='A';
-         if (tcp->flags & TH_PSH) *p++='P';
-         if (tcp->flags & TH_RST) *p++='R';
-         if (tcp->flags & TH_SYN) *p++='S';
-         if (tcp->flags & TH_FIN) *p++='F';
-         *p++='\0';
-         // TCP Options
-         p=&packet_stamp[num_test][5][0];
-         q=((char *)tcp) + TCP_HEADER;
-         arrive = ((char *)tcp) + (tcp->doff*4);
-         while(q<arrive)
-         {
-            int opcode;
-
-            opcode=*q++;
-            if (!opcode) {
-            *p++ = 'L';
-            break;
-            } else if (opcode == 1) {
-              *p++ = 'N';
-            } else if (opcode == 2) {
-              *p++ = 'M';
-              q++;
-              if (ntohs(ptohs(q)) == MSS)
-               *p++ = 'E';
-              q+=2;
-            } else if (opcode == 3) {
-              *p++ = 'W';
-              q+=2;
-            } else if (opcode == 8) {
-              *p++ = 'T';
-              q+=9;
-            }
-         }
-         *p++='\0';
-         }
-      }
-      }
-   }
-   }while(TIME_ELAPSED<1);
-
-   Inet_Forge_packet_destroy( probe_pck );
-}
-
-
-void Fingerprint_Init_Test()
-{
-   sprintf(test_name[0],"Resp");
-   sprintf(test_name[1],"DF");
-   sprintf(test_name[2],"W");
-   sprintf(test_name[3],"ACK");
-   sprintf(test_name[4],"Flags");
-   sprintf(test_name[5],"Ops");
-
-   strcpy(&packet_stamp[0][0][0],"N");
-   strcpy(&packet_stamp[1][0][0],"N");
-   strcpy(&packet_stamp[2][0][0],"N");
-   strcpy(&packet_stamp[3][0][0],"N");
-   strcpy(&packet_stamp[4][0][0],"N");
-   strcpy(&packet_stamp[5][0][0],"N");
-   strcpy(&packet_stamp[6][0][0],"N");
-}
-
-char *Fingerprint_Make_Finger_print()
-{
-   FILE *file;
-   int i, no_match=1;
-   char dummy[500];
-   char num_test[5];
-   char *condition;
-   char *test;
-   static char osname[500];
-   static char res_list[2000];
-
-   file = fopen(DATA_PATH "/nmap-os-fingerprints", "r");
-   if (!file)
-      file = fopen("./share/nmap-os-fingerprints","r");
-      if (!file)
-         Error_msg("Can't open \"nmap-os-fingerprints\" file !!");
-
-
-   Fingerprint_Init_Test();
-   Fingerprint_send_probes();
-   Fingerprint_parse_probes();
-   res_list[0]=0;
-
-   loop
-   {
-      char *To_EOF;
-
-      while( (To_EOF=fgets(osname,500,file)) && !strstr(osname,"Fingerprint") );
-      if (!To_EOF) break;
-      no_match=0;
-      for (i=1; i<=7 && !no_match; i++)
-      {
-         char *deadend;
-
-         snprintf(num_test, sizeof(num_test), "T%1d", i);
-         while(fgets(dummy,500,file) && !strstr(dummy,num_test));
-
-         test=dummy+3;
-         dummy[strlen(dummy)-2]=0;
-         deadend=test+strlen(test);
-
-         while( !no_match &&  (unsigned long)test<(unsigned long)deadend )
-         {
-            int j; char *pos=NULL;
-            condition=(char *)strtok(test,"%");
-            test+=strlen(condition)+1;
-            for (j=0; j<NUM_CONDS && pos!=condition; j++)
-               pos=(char *)strstr(condition,test_name[j]);
-            condition +=  strlen(test_name[j-1])+1;
-            if ( !Fingerprint_Match(&packet_stamp[i-1][j-1][0],condition) ) no_match=1;
-         }
-      }
-      if (!no_match)
-      {
-         strlcat(res_list, osname+sizeof("Fingerprint"), sizeof(res_list));
-      }
-   }
-   fclose(file);
-
-   if (!strcmp(res_list, ""))
-      strcpy(res_list, "Not found in the database\n");
-
-   return res_list;
-
-}
-
-
-void Fingerprint_Parse_packet(char *buffer)
-{
-   IP_header  *ip;
-   TCP_header *tcp;
-
-   ip = (IP_header *) (buffer+ETH_HEADER);
-   if (ip->source_ip==IPD && ip->dest_ip==IPS && ip->proto==IPPROTO_TCP)
-   {
-     tcp = (TCP_header *) ((int)ip + ip->h_len * 4);
-     if ( (tcp->flags & TH_SYN) && (tcp->flags & TH_ACK) )
-        open_port=ntohs(tcp->source);
-     if ( (tcp->flags & TH_RST) && ntohs(tcp->dest)==PORTS )
-        closed_port=ntohs(tcp->source);
-   }
-}
-
-void Fingerprint_Simple_Scan()
-{
-   int i, startP, finP;
-   char *pck_to_send;
-   TIME_DECLARE;
-
-   startP = 10;  finP = 150;
-
-   pck_to_send = (char *)Inet_Forge_packet(MTU);
-   Inet_Forge_ethernet( pck_to_send, MACS, MACD, ETH_P_IP );
-   Inet_Forge_ip( pck_to_send + ETH_HEADER, IPS, IPD, TCP_HEADER, IP_ID++, 0, IPPROTO_TCP);
-
-   for (i=startP; i<=finP; i++)
-   {
-      Inet_Forge_tcp( pck_to_send + ETH_HEADER + IP_HEADER, PORTS, i,  SYN_SEQ, 0, TH_SYN, 0, 0);
-      Inet_SendRawPacket(sock, pck_to_send, ETH_HEADER + IP_HEADER + TCP_HEADER );
-      if (!(i%5)) usleep(500);
-   }
-
-   TIME_START;
-   do
-   {
-      Inet_GetRawPacket(sock, pck_to_send, MTU, NULL);
-      Fingerprint_Parse_packet(pck_to_send);
-      TIME_FINISH;
-   } while (TIME_ELAPSED <2 && (!open_port || !closed_port) );
-   Inet_Forge_packet_destroy( pck_to_send );
-}
-
-
-
-char * Fingerprint_OS(char *IP)
-{
-   char *res_name;
-
-#ifdef DEBUG
-   Debug_msg("Fingerprint_OS -- [%s]", IP);
-#endif
-
-   if (!strcmp(IP, Inet_MyIPAddress()))
-   {
-      #ifdef HAVE_SYS_UTSNAME_H
-         struct utsname buf;
-
-         res_name = (char *)malloc(50);
-         uname(&buf);
-         strlcpy(res_name, buf.sysname, 50);
-         strlcat(res_name, " ", 50);
-         strlcat(res_name, buf.release, 50);
-         return res_name;
-      #else
-         return "Yourself ;) try `uname -sr`";
-      #endif
-   }
-
-   IPD = inet_addr(IP);
-   sock = Inet_OpenRawSock(Options.netiface);
-   fcntl(sock, F_SETFL, O_NONBLOCK);
-   Inet_GetIfaceInfo(Options.netiface, &MTU, MACS, (unsigned long *)&IPS, 0);
-   memcpy(MACD, Inet_MacFromIP(inet_addr(IP)), 6);
-   srand(time(0)); IP_ID = PORTS = SYN_SEQ = rand()%(0xFFFE)+1;
-
-   open_port = 0;
-   closed_port = 0;
-
-   Fingerprint_Simple_Scan();
-   if (!open_port || !closed_port)
-   {
-      Inet_CloseRawSock(sock);
-      return "Can't find ports to probe";
-   }
-   else
-   {
-      res_name = Fingerprint_Make_Finger_print();
-      Inet_CloseRawSock(sock);
-      if (!res_name)
-         return "No match in database";
+      /* sort the list ascending */
+      if (last == NULL)
+         SLIST_INSERT_HEAD(&finger_head, p, next);
       else
-         return res_name;
+         SLIST_INSERT_AFTER(last, p, next);
+
+      /* set the last entry */
+      last = p;
+
+      /* count the fingerprints */
+      i++;
+
    }
 
+   DEBUG_MSG("fingerprint_init -- %d fingers loaded", i);
+   USER_MSG("%4d tcp OS fingerprint\n", i);
+   
+   fclose(f);
+
+   atexit(fingerprint_discard);
+
+   return i;
+}
+
+/*
+ * search in the database for a given fingerprint
+ */
+
+int fingerprint_search(const char *f, char *dst)
+{
+   struct entry *l;
+
+   if (!strcmp(f, "")) {
+      strcpy(dst, "UNKNOWN");
+      return ESUCCESS;
+   }
+   
+   /* if the fingerprint matches, copy it in the dst and
+    * return ESUCCESS.
+    * if it is not found, copy the next finger in dst 
+    * and return -ENOTFOUND, it is the nearest fingerprint
+    */
+   
+   SLIST_FOREACH(l, &finger_head, next) {
+   
+      /* this is exact match */
+      if ( memcmp(l->finger, f, FINGER_LEN) == 0) {
+         strcpy(dst, l->os);
+         return ESUCCESS;
+      }
+      
+      /* 
+       * if not found seach with wildcalderd MSS 
+       * but he same WINDOW size
+       */
+      if ( memcmp(l->finger, f, FINGER_LEN) > 0) {
+         
+         /* the window field is FINGER_MSS bytes */
+         char win[FINGER_MSS];
+         char pattern[FINGER_LEN+1];
+         
+         /* the is the next in the list */
+         strcpy(dst, l->os);  
+        
+         strncpy(win, f, FINGER_MSS);
+         win[FINGER_MSS-1] = '\0';
+         
+         /* pattern will be something like:
+          *
+          *  0000:*:TT:WS:0:0:0:0:F:LT
+          */
+         sprintf(pattern, "%s:*:%s", win, f + FINGER_TTL);
+
+         /* search for equal WINDOW but wildcarded MSS */
+         while (l != SLIST_END(&finger_head) && !strncmp(l->finger, win, 4)) {
+            if (match_pattern(l->finger, pattern)) {
+               /* save the nearest one (wildcarded MSS) */
+               strcpy(dst, l->os); 
+               return -ENOTFOUND;
+            }
+            l = SLIST_NEXT(l, next);
+         }
+         return -ENOTFOUND;
+      }
+   }
+
+   return -ENOTFOUND;
+}
+
+/*
+ * initialize the fingerprint string
+ */
+
+void fingerprint_default(char *finger)
+{
+   /* 
+    * initialize the fingerprint 
+    *
+    * WWWW:_MSS:TT:WS:S:N:D:T:F:LT
+    */
+   strcpy(finger,"0000:_MSS:TT:WS:0:0:0:0:F:LT");  
+}
+
+/*
+ * add a parameter to the finger string
+ */
+
+void fingerprint_push(char *finger, int param, int value)
+{
+   char tmp[10];
+   int lt_old = 0;
+
+   ON_ERROR(finger, NULL, "finger_push used on NULL string !!");
+   
+   switch (param) {
+      case FINGER_WINDOW:
+         snprintf(tmp, sizeof(tmp), "%04X", value);
+         strncpy(finger + FINGER_WINDOW, tmp, 4);
+         break;
+      case FINGER_MSS:
+         snprintf(tmp, sizeof(tmp), "%04X", value);
+         strncpy(finger + FINGER_MSS, tmp, 4);
+         break;
+      case FINGER_TTL:
+         snprintf(tmp, sizeof(tmp), "%02X", TTL_PREDICTOR(value));
+         strncpy(finger + FINGER_TTL, tmp, 2);
+         break;
+      case FINGER_WS:
+         snprintf(tmp, sizeof(tmp), "%02X", value);
+         strncpy(finger + FINGER_WS, tmp, 2);
+         break;
+      case FINGER_SACK:
+         snprintf(tmp, sizeof(tmp), "%d", value);
+         strncpy(finger + FINGER_SACK, tmp, 1);
+         break;
+      case FINGER_NOP:
+         snprintf(tmp, sizeof(tmp), "%d", value);
+         strncpy(finger + FINGER_NOP, tmp, 1);
+         break;
+      case FINGER_DF:
+         snprintf(tmp, sizeof(tmp), "%d", value);
+         strncpy(finger + FINGER_DF, tmp, 1);
+         break;
+      case FINGER_TIMESTAMP:
+         snprintf(tmp, sizeof(tmp), "%d", value);
+         strncpy(finger + FINGER_TIMESTAMP, tmp, 1);
+         break;
+      case FINGER_TCPFLAG:
+         if (value == 1)
+            strncpy(finger + FINGER_TCPFLAG, "A", 1);
+         else
+            strncpy(finger + FINGER_TCPFLAG, "S", 1);
+         break;
+      case FINGER_LT:
+         /*
+          * since the LENGHT is the sum of the IP header
+          * and the TCP header, we have to calculate it
+          * in two steps. (decoders are unaware of other layers)
+          */
+         lt_old = strtoul(finger + FINGER_LT, NULL, 16);
+         snprintf(tmp, sizeof(tmp), "%02X", value + lt_old);
+         strncpy(finger + FINGER_LT, tmp, 2);
+         break;                                 
+   }
+}
+
+/*
+ * round the TTL to the nearest power of 2 (ceiling)
+ */
+
+u_int8 TTL_PREDICTOR(u_int8 x)
+{                            
+   register u_int8 i = x;
+   register u_int8 j = 1;
+   register u_int8 c = 0;
+
+   do {
+      c += i & 1;
+      j <<= 1;
+   } while ( i >>= 1 );
+
+   if ( c == 1 )
+      return x;
+   else
+      return ( j ? j : 0xff );
 }
 
 
-
-char * Fingerprint_MAC(char *MAC)
+/*
+ * submit a fingerprint to the ettercap website
+ */
+int fingerprint_submit(char *finger, char *os)
 {
-   FILE *fto;
-   char line[1024];
-   mac_database *mac_index;
-
-#ifdef DEBUG
-   Debug_msg("Fingerprint_MAC -- [%s]", MAC);
-#endif
-
-   if (!strcmp(MAC, "")) return "unknown";
-
-   if (mac_list == NULL)  // only the first time
-   {
-
-      if ( (mac_index = (mac_database *)calloc(1,sizeof(mac_database))) == NULL)
-         ERROR_MSG("calloc()");
-
-      mac_list = mac_index;
-
-      fto = fopen(DATA_PATH "/mac-fingerprints", "r");
-      if (!fto)
-         fto = fopen("./share/mac-fingerprints","r");
-         if (!fto)
-            Error_msg("Can't open \"mac-fingerprints\" file !!");
-
-
-      while (fgets (line, 1024, fto))
-      {
-         if (!strlen(line))   // skip 0 length line
-            continue;
-
-         line[strlen(line)-1] = 0;
-
-         if ( (mac_index->next = ( struct mac_database *) calloc (1, sizeof(mac_database))) == NULL)
-            ERROR_MSG("calloc()");
-
-         strlcpy(mac_index->mac, line, sizeof(mac_index->mac));
-         strlcpy(mac_index->vendor, line+10, 60);
-
-         mac_index = (mac_database *) mac_index->next;
-      }
-
-      fclose (fto);
-      mac_index->next = NULL;
+   int sock;
+   char host[] = "ettercap.sourceforge.net";
+   char page[] = "/fingerprint.php";
+   char getmsg[1024];
+   char *os_encoded;
+   size_t i;
+ 
+   memset(getmsg, 0, sizeof(getmsg));
+  
+   /* some sanity checks */
+   if (strlen(finger) > FINGER_LEN || strlen(os) > OS_LEN)
+      return -EINVALID;
+   
+   USER_MSG("Connecting to http://%s...\n", host);
+      
+   /* prepare the socket */
+   sock = open_socket(host, 80);
+   
+   switch(sock) {
+      case -ENOADDRESS:
+         FATAL_MSG("Cannot resolve %s", host);
+         break;
+      case -EFATAL:
+         FATAL_MSG("Cannot create the socket");
+         break;
+      case -ETIMEOUT:
+         FATAL_MSG("Connect timeout to %s on port 80", host);
+         break;
+      case -EINVALID:
+         FATAL_MSG("Error connecting to %s on port 80", host);
+         break;
    }
+  
+   os_encoded = strdup(os);
+   /* sanitize the os (encode the ' ' to '+') */
+   for (i = 0; i < strlen(os_encoded); i++)
+      if (os_encoded[i] == ' ') 
+         os_encoded[i] = '+';
+      
+   /* prepare the HTTP request */
+   snprintf(getmsg, sizeof(getmsg), "GET %s?finger=%s&os=%s HTTP/1.0\r\n"
+                                     "Host: %s\r\n"
+                                     "User-Agent: %s (%s)\r\n"
+                                     "\r\n", page, finger, os_encoded, host, GBL_PROGRAM, GBL_VERSION );
+  
+   SAFE_FREE(os_encoded);
 
-   mac_index = mac_list;
-   for( ; mac_index; mac_index = (mac_database *)mac_index->next)
-   {
-      if (!strncmp(mac_index->mac, MAC, 8))
-      {
-         return mac_index->vendor;
-      }
-   }
-   return "unknown";
+   USER_MSG("Submitting the fingerprint to %s...\n", page);
+   
+   /* send the request to the server */
+   socket_send(sock, getmsg, strlen(getmsg));
+
+   DEBUG_MSG("fingerprint_submit - SEND \n\n%s\n\n", getmsg);
+
+   /* ignore the server response */
+   close_socket(sock);
+
+   USER_MSG("New fingerprint submitted to the ettercap website...\n");
+
+   return ESUCCESS;
 }
 
 
 /* EOF */
+
+// vim:ts=3:expandtab
+

@@ -1,7 +1,7 @@
 dnl
 dnl    ettercap -- configure script
 dnl
-dnl    Copyright (C) 2001  ALoR <alor@users.sourceforge.net>, NaGA <crwm@freemail.it>
+dnl    Copyright (C) ALoR & NaGA
 dnl
 dnl    This program is free software; you can redistribute it and/or modify
 dnl    it under the terms of the GNU General Public License as published by
@@ -16,145 +16,197 @@ dnl
 dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-dnl
-dnl    $Id: configure.in,v 1.24 2002/02/11 20:46:50 alor Exp $
+dnl   
+dnl    $Id: configure.in,v 1.131 2004/09/14 00:18:30 daten Exp $
 dnl
 
-AC_INIT(src/ec_main.c)
-AC_CONFIG_HEADER(config.h)
+AC_INIT
+AC_CONFIG_SRCDIR([include/ec.h])
 
+dnl Force autoconf 2.57 
+AC_PREREQ(2.57)
+
+dnl Force automake 1.7 or better
+dnl AM_INIT_AUTOMAKE(1.7.0)
+
+dnl Do not recompile configure Makefile et similia
+AM_MAINTAINER_MODE
+
+VERSION=`grep EC_VERSION\  ./include/ec_version.h | cut -f2 -d"\""`
 SB=`./shtool echo -n -e %B`
 EB=`./shtool echo -n -e %b`
-
 AC_SUBST(SB)
 AC_SUBST(EB)
-
-VERSION=`grep VERSION ./src/include/ec_main.h | cut -f2 -d"\""`
 AC_SUBST(VERSION)
+EC_MESSAGE(Configuring ettercap $VERSION)
 
-PROG=`grep PROGRAM ./src/include/ec_main.h | cut -f2 -d"\""`
-AC_SUBST(PROG)
+AC_CONFIG_SRCDIR(src)
+AM_INIT_AUTOMAKE(ettercap, $VERSION)
 
-EC_MESSAGE(Configuring $PROG-$VERSION)
-
-SERIAL=`date +%Y%m%d`
-AC_SUBST(SERIAL)
-
-RELEASE=1
-AC_SUBST(RELEASE)
-
-SOURCES=`ls ./src/ec_*.c | awk ' { printf "%s ", $1 } '`
-AC_SUBST(SOURCES)
-
-
-dnl =========================================
-dnl   Enable Developmen feature or portings
-dnl =========================================
-
-AC_ARG_ENABLE(devel, [  --enable-devel          enable the undeveloped (alpha) features.],
-[ case "$enableval" in
-   yes)
-      development=1
-      ;;
-   no)
-      development=0
-      ;;
-esac ],
-   development=0
-)
+AC_CONFIG_HEADERS([include/config.h])
+dnl AC_CONFIG_HEADERS(include/config.h)
 
 dnl ================
 dnl   Check the OS
 dnl ================
 
-AC_CANONICAL_SYSTEM
-case "$target_os" in
+AC_CANONICAL_HOST
+
+AH_TEMPLATE(OS_LINUX, [compiling under linux])    
+
+AH_TEMPLATE(OS_BSD, [compiling under bsd])
+dnl the subtype for BSD only used if there are significant differences
+AH_TEMPLATE(OS_BSD_FREE, [compiling under free bsd])
+AH_TEMPLATE(OS_BSD_OPEN, [compiling under open bsd])
+AH_TEMPLATE(OS_BSD_NET, [compiling under net bsd])
+
+AH_TEMPLATE(OS_DARWIN, [compiling under macosx])
+
+AH_TEMPLATE(OS_SOLARIS, [compiling under solaris])
+
+AH_TEMPLATE(OS_WINDOWS, [compiling under windows])
+dnl the subtype does matter
+AH_TEMPLATE(OS_CYGWIN, [compiling under cygwin])
+AH_TEMPLATE(OS_MINGW, [compiling under mingw])
+
+dnl initialize the conditionals
+AM_CONDITIONAL(LINUX, false)
+AM_CONDITIONAL(BSD, false)
+AM_CONDITIONAL(DARWIN, false)
+AM_CONDITIONAL(SOLARIS, false)
+AM_CONDITIONAL(CYGWIN, false)
+AM_CONDITIONAL(MINGW, false)
+AM_CONDITIONAL(SFU, false)
+   
+case "$host_os" in
 *linux*)
-	EC_LINUX_KERNEL()
-	OS=LINUX
-	OS_OPT=
-	;;
+   AC_DEFINE(OS_LINUX)
+   AM_CONDITIONAL(LINUX, true)
+   OS="LINUX"
+   ;;
 *freebsd*)
-	EC_FREEBSD_VERSION()
-	OS=FREEBSD
-	OS_OPT=
-	;;
-*netbsd*)
-	OS=NETBSD
-	OS_OPT=
-	;;
+   AC_DEFINE(OS_BSD)
+   AC_DEFINE(OS_BSD_FREE)
+   AM_CONDITIONAL(BSD, true)
+   OS="FREEBSD"
+   ;;
 *openbsd*)
-	OS=OPENBSD
-	OS_OPT=
-	;;
+   AC_DEFINE(OS_BSD)
+   AC_DEFINE(OS_BSD_OPEN)
+   AM_CONDITIONAL(BSD, true)
+   OS="OPENBSD"
+   ;;
+*netbsd*)
+   AC_DEFINE(OS_BSD)
+   AC_DEFINE(OS_BSD_NET)
+   AM_CONDITIONAL(BSD, true)
+   OS="NETBSD"
+   ;;
 *darwin*)
-	EC_DARWIN_KERNEL()
-	OS=MACOSX
-	OS_OPT=
-	STRIPOPTION="-x"
-	;;
-*cygwin*)
-	if test $development -ne 1; then
-   	echo
-   	echo "CYGWIN PORTING IS IN PROGRESS..."
-   	echo "STAY TUNED FOR THE NEXT RELEASE"
-   	echo
-   	echo "you can try to compile and run it"
-   	echo "by configuring with the --enable-devel flag"
-   	echo "TRY AT YOUR OWN RISK"
-   	echo
-   	exit
-   fi
-	OS=CYGWIN
-	OS_OPT=
-	;;
+   AC_DEFINE(OS_DARWIN)
+   AM_CONDITIONAL(DARWIN, true)
+   OS="DARWIN"
+   ;;
 *solaris*)
-	if test $development -ne 1; then
-   	echo
-   	echo "WE ARE VERY VERY SORRY, BUT STILL NO SOLARIS PORT"
-   	echo "WE ARE WORKING ON IT..."
-   	echo "IF YOU WANT TO CONTRIBUTE WITH PORTING:"
-   	echo "run  ./configure --enable-devel "
-   	echo "and report bugs"
-   	echo
-   	exit
-   fi
-	OS=SOLARIS
-	OS_OPT=
-	;;
+   AC_DEFINE(OS_SOLARIS)
+   AM_CONDITIONAL(SOLARIS, true)
+   OS="SOLARIS"
+   ;;
+*cygwin*)
+   EC_WINDOWS_KERNEL()
+   EC_CYGWIN_KERNEL()
+   AC_DEFINE(OS_CYGWIN)
+   AM_CONDITIONAL(CYGWIN, true)
+   OS="WINDOWS"
+   OS_SUB="CYGWIN $ac_ec_windows_version"
+   PL_LDFLAGS="-no-undefined"
+   ;;
+*mingw*)
+   EC_WINDOWS_KERNEL()
+   EC_MINGW_KERNEL()
+   AC_DEFINE(OS_WINDOWS)
+   AC_DEFINE(OS_MINGW)
+   AM_CONDITIONAL(MINGW, true)
+   OS="WINDWOS"
+   OS_SUB="MINGW"
+   EC_MINGW_SPECIAL_MAKEFILE()
+   exit
+   ;;
 *)
-	echo
-	echo "NOT A SUPPORTED SYSTEM / OR SYSTEM NOT RECOGNIZED"
-	echo
-	cat PORTINGS
-	echo
-	exit
-	;;
+   echo
+   echo "NOT A SUPPORTED SYSTEM / OR SYSTEM NOT RECOGNIZED"
+   echo
+   ;;
 esac
 
-AC_SUBST(OS)
-AC_SUBST(OS_OPT)
-AC_SUBST(STRIPOPTION)
+AC_SUBST(PL_LDFLAGS)
 
-dnl ======================
-dnl   Initialize prefix.
-dnl ======================
+dnl =====================================
+dnl   Save the path passed to configure
+dnl =====================================
 
 AC_PREFIX_DEFAULT(/usr/local)
 
 if test "$prefix" = "NONE"; then
-	prefix="/usr/local"
+   prefix="/usr/local"
+fi
+if test "$exec_prefix" = "NONE"; then
+   exec_prefix=$prefix
 fi
 
+AH_TEMPLATE(INSTALL_PREFIX, [the prefix passed by configure])
+AC_DEFINE_UNQUOTED(INSTALL_PREFIX, "`eval echo $prefix`")
+
+AH_TEMPLATE(INSTALL_EXECPREFIX, [the exec_prefix passed by configure])
+AC_DEFINE_UNQUOTED(INSTALL_EXECPREFIX, "`eval echo $exec_prefix`")
+
+AH_TEMPLATE(INSTALL_SYSCONFDIR, [where can I find my sysconf file ?])
+AC_DEFINE_UNQUOTED(INSTALL_SYSCONFDIR, "`eval echo $sysconfdir`")
+
+AH_TEMPLATE(INSTALL_DATADIR, [where can I find my data file ?])
+AC_DEFINE_UNQUOTED(INSTALL_DATADIR, "`eval echo $datadir`")
+
+AH_TEMPLATE(INSTALL_LIBDIR, [where can I find my plugins ?])
+AC_DEFINE_UNQUOTED(INSTALL_LIBDIR, "`eval echo $libdir`")
+
+AH_TEMPLATE(INSTALL_BINDIR, [where can I find the ettercap executable ?])
+AC_DEFINE_UNQUOTED(INSTALL_BINDIR, "`eval echo $bindir`")
 
 dnl ========================
 dnl   Check the C compiler
 dnl ========================
 
 AC_PROG_CC
+AM_PROG_CC_STDC
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_GCC_TRADITIONAL
+EC_GCC_MACRO
+AH_TEMPLATE(GCC_VERSION, [gcc version])
+gcc_ver=`$CC -dumpversion`
+AC_DEFINE_UNQUOTED(GCC_VERSION, "$gcc_ver")
+
+dnl ========================
+dnl   Bison/Flex related...
+dnl ========================
+
+AC_PROG_YACC
+AC_PROG_LEX
+
+dnl ========================
+dnl   Libtool related...
+dnl ========================
+
+AC_DISABLE_STATIC
+AC_LIBTOOL_WIN32_DLL
+AC_LIBTOOL_DLOPEN
+AM_PROG_LIBTOOL
+AC_SEARCH_LIBS(dlopen,c dl,,)
+AC_LIB_LTDL
+ac_ec_lt_dlopen=yes
+AC_SEARCH_LIBS(lt_dlopen,c dl ltdl,,ac_ec_lt_dlopen=no)
+AC_CHECK_HEADERS(dlfcn.h)
+AC_CHECK_HEADERS(ltdl.h)
 
 dnl ======================
 dnl   Machine Endianness
@@ -162,212 +214,99 @@ dnl ======================
 
 AC_C_BIGENDIAN
 
-dnl ======================
-dnl   OS specific checks
-dnl ======================
-
-
-if test "$OS" = "LINUX"; then
-
-	dnl ===========================
-	dnl   Check for Socket Packet
-	dnl ===========================
-
-		EC_PF_PACKET()
-		EC_SOCK_PACKET()
-
-		if test "$ac_cv_ec_nopf" = 1 && test "$ac_cv_ec_nosock" = 1; then
-			AC_MSG_WARN(*************************************);
-			AC_MSG_WARN(* You can't create Socket Packet !! *);
-			AC_MSG_WARN(*************************************);
-			exit;
-		fi
-
-	dnl ===========================================
-	dnl   Check for /proc/sys/net/ipv4/ip_forward
-	dnl ===========================================
-
-		AC_PATH_PROGS(IPFORWARD,ip_forward,no,/proc/sys/net/ipv4)
-		if test "$IPFORWARD" = no; then
-			AC_MSG_WARN(*****************************************************************)
-			AC_MSG_WARN(* /proc/sys/net/ipv4/ip_forward not found !!                    *)
-			AC_MSG_WARN(* please disable manually ip_forwarding before running ettercap *)
-			AC_MSG_WARN(*****************************************************************)
-		else
-			AC_DEFINE(HAVE_PROC_FORWARDING)
-		fi
-
-fi
-
-
-
-if test "$OS" = "FREEBSD" -o "$OS" = "OPENBSD" -o "$OS" = "NETBSD" -o "$OS" = "MACOSX"; then
-
-	AC_MSG_CHECKING(link-layer packet interface)
-
-	if test -r /dev/bpf0 ; then
-		AC_MSG_RESULT(found bpf)
-	elif test -c /dev/bpf0 ; then
-		AC_MSG_RESULT(found bpf)
-	else
-		AC_MSG_WARN(*********************************************************);
-		AC_MSG_WARN(* /dev/bpf0 not found !! please reconfigure your kernel *);
-		AC_MSG_WARN(*********************************************************);
-		exit;
-	fi
-
-fi
-
-
-
-if test "$OS" = "SOLARIS"; then
-
-	AC_CHECK_HEADERS(sys/bufmod.h sys/dlpi_ext.h)
-	AC_MSG_CHECKING(for /dev/dlpi device)
-	if test -c /dev/dlpi; then
-		AC_MSG_RESULT(yes)
-		AC_DEFINE(HAVE_DEV_DLPI)
-	else
-		AC_MSG_RESULT(no)
-		dir="/dev/dlpi"
-		AC_MSG_CHECKING(for $dir directory)
-		if test -d $dir ; then
-			AC_MSG_RESULT(yes)
-			AC_DEFINE_UNQUOTED(DLPI_DEV_PREFIX, "$dir")
-		else
-			AC_MSG_RESULT(no)
-		fi
-	fi
-
-fi
-
-if test "$OS" = "CYGWIN"; then
-
-	AC_MSG_CHECKING(for WinPcap developer's pack)
-	AC_ARG_WITH(wpdpack,
-	[  --with-wpdpack=DIR      use WinPcap developer's pack in DIR],
-	[ AC_MSG_RESULT($withval)
-		if test -f $withval/include/packet32.h -a -f $withval/lib/packet.a; then
-			COPTS="$COPTS -I$withval/include"
-			LIBS="$LIBS -L$withval/lib -lpacket -lws2_32"
-		else
-			AC_MSG_ERROR(packet32.h or packet.a not found in $withval)
-		fi ],
-	[ for dir in ${prefix} ${HOME}/WPdpack ; do
-			if test -f ${dir}/include/packet32.h -a -f ${dir}/lib/packet.a; then
-				COPTS="$COPTS -I${dir}/include"
-				LIBS="$LIBS -L${dir}/lib -lpacket -lws2_32"
-				have_pcap=yes
-				break;
-			fi
-	  done
-	  if test "$have_pcap" != yes; then
-			AC_MSG_ERROR(WinPcap developer's pack not found)
-	  fi
-	  AC_MSG_RESULT(yes) ])
-
-fi
-
-dnl ===========================
-dnl   Check for programs path
-dnl ===========================
-
-AC_PATH_PROG(WGET_PATH, "wget")
-  if test -n "$WGET_PATH"; then
-    AC_DEFINE_UNQUOTED(WGET_PATH, "$WGET_PATH")
-  else
-    AC_DEFINE_UNQUOTED(WGET_PATH, "")
-  fi
-
-
 dnl =====================
 dnl   Check for headers
 dnl =====================
 
 AC_HEADER_STDC
-AC_HEADER_DIRENT
 AC_HEADER_TIME
-AC_CHECK_HEADERS(getopt.h)
-AC_CHECK_HEADERS(fcntl.h termios.h ctype.h)
-AC_CHECK_HEADERS(sys/time.h sys/utsname.h)
-AC_CHECK_HEADERS(ifaddrs.h)
+AC_HEADER_DIRENT
 
 dnl These are required !!
-AC_CHECK_HEADERS(unistd.h stdlib.h signal.h stdarg.h sys/ioctl.h,,
-	AC_MSG_WARN(**************************************************);
-	AC_MSG_WARN(* REQUIRED !! I cant believe U don't have this !!*);
-	AC_MSG_WARN(**************************************************);
-	exit)
+AC_CHECK_HEADERS(unistd.h stdlib.h signal.h stdarg.h sys/ioctl.h sys/types.h dirent.h errno.h,,
+   AC_MSG_WARN(****************************************************);
+   AC_MSG_WARN(* REQUIRED !! I cant believe you don't have this !!*);
+   AC_MSG_WARN(****************************************************);
+   exit 1)
 
-AC_CHECK_HEADERS(dirent.h errno.h,,
-	AC_MSG_WARN(***************);
-	AC_MSG_WARN(* REQUIRED !! *);
-	AC_MSG_WARN(***************);
-	exit)
-
-AC_CHECK_HEADERS(net/ethernet.h net/if_arp.h net/if.h)
-AC_CHECK_HEADERS(netinet/ip.h netinet/ip_icmp.h netinet/tcp.h)
-AC_CHECK_HEADERS(sys/sockio.h)
-
+AC_CHECK_HEADERS(fcntl.h ctype.h)
+AC_CHECK_HEADERS(sys/types.h stdint.h)
+AC_CHECK_HEADERS(sys/time.h sys/utsname.h)
+AC_CHECK_HEADERS(termios.h)
+AC_CHECK_HEADERS(sys/poll.h poll.h sys/select.h)
+AC_CHECK_HEADERS(sys/cdefs.h)
+dnl nameser NS_GET32 and so on...
+EC_NS_GET()
 
 dnl ==================================================================
 dnl   Checks for typedefs, structures, and compiler characteristics.
 dnl ==================================================================
 
 AC_STRUCT_TM
-EC_SOCKLEN_CHECK
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_C_CONST
-AC_LBL_SOCKADDR_SA_LEN
-AC_LBL_UNALIGNED_ACCESS
 
 dnl =====================
 dnl   Check for libs
 dnl =====================
 
-AC_FUNC_MALLOC
-AC_FUNC_MEMCMP
+
 AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
 EC_PTHREAD_CHECK()
-AC_SEARCH_LIBS(log,c m)
-AC_SEARCH_LIBS(pow,c m)
-AC_SEARCH_LIBS(gethostbyname,c nsl,,AC_MSG_ERROR(libnsl not found.))
-AC_SEARCH_LIBS(socket,c socket,,AC_MSG_ERROR(libsocket not found.))
-AC_SEARCH_LIBS(dn_expand,c resolv,,)
 AC_CHECK_FUNCS(getifaddrs)
 AC_CHECK_FUNCS(gettimeofday)
 AC_CHECK_FUNCS(vsnprintf)
-AC_CHECK_FUNCS(select strdup strerror strstr strsignal)
+AC_CHECK_FUNCS(select poll strdup strerror strstr strsignal strtok_r)
 AC_CHECK_FUNCS(uname)
+AC_CHECK_FUNCS(daemon)
 
+EC_MESSAGE(Checking for required libraries)
+
+AC_SEARCH_LIBS(gethostbyname, c nsl socket,, AC_MSG_ERROR(not found.))
+AC_SEARCH_LIBS(socket, c socket,, AC_MSG_ERROR(not found.))
+AC_SEARCH_LIBS(poll, c poll) 
+AC_SEARCH_LIBS(gzopen,c z,,AC_MSG_ERROR(not found.))
+
+dnl
+dnl  Do we have dn_expand ?
+dnl
+EC_RESOLVE_CHECK()
 
 dnl ===============================
 dnl   Check for non standard libs
 dnl ===============================
 
-MISSING=""
-MISSLIBS=""
+EC_MESSAGE(Checking for missing functions)
 
-AC_CHECK_FUNCS(getopt_long,,MISSING="$MISSING ./src/missing/getopt.c ./src/missing/getopt1.c"
-                            MISSLIBS="$MISSLIBS ./src/missing/getopt.o ./src/missing/getopt1.o")
-AC_CHECK_FUNCS(strlcat,,MISSING="$MISSING ./src/missing/strlcat.c"
-                        MISSLIBS="$MISSLIBS ./src/missing/strlcat.o")
-AC_CHECK_FUNCS(strlcpy,,MISSING="$MISSING ./src/missing/strlcpy.c"
-                        MISSLIBS="$MISSLIBS ./src/missing/strlcpy.o")
-AC_CHECK_FUNCS(strsep,,MISSING="$MISSING ./src/missing/strsep.c"
-                       MISSLIBS="$MISSLIBS ./src/missing/strsep.o")
-AC_CHECK_FUNCS(memmem,,MISSING="$MISSING ./src/missing/memmem.c"
-                       MISSLIBS="$MISSLIBS ./src/missing/memmem.o")
-AC_CHECK_FUNCS(inet_aton,,MISSING="$MISSING ./src/missing/inet_aton.c"
-                          MISSLIBS="$MISSLIBS ./src/missing/inet_aton.o")
-AC_CHECK_FUNCS(scandir,,MISSING="$MISSING ./src/missing/scandir.c"
-                        MISSLIBS="$MISSLIBS ./src/missing/scandir.o")
+AC_CONFIG_LIBOBJ_DIR(src/missing)
 
-AC_SUBST(MISSING)
-AC_SUBST(MISSLIBS)
+AM_CONDITIONAL(MISSING_STRLCPY, false)
+AM_CONDITIONAL(MISSING_STRLCAT, false)
+AM_CONDITIONAL(MISSING_STRSEP, false)
+AM_CONDITIONAL(MISSING_MEMMEM, false)
+AM_CONDITIONAL(MISSING_MEMCMP, false)
+AM_CONDITIONAL(MISSING_GETOPT_LONG, false)
+AM_CONDITIONAL(MISSING_STRCASESTR, false)
+AM_CONDITIONAL(MISSING_INET_ATON, false)
+AM_CONDITIONAL(MISSING_SCANDIR, false)
 
+dnl AC_REPLACE_FUNCS(strlcpy)
+
+AC_CHECK_FUNCS([strlcpy], , [AC_LIBOBJ(missing/strlcpy) AM_CONDITIONAL(MISSING_STRLCPY, true)])
+AC_CHECK_FUNCS([strlcat], , [AC_LIBOBJ(missing/strlcat) AM_CONDITIONAL(MISSING_STRLCAT, true)])
+AC_CHECK_FUNCS([strsep], , [AC_LIBOBJ(missing/strsep) AM_CONDITIONAL(MISSING_STRSEP, true)])
+AC_CHECK_FUNCS([memmem], , [AC_LIBOBJ(missing/memmem) AM_CONDITIONAL(MISSING_MEMMEM, true)])
+AC_CHECK_FUNCS([memcmp], , [AC_LIBOBJ(missing/memcmp) AM_CONDITIONAL(MISSING_MEMCMP, true)])
+AC_CHECK_FUNCS([getopt_long], , [AC_LIBOBJ(missing/getopt) AM_CONDITIONAL(MISSING_GETOPT_LONG, true)])
+AC_CHECK_FUNCS([strcasestr], , [AC_LIBOBJ(missing/strcasestr) AM_CONDITIONAL(MISSING_STRCASESTR, true)])
+AC_CHECK_FUNCS([scandir], , [AC_LIBOBJ(missing/scandir) AM_CONDITIONAL(MISSING_SCANDIR, true)])
+AC_CHECK_FUNCS([inet_aton], , [AC_LIBOBJ(missing/inet_aton) AM_CONDITIONAL(MISSING_INET_ATON, true)])
+
+AC_CHECK_LIB(resolv, inet_aton,
+   AM_CONDITIONAL(INET_ATON_WANTS_RESOLV, true), 
+   AM_CONDITIONAL(INET_ATON_WANTS_RESOLV, false))
 
 dnl =======================================
 dnl   Check user defined --enable-FEATURE
@@ -375,301 +314,593 @@ dnl =======================================
 
 EC_MESSAGE(Checking user defined options)
 
-dnl -----------------------
-dnl -- NCURSES INTERFACE --
-dnl -----------------------
-
-check_ncurses=0
-AC_MSG_CHECKING([if --enable-ncurses option is specified])
-AC_ARG_ENABLE(ncurses, [  --enable-ncurses        enable the ncurses interface.],
-[ case "$enableval" in
-	yes)
-		AC_MSG_RESULT(yes.)
-		check_ncurses=1
-		;;
-	no)  AC_MSG_RESULT(no.)
-		;;
-esac ],
-	AC_MSG_RESULT(yes. enabled by default.)
-	check_ncurses=1
-)
-
-ac_cv_ec_ncurses=no
-ac_cv_ec_form=no
-
-if test $check_ncurses -ne 0; then
-	ncurses_warn=0
-	curses_warn=0
-
-	AC_CHECK_HEADERS(ncurses.h,,ncurses_warn=1)
-	AC_CHECK_LIB(ncurses,newpad,,ncurses_warn=1)
-
-	if test $ncurses_warn -ne 1; then
-		AC_DEFINE(HAVE_NCURSES,1)
-		ac_cv_ec_ncurses=yes
-	else
-		AC_CHECK_HEADERS(curses.h,,curses_warn=1)
-		AC_CHECK_LIB(curses,newpad,,curses_warn=1)
-		AC_CHECK_LIB(curses,mvwgetnstr,,curses_warn=1)
-
-		if test $curses_warn -ne 1; then
-			AC_DEFINE(HAVE_NCURSES,1)
-			ac_cv_ec_ncurses=yes
-		else
-			AC_MSG_WARN(***********************************************)
-			AC_MSG_WARN(* NCURSES are NOT available in your system !! *)
-			AC_MSG_WARN(* Interactive mode will not be supported!     *)
-			AC_MSG_WARN(***********************************************)
-		fi
-	fi
-
-	form_warn=0
-
-	if test "$ncurses_warn$curses_warn" = "00"; then
-		AC_CHECK_HEADERS(form.h,,form_warn=1)
-		AC_CHECK_LIB(form,form_win,,form_warn=1)
-
-		if test $form_warn -ne 1; then
-			AC_DEFINE(HAVE_FORM,1)
-			ac_cv_ec_form=yes
-		else
-			AC_MSG_WARN(**********************************************)
-			AC_MSG_WARN(* FORM are NOT available in your system !!   *)
-			AC_MSG_WARN(* some interface will be less pleasureful... *)
-			AC_MSG_WARN(**********************************************)
-		fi
-	fi
-fi
-
-
-
-
 dnl -----------
 dnl -- DEBUG --
 dnl -----------
 
-AC_MSG_CHECKING([if --enable-debug option is specified])
-AC_ARG_ENABLE(debug, [  --enable-debug          create a file for debugging messages.],
+AH_TEMPLATE(DEBUG, [debug support])
+
+ac_ec_debug=no
+AC_MSG_CHECKING([if --enable-debug option was specified])
+AC_ARG_ENABLE(debug, AC_HELP_STRING(--enable-debug,create a file for debugging messages),
 [ case "$enableval" in
-	yes)
-		DEBUG="-DDEBUG"
-		CFLAGS="-g -ggdb -Wmissing-prototypes -Werror -Wall"
-		AC_MSG_RESULT(yes)
-		ac_cv_ec_debug=yes
-		;;
-	no)  AC_MSG_RESULT(no.)
-		CFLAGS="-O3 -funroll-loops -fomit-frame-pointer -Wall"
-		ac_cv_ec_debug=no
-		;;
+   yes)
+      AC_DEFINE(DEBUG, 1)
+      DEBUG_FLAGS="-g -ggdb -Wmissing-prototypes -Wno-uninitialized -Werror -Wformat-security -Wsign-compare -Wall"
+      AC_MSG_RESULT(yes)
+      ac_ec_debug=yes
+      ;;
+   no)  AC_MSG_RESULT(no)
+      DEBUG_FLAGS="-O2 -funroll-loops -fomit-frame-pointer -Wall"
+      ac_ec_debug=no
+      ;;
 esac ],
-	AC_MSG_RESULT(no. disabled by default.)
-	CFLAGS="-O3 -funroll-loops -fomit-frame-pointer -Wall"
-	ac_cv_ec_debug=no
+   AC_MSG_RESULT(no)
+   DEBUG_FLAGS="-O2 -funroll-loops -fomit-frame-pointer -Wall"
+   ac_ec_debug=no
 )
-AC_SUBST(DEBUG)
 
 dnl -------------
 dnl -- PLUGINS --
 dnl -------------
 
+AM_CONDITIONAL(PLUGINS, false)
+AH_TEMPLATE(HAVE_PLUGINS, [plugins support])
+
 check_plugins=0
-AC_MSG_CHECKING([if --enable-plugins option is specified])
-AC_ARG_ENABLE(plugins, [  --enable-plugins        enable the use of plugins in ettercap.],
+ac_ec_plugin=no
+AC_MSG_CHECKING([if --enable-plugins option was specified])
+if test $ac_ec_lt_dlopen = yes; then
+AC_ARG_ENABLE(plugins, AC_HELP_STRING(--enable-plugins,enable the use of plugins in ettercap),
 [ case "$enableval" in
-	yes)
-		AC_MSG_RESULT(yes.)
-		check_plugins=1
-		;;
-	no)  AC_MSG_RESULT(no.)
-		ac_cv_ec_plugin=no
-		;;
+   yes)
+      AC_MSG_RESULT(yes)
+      AM_CONDITIONAL(PLUGINS, true)
+      AC_DEFINE(HAVE_PLUGINS, 1)
+      ac_ec_plugin=yes
+      ;;
+   no)  AC_MSG_RESULT(no)
+      ac_ec_plugin=no
+      ;;
 esac ],
-	AC_MSG_RESULT(yes. enabled by default.)
-	check_plugins=1
+   AC_MSG_RESULT(yes by default)
+   AM_CONDITIONAL(PLUGINS, true)
+   AC_DEFINE(HAVE_PLUGINS, 1)
+   ac_ec_plugin=yes
 )
-
-
-if test $check_plugins -ne 0; then
-	plugins_warn=0
-	AC_CHECK_HEADERS(dlfcn.h,,plugins_warn=1)
-	AC_SEARCH_LIBS(dlopen, dl c,,plugins_warn=1)
-
-	if test $plugins_warn -ne 1; then
-		AC_DEFINE(PERMIT_PLUGINS,1)
-		ac_cv_ec_plugin=yes
-		AC_MSG_CHECKING([for gcc option to produce PIC])
-		if test "$OS" = "MACOSX"; then
-			PICFLAG="-bundle -undefined $ac_cv_ec_undefined -bundle_loader ../../ettercap"
-		elif test "$OS" = "SOLARIS"; then
-			PICFLAG="-fPIC -DPIC -shared"
-		elif test "$OS" = "CYGWIN"; then
-			PICFLAG="-DPIC -shared"
-		else
-			LIBS="$LIBS -rdynamic"
-			PICFLAG="-fPIC -DPIC -shared"
-		fi
-		AC_MSG_RESULT($PICFLAG)
-		AC_SUBST(PICFLAG)
-	else
-		AC_MSG_WARN(***********************************************)
-		AC_MSG_WARN(* Plugins are NOT supported by your system !! *)
-		if test "$OS" = "MACOSX"; then
-			AC_MSG_WARN(*                                             *)
-			AC_MSG_WARN(* You have to install the dlcompat library... *)
-		fi
-		AC_MSG_WARN(***********************************************)
-	   ac_cv_ec_plugin=no
-	fi
+else
+   AC_MSG_RESULT(not supported)
 fi
 
+dnl ==================
+dnl   Check for libs
+dnl ==================
+
 
 dnl ---------
-dnl -- SSH --
+dnl  libpcap
 dnl ---------
+ac_ec_libpcap=default
 
-check_ssh=0
-AC_ARG_WITH(openssl, [  --with-openssl=DIR      use OpenSSL in DIR],
+AC_MSG_CHECKING(for libpcap)
+AC_ARG_WITH(libpcap, AC_HELP_STRING(--with-libpcap=DIR,use libpcap in DIR),
 [ case "$withval" in
-	no)
-		AC_MSG_CHECKING(for OpenSSL)
-		AC_MSG_RESULT(no)
-		ac_cv_ec_ssh=no
-		;;
-	*)
-		AC_MSG_CHECKING(for OpenSSL in $withval)
-		check_ssh=1
-		ssl_path=$withval
-		;;
-	esac ],
-	[ AC_MSG_CHECKING(for OpenSSL in ${prefix})
-	check_ssh=1
-	ssl_path=${prefix}
-	]
+  no)
+     AC_MSG_RESULT(no)
+     AC_MSG_ERROR(["*** ettercap cannot operate without libpcap. ***"])
+     ;;
+  *)
+     if test -f $withval/pcap.h; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        PCAPINC="-I$withval"
+        if test "$OS" = "WINDOWS"; then
+           PCAPLIB="-L$withval -lwpcap -lpacket"
+        else
+           PCAPLIB="-L$withval -lpcap"
+        fi
+        ac_ec_libpcap=$withval
+        AC_MSG_RESULT($withval)
+     elif test -f $withval/include/pcap.h; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        PCAPINC="-I$withval/include"
+        if test "$OS" = "WINDOWS"; then
+           PCAPLIB="-L$withval/lib -lwpcap -lpacket"
+        else
+           PCAPLIB="-L$withval/lib -lpcap"
+        fi
+        ac_ec_libpcap=$withval
+        AC_MSG_RESULT($withval)
+     else
+        AC_MSG_RESULT(no)
+        AC_MSG_ERROR([pcap.h not found in $withval])
+     fi
+     ;;
+  esac ],
+[ if test -f /usr/include/pcap/pcap.h; then
+     PCAPINC="-I/usr/include/pcap"
+     if test "$OS" = "WINDOWS"; then
+        PCAPLIB="-lwpcap -lpacket"
+     else
+        PCAPLIB="-lpcap"
+     fi
+  elif test -f /usr/include/pcap.h; then
+     if test "$OS" = "WINDOWS"; then
+        PCAPLIB="-lwpcap -lpacket"
+     else
+        PCAPLIB="-lpcap"
+     fi
+  elif test -f /usr/local/include/pcap.h; then
+     PCAPINC="-I/usr/local/include"
+     if test "$OS" = "WINDOWS"; then
+        PCAPLIB="-lwpcap -lpacket"
+     else
+        PCAPLIB="-lpcap"
+     fi
+  else
+     AC_MSG_RESULT(no)
+     AC_MSG_ERROR([libpcap not found])
+  fi
+  AC_MSG_RESULT(yes) ]
 )
 
-
-if test $check_ssh -ne 0; then
-
-	if test -f $ssl_path/include/openssl/ssl.h; then
-		COPTS="$COPTS -I$ssl_path/include"
-		LIBS="$LIBS -L$ssl_path/lib -lssl -lcrypto"
-		AC_DEFINE(HAVE_OPENSSL,1)
-		ac_cv_ec_ssh=yes
-		AC_MSG_RESULT(yes)
-	elif test -f $ssl_path/ssl/include/openssl/ssl.h; then
-		COPTS="$COPTS -I$ssl_path/ssl/include"
-		LIBS="$LIBS -L$ssl_path/ssl/lib -lssl -lcrypto"
-		AC_DEFINE(HAVE_OPENSSL,1)
-		ac_cv_ec_ssh=yes
-		AC_MSG_RESULT(yes)
-	elif test -f /usr/include/openssl/ssl.h; then
-		LIBS="$LIBS -lssl -lcrypto"
-		AC_DEFINE(HAVE_OPENSSL,1)
-		ac_cv_ec_ssh=yes
-		AC_MSG_RESULT(yes)
-	else
-		AC_MSG_RESULT(no)
-		ac_cv_ec_ssh=no
-		AC_MSG_WARN(**********************************************)
-		AC_MSG_WARN(* OpenSSL is NOT installed in your system !! *)
-		AC_MSG_WARN(* SSH support will NOT be available...       *)
-		AC_MSG_WARN(**********************************************)
-	fi
-
-	AC_PATH_PROG(OPENSSL_PATH, "openssl",, "$PATH:/usr/local/ssl/bin")
-	if test -n "$OPENSSL_PATH"; then
-	  AC_DEFINE_UNQUOTED(OPENSSL_PATH, "$OPENSSL_PATH")
-	else
-	  AC_DEFINE_UNQUOTED(OPENSSL_PATH, "")
-	fi
-
+if test "$OS" = "WINDOWS"; then
+   EC_CHECK_FUNC(wpcap, pcap_datalink_val_to_description, $PCAPLIB, $LIBS,, AC_MSG_ERROR([Incorrect libpcap version. libpcap >= 0.8.1 required]))
+   EC_CHECK_FUNC(packet, PacketInitPacket, $PCAPLIB, $LIBS,, AC_MSG_ERROR([Incorrect libpcap version. libpcap >= 0.8.1 required]))
+   AC_CHECK_LIB(ws2_32, ntohs,, AC_MSG_ERROR([Incorrect ws2_32 version.]))
+   AC_CHECK_LIB(iphlpapi, main)
+else
+   EC_CHECK_FUNC(pcap, pcap_datalink_val_to_description, $PCAPLIB, $LIBS,, AC_MSG_ERROR([Incorrect libpcap version. libpcap >= 0.8.1 required]))
 fi
 
+dnl ---------
+dnl  libnet
+dnl ---------
+ac_ec_libnet=default
 
-dnl -----------
-dnl -- HTTTS --
-dnl -----------
-
-AC_MSG_CHECKING([if --enable-https option is specified])
-AC_ARG_ENABLE(https, [  --enable-https          permit https dissection (invasive).],
-[ case "$enableval" in
-	yes)
-		if test "$OS" = "MACOSX" -o "$OS" = "SOLARIS" -o "$OS" = "CYGWIN"; then
-			AC_MSG_RESULT(NOT available on this OS)
-			ac_cv_ec_https=no
-		else
-			AC_DEFINE(PERMIT_HTTPS,1)
-			AC_MSG_RESULT(yes)
-			ac_cv_ec_https=yes
-		fi
-		;;
-	no)  AC_MSG_RESULT(no)
-		ac_cv_ec_https=no
-		;;
-	esac ],
-	if test "$OS" = "MACOSX" -o "$OS" = "SOLARIS" -o "$OS" = "CYGWIN"; then
-		AC_MSG_RESULT(NOT available on this OS)
-		ac_cv_ec_https=no
-	elif test "$OS" = "OPENBSD" -o "$OS" = "FREEBSD" -o "$OS" = "NETBSD"; then
-		AC_MSG_RESULT(no.)
-		ac_cv_ec_https=no
-		AC_MSG_WARN(***************************************************)
-		AC_MSG_WARN(* HTTPS dissection in in ALPHA state under BSD... *)
-		AC_MSG_WARN(* I discourage you to enable it.                  *)
-		AC_MSG_WARN(* But if you want use at your own risk            *)
-		AC_MSG_WARN(***************************************************)
-	else
-		AC_MSG_RESULT(yes. enabled by default.)
-		AC_DEFINE(PERMIT_HTTPS,1)
-		ac_cv_ec_https=yes
-	fi
-
+AC_MSG_CHECKING(for libnet)
+AC_ARG_WITH(libnet, AC_HELP_STRING(--with-libnet=DIR,use libnet in DIR),
+[ case "$withval" in
+  no)
+     AC_MSG_RESULT(no)
+     AC_MSG_ERROR(["*** ettercap cannot operate without libnet. ***"])
+     ;;
+  *)
+     if test -f $withval/include/libnet.h; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        LNETINC="-I$withval/include"
+        LNETLIB="-L$withval/lib -L$withval/src -lnet"
+        ac_ec_libnet=$withval
+        AC_MSG_RESULT($withval)
+     else
+        AC_MSG_RESULT(no)
+        AC_MSG_ERROR([libnet.h not found in $withval])
+     fi
+     ;;
+  esac ],
+[ if test -f /usr/include/libnet.h; then
+     AC_MSG_RESULT(yes)
+     LNETINC=""
+     LNETLIB="-lnet"
+  else
+     AC_MSG_RESULT(no)
+     AC_MSG_ERROR([libnet >= 1.1.2.1 not found])
+  fi
+]
 )
 
+EC_CHECK_FUNC(net, libnet_adv_free_packet, $LNETLIB, $LIBS,, AC_MSG_ERROR([Incorrect libnet version. libnet >= 1.1.2.1 required]))
+
+dnl ------------------
+dnl Checks for openssl
+dnl ------------------
+
+AH_TEMPLATE(HAVE_OPENSSL, [openssl executable path])
+AM_CONDITIONAL(OPENSSL, false)
+ac_ec_libssl="NO"
+
+AC_MSG_CHECKING(for openssl)
+AC_ARG_WITH(openssl, AC_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
+[ case "$withval" in
+  yes|no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+     if test -f $withval/include/openssl/ssl.h; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        SSLINC="-I$withval/include"
+        SSLLIB="-L$withval/lib -lssl -lcrypto"
+        AC_DEFINE(HAVE_OPENSSL, 1)
+        AM_CONDITIONAL(OPENSSL, true)
+        ac_ec_libssl=$withval
+        AC_MSG_RESULT($withval)
+     elif test -f $withval/ssl/include/openssl/ssl.h; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        SSLINC="-I$withval/ssl/include"
+        SSLLIB="-L$withval/ssl/lib -lssl -lcrypto"
+        AC_DEFINE(HAVE_OPENSSL, 1)
+        AM_CONDITIONAL(OPENSSL, true)
+        ac_ec_libssl=$withval
+        AC_MSG_RESULT($withval)
+     else
+        AC_MSG_RESULT(no)
+        AC_MSG_ERROR([ssl.h not found in $withval])
+     fi
+     ;;
+  esac ],
+[ if test -f /usr/include/openssl/ssl.h; then
+     SSLLIB="-lssl -lcrypto"
+     AC_DEFINE(HAVE_OPENSSL, 1)
+     AM_CONDITIONAL(OPENSSL, true)
+     AC_MSG_RESULT(yes)
+     ac_ec_libssl=default
+  else
+     AC_MSG_RESULT(no)
+  fi]
+)
+
+
+dnl ---------
+dnl  libpcre
+dnl ---------
+
+AH_TEMPLATE(HAVE_PCRE, [perl compatible regex])
+
+ac_ec_pcre=no
+
+AC_MSG_CHECKING(for libpcre)
+AC_ARG_WITH(libpcre, AC_HELP_STRING(--with-libpcre=DIR,use libpcre in DIR),
+[ case "$withval" in
+  no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+     if test -f $withval/pcre.h; then 
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        PCREINC="-I$withval/"
+        PCRELIB="-L$withval/ -lpcre"
+        AM_CONDITIONAL(HAVE_PCRE, true) 
+        AC_DEFINE(HAVE_PCRE, 1)
+        ac_ec_pcre=yes
+        AC_MSG_RESULT($withval)
+     elif test -f $withval/include/pcre.h; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        PCREINC="-I$withval/include"
+        PCRELIB="-L$withval/lib -lpcre"
+        AM_CONDITIONAL(HAVE_PCRE, true) 
+        AC_DEFINE(HAVE_PCRE, 1)
+        ac_ec_pcre=yes
+        AC_MSG_RESULT($withval)
+     else
+        AC_MSG_RESULT(no)
+        AC_MSG_ERROR([pcre.h not found in $withval])
+     fi
+     ;;
+  esac ],
+[ if test -f /usr/include/pcre.h; then
+     AM_CONDITIONAL(HAVE_PCRE, true) 
+     AC_DEFINE(HAVE_PCRE, 1)
+     ac_ec_pcre=yes
+     PCREINC=""
+     PCRELIB="-lpcre"
+     AC_MSG_RESULT(yes)
+  else
+     AC_MSG_RESULT(no)
+     AM_CONDITIONAL(HAVE_PCRE, false) 
+  fi
+]
+)
+
+dnl ------------------
+dnl  iconv / libiconv
+dnl ------------------
+
+AH_TEMPLATE(HAVE_UTF8, [support for UTF-8])
+
+ac_ec_utf8=no
+
+AC_MSG_CHECKING(for iconv)
+AC_ARG_WITH(iconv, AC_HELP_STRING(--with-iconv=DIR,use iconv in DIR),
+[ case "$withval" in
+  no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+     if test -f $withval/iconv.h; then 
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        ICONVINC="-I$withval/"
+        ICONVLIB="-L$withval/ -liconv"
+        AC_MSG_RESULT($withval)
+     elif test -f $withval/include/iconv.h; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        ICONVINC="-I$withval/include"
+        ICONVLIB="-L$withval/lib -liconv"
+        AC_MSG_RESULT($withval)
+     else
+        AC_MSG_RESULT(no)
+        AC_MSG_ERROR([iconv.h not found in $withval])
+     fi
+     ;;
+  esac ],
+[ if test -f /usr/include/iconv.h; then
+     AC_MSG_RESULT(yes)
+     ICONVINC=""
+     ICONVLIB=""
+     AC_SEARCH_LIBS(iconv, c, , ICONVLIB="-liconv")
+  else
+     AC_MSG_RESULT(no)
+  fi
+]
+)
+
+EC_CHECK_FUNC(c, iconv, $ICONVLIB,, [AC_DEFINE(HAVE_UTF8,1) ac_ec_utf8=yes])
+EC_CHECK_FUNC(iconv, iconv, $ICONVLIB,, [AC_DEFINE(HAVE_UTF8,1) ac_ec_utf8=yes ICONVLIB="-liconv"])
+EC_CHECK_FUNC(iconv, libiconv, $ICONVLIB,, [AC_DEFINE(HAVE_UTF8,1) ac_ec_utf8=yes ICONVLIB="-liconv"])
+
+dnl ---------
+dnl  ncurses
+dnl ---------
+AH_TEMPLATE(HAVE_NCURSES, [ncurses support])
+AM_CONDITIONAL(NCURSES, false)
+
+ac_ec_libncurses="NO"
+
+AC_MSG_CHECKING(for libncurses)
+AC_ARG_WITH(libncurses, AC_HELP_STRING(--with-libncurses=DIR,use libncurses in DIR),
+[ case "$withval" in
+  yes|no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+     if test -f $withval/ncurses.h \
+             -a -f $withval/panel.h \
+             -a -f $withval/form.h \
+             -a -f $withval/menu.h; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        NCURSINC="-I$withval"
+        NCURSLIB="-L$withval -lpanel -lmenu -lform -lncurses"
+        AC_DEFINE(HAVE_NCURSES, 1)
+        AM_CONDITIONAL(NCURSES, true)
+        ac_ec_libncurses=$withval
+        AC_MSG_RESULT($withval)
+     elif test -f $withval/include/ncurses.h \
+               -a -f $withval/include/panel.h \
+               -a -f $withval/include/menu.h \
+               -a -f $withval/include/form.h; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        NCURSINC="-I$withval/include"
+        NCURSLIB="-L$withval/lib -lpanel -lmenu -lform -lncurses"
+        AC_DEFINE(HAVE_NCURSES, 1)
+        AM_CONDITIONAL(NCURSES, true)
+        ac_ec_libncurses=$withval
+        AC_MSG_RESULT($withval)
+     elif test -f $withval/include/ncurses/ncurses.h \
+               -a -f $withval/include/ncurses/panel.h \
+               -a -f $withval/include/ncurses/menu.h \
+               -a -f $withval/include/ncurses/form.h; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        NCURSINC="-I$withval/include/ncurses"
+        NCURSLIB="-L$withval/lib -lpanel -lmenu -lform -lncurses"
+        AC_DEFINE(HAVE_NCURSES, 1)
+        AM_CONDITIONAL(NCURSES, true)
+        ac_ec_libncurses=$withval
+        AC_MSG_RESULT($withval)
+     else
+        AC_MSG_RESULT(no)
+        AC_MSG_ERROR([ncurses.h menu.h panel.h form.h not found in $withval])
+     fi
+     ;;
+  esac ],
+[ if test -f /usr/include/ncurses/ncurses.h; then
+     if test ! -f /usr/include/ncurses/form.h \
+               -a -f /usr/include/ncurses/menu.h \
+               -a -f /usr/include/ncurses/panel.h; then
+         AC_MSG_RESULT(no)
+     else 
+         NCURSINC="-I/usr/include/ncurses"
+         NCURSLIB="-lpanel -lmenu -lform -lncurses"
+         AC_DEFINE(HAVE_NCURSES, 1)
+         AM_CONDITIONAL(NCURSES, true)
+         ac_ec_libncurses=default
+         AC_MSG_RESULT(yes)
+     fi
+  elif test -f /usr/include/ncurses.h; then
+     if test ! -f /usr/include/form.h \
+               -a -f /usr/include/menu.h \
+               -a -f /usr/include/panel.h; then
+         AC_MSG_RESULT(no)
+     else 
+         NCURSLIB="-lpanel -lmenu -lform -lncurses"
+         AC_DEFINE(HAVE_NCURSES, 1)
+         AM_CONDITIONAL(NCURSES, true)
+         ac_ec_libncurses=default
+         AC_MSG_RESULT(yes)
+     fi
+  else
+     AC_MSG_RESULT(no)
+  fi]
+)
+
+dnl ---------
+dnl  GTK
+dnl ---------
+
+AH_TEMPLATE(HAVE_GTK, [gtk+ support])
+AM_CONDITIONAL(GTK, false)
+
+ac_ec_gtk="NO"
+
+AC_MSG_CHECKING(if --enable-gtk option was specified)
+AC_ARG_ENABLE(gtk, AC_HELP_STRING(--enable-gtk,enable the gtk interface),
+[ case "$enableval" in
+  no)
+     AC_MSG_RESULT(no)
+     ;;
+  yes)
+      AC_MSG_RESULT(yes)
+      AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+      if test "$PKG_CONFIG" = "no" ; then
+         AC_MSG_RESULT(pkg-config not found)
+      else
+         AC_MSG_CHECKING(for gtk+)
+         PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.0.0 pango >= 1.0 atk >= 1.0,
+            [ AC_DEFINE(HAVE_GTK, 1)
+              AM_CONDITIONAL(GTK, true)
+              AC_MSG_RESULT(yes)
+              GTK_LIBS="$GTK_LIBS -lgthread-2.0"
+              ac_ec_gtk=yes ],
+            [ AC_MSG_RESULT(no) ]
+         )
+      fi
+     ;;
+  esac ],
+[ 
+     AC_MSG_RESULT(yes)
+     AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+     if test "$PKG_CONFIG" = "no" ; then
+        AC_MSG_RESULT(pkg-config not found)
+     else
+        PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.0.0 pango >= 1.0 atk >= 1.0,
+           [ AC_DEFINE(HAVE_GTK, 1)
+             AM_CONDITIONAL(GTK, true)
+             GTK_LIBS="$GTK_LIBS -lgthread-2.0"
+             ac_ec_gtk=yes ]
+        )
+     fi
+])
+
+
+dnl -----------------------
+dnl  set up the final vars
+dnl -----------------------
+EC_CFLAGS="$DEBUG_FLAGS $PCAPINC $LNETINC $SSLINC $PCREINC $ICONVINC"
+EC_LIBS="$LIBS $PCAPLIB $LNETLIB $SSLLIB $PCRELIB $NCURSLIB $GTK_LIBS $ICONVLIB"
+
+AC_SUBST(EC_CFLAGS)
+AC_SUBST(EC_LIBS)
+
+AC_SUBST(PCAPINC)
+AC_SUBST(LNETINC)
+AC_SUBST(SSLINC)
+AC_SUBST(PCREINC)
+AC_SUBST(NCURSINC)
+AC_SUBST(GTK_CFLAGS)
+
+AC_SUBST(PCAPLIB)
+AC_SUBST(LNETLIB)
+AC_SUBST(SSLLIB)
+AC_SUBST(PCRELIB)
+AC_SUBST(NCURSLIB)
+AC_SUBST(GTK_LIBS)
+
+AC_SUBST(ICONVLIB)
+
+dnl  for the plugins
+PL_CFLAGS="$DEBUG_FLAGS $PCREINC"
+AC_SUBST(PL_CFLAGS)
 
 dnl ===============
 dnl   FINISHED !!
 dnl ===============
 
-AC_SUBST(COPTS)
-
 EC_MESSAGE(Writing output files)
 
-PLUGINS=`ls ./plugins | grep -v -E "Make|CVS" | awk ' { printf "%s ", $1 } '`
-AC_SUBST(PLUGINS)
+AC_CONFIG_FILES(  Makefile
+                  Makefile.mingw
+                  man/Makefile 
+                  man/ettercap.8 
+                  man/ettercap_curses.8 
+                  man/ettercap_plugins.8 
+                  man/etterlog.8 
+                  man/etterfilter.8 
+                  man/etter.conf.5
+                  share/Makefile 
+                  src/Makefile 
+                  src/os/Makefile 
+                  src/interfaces/Makefile 
+                  src/interfaces/daemon/Makefile 
+                  src/interfaces/text/Makefile 
+                  src/interfaces/curses/Makefile 
+                  src/interfaces/curses/widgets/Makefile 
+                  src/interfaces/gtk/Makefile 
+                  include/Makefile
+                  utils/Makefile
+                  utils/etterlog/Makefile
+                  utils/etterfilter/Makefile
+                  plug-ins/Makefile
+                  plug-ins/arp_cop/Makefile
+                  plug-ins/autoadd/Makefile
+                  plug-ins/chk_poison/Makefile
+                  plug-ins/dos_attack/Makefile
+                  plug-ins/dns_spoof/Makefile
+                  plug-ins/dummy/Makefile
+                  plug-ins/find_conn/Makefile
+                  plug-ins/find_ettercap/Makefile
+                  plug-ins/find_ip/Makefile
+                  plug-ins/finger/Makefile
+                  plug-ins/finger_submit/Makefile
+                  plug-ins/gre_relay/Makefile
+                  plug-ins/gw_discover/Makefile
+                  plug-ins/isolate/Makefile
+                  plug-ins/link_type/Makefile
+                  plug-ins/pptp_chapms1/Makefile
+                  plug-ins/pptp_clear/Makefile
+                  plug-ins/pptp_pap/Makefile
+                  plug-ins/pptp_reneg/Makefile
+                  plug-ins/rand_flood/Makefile
+                  plug-ins/remote_browser/Makefile
+                  plug-ins/reply_arp/Makefile
+                  plug-ins/scan_poisoner/Makefile
+                  plug-ins/search_promisc/Makefile
+                  plug-ins/smb_clear/Makefile
+                  plug-ins/smb_down/Makefile
+                  plug-ins/stp_mangler/Makefile)
 
-makeplug=`ls ./plugins | grep -v -E "Make|CVS" | awk '{ printf("plugins/%s/Makefile ", $1) }'`
-
-AC_OUTPUT(ettercap.spec ettercap.8 Makefile $makeplug plugins/Makefile)
-
+AC_OUTPUT
 
 dnl ===============
 dnl   THE SUMMARY
 dnl ===============
 
-
-EC_MESSAGE(Ettercap has been configured as follow)
+EC_MESSAGE(ettercap has been configured as follow)
 
 echo "=================================================="
 echo
-	EC_CHECK_OPTION(" Install directory: ",${prefix})
+   EC_CHECK_OPTION(" Install directory: ",${prefix})
 echo
 echo
-	EC_CHECK_OPTION(" DEBUG mode ....... ",${ac_cv_ec_debug})
-	EC_CHECK_OPTION(" NCURSES support .. ",${ac_cv_ec_ncurses})
-	EC_CHECK_OPTION(" FORM support ..... ",${ac_cv_ec_form})
-	EC_CHECK_OPTION(" PLUGIN support ... ",${ac_cv_ec_plugin})
-	EC_CHECK_OPTION(" SSH support ...... ",${ac_cv_ec_ssh})
-	EC_CHECK_OPTION(" HTTPS support .... ",${ac_cv_ec_https})
+   EC_CHECK_OPTION("Libraries :", "")
+echo
+   EC_CHECK_OPTION(" LIBPCAP ................ ",${ac_ec_libpcap})
+   EC_CHECK_OPTION(" LIBNET ................. ",${ac_ec_libnet})
+   EC_CHECK_OPTION(" LIBSSL ................. ",${ac_ec_libssl})
+   EC_CHECK_OPTION(" NCURSES ................ ",${ac_ec_libncurses})
+   EC_CHECK_OPTION(" GTK+ ................... ",${ac_ec_gtk})
+echo
+   EC_CHECK_OPTION("Functionalities :", "")
+echo
+   EC_CHECK_OPTION(" Debug mode ............. ",${ac_ec_debug})
+   EC_CHECK_OPTION(" Plugin support ......... ",${ac_ec_plugin})
+   EC_CHECK_OPTION(" Passive DNS ............ ",${ac_ec_dns})
+   EC_CHECK_OPTION(" Perl regex in filters .. ",${ac_ec_pcre})
+   EC_CHECK_OPTION(" Iconv UTF-8 support .... ",${ac_ec_utf8})
 echo
 echo "=================================================="
 echo
-echo
-echo For a list of all possible make processes, type \`${SB}make help${EB}\`
-echo
-echo
+
+dnl ================
 
 
-
-EC_CHECK_DATE()
+dnl vim:ts=3:expandtab
 

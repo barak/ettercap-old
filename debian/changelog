@@ -1,3 +1,76 @@
+ettercap (1:0.7.1-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Murat Demirten <murat@debian.org>  Mon, 11 Oct 2004 20:24:00 +0300
+
+ettercap (1:0.7.0-1) unstable; urgency=low
+
+  * New upstream release
+  * Package splitting notes now included in NEWS.Debian (Closes: #205172)
+  * New version doesn't segfault on exit (Closes: #254675)
+
+ -- Murat Demirten <murat@debian.org>  Wed, 07 Jul 2004 11:35:20 +0300
+
+ettercap (1:0.6.b-2) unstable; urgency=low
+
+  * Added autoconf and automake entry in Build-Depends field to build
+    ettercap for other architectures.
+
+ -- Murat Demirten <murat@debian.org>  Mon, 21 Jun 2003 19:57:18 +0200
+
+ettercap (1:0.6.b-1) unstable; urgency=low
+
+  * New upstream release
+  * Package moved into main from non-us archive (See LICENSE.OPENSSL)
+  * Ettercap split into three package (Closes: #197451)
+    ettercap-common includes configuration files, documentation and
+    plugins. ettercap-gtk compiled with gtk support and ettercap
+    compiled with ncurses support (Closes: #195799)
+  * Ettercap packages now install localized man pages (Closes: #181760)
+  
+ -- Murat Demirten <murat@debian.org>  Sun, 12 Jun 2003 14:07:27 +0200
+
+ettercap (1:0.6.a-2) unstable; urgency=low
+
+  * Fixed important packaging problem (Closes: #193704)
+  
+ -- Murat Demirten <murat@debian.org>  Sun, 18 May 2003 12:16:39 +0200
+
+ettercap (1:0.6.a-1) unstable; urgency=low
+
+  * New upstream release.
+  * Ettercap-plugins package replaced by ettercap.
+  * Ettercap properly reset its terminal when exit (Closes: #179465)
+  * Removed duplicate changelog file (Closes: #176321)
+  * Gtk option enabled (Closes: #185799)
+  
+ -- Murat Demirten <murat@debian.org>  Sun, 11 May 2003 19:27:46 +0200
+
+ettercap (1:0.6.9-1) unstable; urgency=low
+
+  * New upstream release.
+  
+ -- Murat Demirten <murat@debian.org>  Fri, 31 Jan 2003 00:48:25 +0200
+
+ettercap (1:0.6.7-1) unstable; urgency=low
+
+  * New upstream release.
+  
+ -- Murat Demirten <murat@debian.org>  Tue, 02 Jul 2002 21:53:38 +0200
+
+ettercap (1:0.6.6.6-1) unstable; urgency=low
+
+  * New upstream release.
+  
+ -- Murat Demirten <murat@debian.org>  Mon, 03 Jun 2002 17:43:20 +0200
+
+ettercap (1:0.6.5-1) unstable; urgency=low
+
+  * New upstream release.
+  
+ -- Murat Demirten <murat@debian.org>  Tue, 23 Apr 2002 12:01:39 +0200
+
 ettercap (1:0.6.4-1) unstable; urgency=low
 
   * New upstream release.

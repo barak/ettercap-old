@@ -1,14 +1,17 @@
 This package was debianized by Murat Demirten <murat@debian.org> on
-Wed, 19 Dec 2001 13:08:46 +0200.
+Wed, 12 Jul 2003 12:50:15 +0200.
 
 It was downloaded from http://ettercap.sourceforge.net
 
-Upstream Author(s): 	Alberto Ornaghi <alor@users.sourceforge.net>
+Upstream Authors: 	Alberto Ornaghi <alor@users.sourceforge.net>
 			Marco Valleri <crwm@freemail.it>
 
 Copyright:
 
 Ettercap is licensed under the terms of the GNU GPL.
+
+This program is released under the GPL with the additional exemption
+that compiling, linking, and/or using OpenSSL is allowed.
 
 The GPL licence can be found in /usr/share/common-licenses on modern
 Debian systems.

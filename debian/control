@@ -1,14 +1,24 @@
 Source: ettercap
-Section: non-US
+Section: net
 Priority: optional
 Maintainer: Murat Demirten <murat@debian.org>
-Build-Depends: debhelper (>> 3.0.0), libncurses5-dev, libssl-dev
-Standards-Version: 3.5.2
+Build-Depends: debhelper (>> 3.0.0), autoconf, automake, libncurses-dev, libgtk2.0-dev, libltdl3-dev, libssl0.9.7, libssl-dev, libpcap0.8-dev, libnet1-dev, libpcre3-dev 
+Standards-Version: 3.6.1.0
+
+Package: ettercap-common
+Architecture: any
+Depends: ${shlibs:Depends}
+Recommends: ettercap | ettercap-gtk
+Replaces: ettercap-plugins, ettercap (<= 1:0.6.a-2)
+Conflicts: ettercap-plugins, ettercap (<= 1:0.6.a-2)
+Description: Common support files and plugins for ettercap
+ It includes all of the configuration files, plugins and documentation.
 
 Package: ettercap
 Architecture: any
-Depends: ${shlibs:Depends}
-Recommends: ettercap-plugins
+Depends: ${shlibs:Depends}, ettercap-common (= ${Source-Version}), debconf
+Replaces: ettercap-gtk
+Conflicts: ettercap-gtk
 Description: Multipurpose sniffer/interceptor/logger for switched LAN
  Ettercap supports active and passive dissection of many protocols 
  (even ciphered ones) and includes many feature for network and host 
@@ -25,11 +35,14 @@ Description: Multipurpose sniffer/interceptor/logger for switched LAN
  It has the ability to check whether you are in a switched LAN or
  not, and to use OS fingerprints (active or passive) to let you know the
  geometry of the LAN.
- 
-Package: ettercap-plugins
+
+Package: ettercap-gtk
 Architecture: any
-Depends: ${shlibs:Depends}, ettercap
-Description: Miscellaneous plugins for ettercap
- It includes H00_lurker, H10_phantom, H20dwarf, H99_dummy, arpcop, banshee,
- basilisk, beholder, dummy, golem, imp, leech, ooze, phantom, shadow,
- spectre, thief, zaratan and triton plugins. 
+Depends: ${shlibs:Depends}, ettercap-common (= ${Source-Version})
+Replaces: ettercap
+Conflicts: ettercap
+Recommends: gksu
+Description: Multipurpose sniffer/interceptor/logger for switched LAN
+ .
+ This package includes gtk enabled version of ettercap. It also
+ includes ncurses support.

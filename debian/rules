@@ -7,7 +7,7 @@
 # package.
 
 # Uncomment this to turn on verbose mode. 
-#export DH_VERBOSE=1
+# export DH_VERBOSE=1
 
 # This is the debhelper compatability version to use.
 export DH_COMPAT=3
@@ -16,9 +16,6 @@ configure: configure-stamp
 configure-stamp:
 	dh_testdir
 	# Add here commands to configure the package.
-	./configure --prefix=/usr --mandir=\$${prefix}/share/man --exec-prefix=/usr \
-	--enable-https --enable-ncurses --enable-plugins \
-	--sysconfdir=/etc --with-openssl
 
 	touch configure-stamp
 
@@ -26,8 +23,26 @@ build: configure-stamp build-stamp
 build-stamp:
 	dh_testdir
 
+	## To build ettercap.fr.8 added AC_OUTPUT entry
+	# sed -e 's/AC_OUTPUT(ettercap.spec ettercap.8 Makefile $makeplug win32\/ettercap.nsi)/AC_OUTPUT(docs\/fr\/ettercap.fr.8 ettercap.spec ettercap.8 Makefile $makeplug win32\/ettercap.nsi)/' configure.in > .debian.configure.in
+	#mv .debian.configure.in configure.in
+	#autoconf
+
 	# Add here commands to compile the package.
-#	$(MAKE) DATADIR=/etc/ettercap path
+	./configure --prefix=/usr --mandir=\$${prefix}/share/man \
+	--exec-prefix=/usr --enable-https --enable-gtk --enable-plugins \
+	--sysconfdir=/etc 
+
+	$(MAKE)
+
+	cp src/ettercap ettercap-gtk
+
+	make clean	
+
+	./configure --disable-gtk --enable-plugins \
+	--prefix=/usr --mandir=/usr/share/man --enable-https \
+	--sysconfdir=/etc
+
 	$(MAKE)
 
 #	dh_testdir
@@ -42,6 +57,7 @@ clean:
 	# Add here commands to clean up after the build process.
 	-$(MAKE) distclean
 
+	rm -f ettercap-gtk
 	dh_clean
 
 install: DH_OPTIONS=
@@ -52,15 +68,22 @@ install: build
 	dh_installdirs
 
 	# Add here commands to install the package into debian/ettercap.
-	$(MAKE) DATADIR=/etc/ettercap DESTDIR=$(CURDIR)/debian/ettercap install
+	$(MAKE) DATADIR=/etc/ettercap DESTDIR=$(CURDIR)/debian/ettercap-common install
 	#/usr/bin/install -m 700 ettercap debian/ettercap/usr/sbin/
-	/bin/rm -f debian/ettercap/usr/share/doc/ettercap/COPYING
-	/bin/rm -f debian/ettercap/usr/share/doc/ettercap/INSTALL
-#	mv debian/ettercap/usr/share/ettercap/* debian/ettercap/etc/ettercap/
-	rm -rf debian/ettercap/usr/share/ettercap
+	rm -rf debian/ettercap-common/usr/share/doc/ettercap
+	rm -f debian/ettercap-common/etc/ettercap/AUTHORS
+	rm -f debian/ettercap-common/etc/ettercap/THANKS
+	rm -f debian/ettercap-common/usr/share/man/man8/ettercap.8
+	rm -f debian/ettercap/usr/share/doc/ettercap-common/CHANGELOG
+	rm -f debian/ettercap/usr/share/doc/ettercap-common/ettercap.8
 
-	dh_testdir
-	cd plugins && $(MAKE) DATADIR=/etc/ettercap DESTDIR=$(CURDIR)/debian/ettercap-plugins install
+	rm -f debian/ettercap-common/usr/bin/ettercap
+
+	install -m 700 ettercap-gtk debian/ettercap-gtk/usr/sbin/ettercap
+	install -m 700 src/ettercap debian/ettercap/usr/sbin/ettercap 
+	
+	# dh_testdir
+	cd plug-ins && $(MAKE) DATADIR=/etc/ettercap DESTDIR=$(CURDIR)/debian/ettercap-common install
 
 #	dh_movefiles
 
@@ -75,14 +98,15 @@ binary-arch: build install
 #	dh_installdebconf -a
 	dh_installdocs -a
 #	dh_installexamples -a
-#	dh_installmenu -a
+	dh_installmenu -a
 #	dh_installlogrotate -a
 #	dh_installemacsen -a
 #	dh_installpam -a
 #	dh_installmime -a
 #	dh_installinit -a
 #	dh_installcron -a
-#	dh_installman -a
+	dh_installman -pettercap-gtk man/ettercap.8
+	dh_installman -pettercap man/ettercap.8
 	dh_installinfo -a
 #	dh_undocumented -a
 	dh_installchangelogs CHANGELOG -a

@@ -1,75 +1,81 @@
-==================
-  TODO for 0.6.x
-==================
+==========================
+  TODO for the NG series
+==========================
 
-   + PORTING TO SUNOS      (TO BE TESTED, TESTED and TESTED...)
-      + ifr.ifru_mtu
-      + Promisc mode doesn't work
-      + void Inet_DisableForwarding(void)
-      + void Inet_RestoreForwarding(void)
-      + char *Inet_MacFromIP(unsigned long ip)
+>>> things to be fixed
+   
+   + FIXING
+      - remove GBL_OPTIONS->quiet from some plugins
 
-   + PORTING TO 64 bit ARCH
+   + PCAP RELATED
+      - pcap_stat fix (even under linux the stats are cumulative)
 
-   + SELECTIVE LOGGING FROM SNIFFING INTERFACE
+============================
+  In the next release(s)
+============================
 
-   + TCP + UDP sniffing default for console mode
+   + record the MSS for the packet splitting
 
-   + MULTI-POISONING
-      - allow multi target in arp based mode
-      - hybrid sniffing
+   + multiple dissector on a single port
 
-   + PASSIVE SCANNING
-      - PASV mode in ftp must not be shown in the open ports
-         (227 Entering Passive Mode (192,168,0,30,78,85)) -->  78*256 + 85
+   + CURSES
+      - modifiable text in widgets
 
-   + BUG FIXING
-      - Public session removal  ack without psh  and datalen =0
-      - unicode user for samba
+   + NETWORK MAPPER
+      - automatic scan (all the host in the profile list)
+      - specified ip address
+      - interconnections map (linked to the profiles)
+      - based on ttl (ala traceroute)
+      - png output (ala nagios)
 
-   + CODE TUNING
-      - Convert some structures to speed up the ncurses interface
+   + BINDER
+ 
+   + ETTERLOG
+      - extract files from streams looking for mime content or protocol
+      - stream functions
+      - extractors for each protocol
 
-   + HTTPS
-      - porting to BSD  (damned routing socket system !! it doesn't permit our dirty job...)
+   + ETTERFILTER
+      - possibility to set flags in scripts 
+         - per packet
+         - per connection ???
 
-   + NEW DISSECTOR
-      - TACACS dissector
-      - ICQ 2001
-      - new netbios
+   + SSH - SSL
+      - decryption with given keys
+      - DES support
 
 ==================
   LONG TERM TODO
 ==================
+   
+   + SSH2 dissection :) (yes, it can be done)
 
-   + SFTP
-   + FTP-SSL
+   + IPv6
+      - NDIS mitm
+      - router discovery
 
-   + RESEARCH
-      - How does IPSec work ?
-      - How does VPN work ?
-      - How does Kerberos work ?
+   + Rendevouz mitm
 
-   + Protocol Injection
-      - with ncurses form (different injector for different protocol)
+   + SOCKS
+      - decode the internal connection
 
-   + Decodedata
-      - add other protocol dissectors
-         . as many as possible... POSTGRESQL CVS TDS TACACS
-      - data dissectors
-         . as many as possible... ICQ
+   + multiple interfaces on gateway
 
-   + Inet
+   + NEW DISSECTOR
+      - TACACS dissector
+      - Microsoft RPC
+      - postgresql
+      - pcanywhere
+      - TDS
+      - MS-SQL (http://www.nii.co.in/vuln/sqlpass.html)
+      - YMSG
+        (http://www.xi0n.com/forums/showthread.php?s=8dc997a1e1f0d3216c8956d64fcdb414&postid=2767#post2767
+         http://www.venkydude.com/articles/yahoo.htm)
+      - RDesktop
+      - MSN9 (http://www.hackerscenter.com/Articles/Article.asp?id=54)
+
+   + INET
       - handle fragmented packets
-
-   + Ncurses interface
-      - better winch handling... (i'm too lazy to do this...)
+      - IPv6 support
 
 
-=================
-  TODO NEVER ;)    or very very very long term todo... :)
-=================
-
-   + GTK+ interface
-
-   + Kettercap (KDE interface)

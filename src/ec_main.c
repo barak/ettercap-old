@@ -1,7 +1,7 @@
 /*
-    ettercap -- a ncurses-based sniffer/interceptor utility for switched LAN
+    ettercap -- everything starts from this file... 
 
-    Copyright (C) 2001  ALoR <alor@users.sourceforge.net>, NaGA <crwm@freemail.it>
+    Copyright (C) ALoR & NaGA
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,535 +17,276 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_main.c,v 1.17 2002/02/10 10:07:49 alor Exp $
+    $Id: ec_main.c,v 1.64 2004/07/29 09:46:47 alor Exp $
 */
 
-#include "include/ec_main.h"
+#include <ec.h>
+#include <ec_version.h>
+#include <ec_globals.h>
+#include <ec_signals.h>
+#include <ec_parser.h>
+#include <ec_threads.h>
+#include <ec_capture.h>
+#include <ec_dispatcher.h>
+#include <ec_send.h>
+#include <ec_plugins.h>
+#include <ec_format.h>
+#include <ec_fingerprint.h>
+#include <ec_manuf.h>
+#include <ec_services.h>
+#include <ec_http.h>
+#include <ec_scan.h>
+#include <ec_ui.h>
+#include <ec_conf.h>
+#include <ec_mitm.h>
+#include <ec_sslwrap.h>
 
-#include <sys/ioctl.h>
-#if defined (HAVE_TERMIOS_H) && !defined (CYGWIN)
-   #include <termios.h>
-#endif
-#ifdef HAVE_GETOPT_H
-   #include <getopt.h>
-#else
-   #include "missing/getopt.h"
-#endif
-
-
-#include "include/ec_error.h"
-#include "include/ec_inet.h"
-#include "include/ec_simple.h"
-#include "include/ec_signal.h"
-#include "include/ec_parser.h"
-#include "include/ec_filterdrop.h"
-#include "include/ec_thread.h"
-#include "include/ec_plugins.h"
-
-#ifdef HAVE_NCURSES
-    #include "include/ec_interface.h"
-#endif
-
-// global variables
-
-HOST *Host_In_LAN = NULL;              // ec_main.h
-int number_of_hosts_in_lan;
-
-CONNECTION *Conn_Between_Hosts = NULL; // ec_main.h
-int number_of_connections = -1;
-
-PASSIVE_DATA *Passive_Host;            // ec_main.h
-int number_of_passive_hosts;
-
-CURRENT_SNIFFED_DATA current_illithid_data;
-
-HOST Host_Source;
-HOST Host_Dest;
-
-char **Host_List;          // scan only these hosts
-int host_to_be_scanned;
-
-char *Execute_Plugin;
-
-OPTIONS Options;
-
-int pipe_with_illithid_data = -1;
-int pipe_with_plugins = -1;
-int pipe_inject[2];
-int pipe_kill[2];
-
-char active_dissector = 1;    // ec_main.h
-char filter_on_source = 0;
-char filter_on_dest = 0;
+/* global vars */
 
 
-// protos...
+/* protos */
 
-void Main_Usage(void);
-void Main_Interactive(void);
-void Main_Normal(void);
-void Main_CheckForRun(char *program_argv0);
-void Main_CheckForFilters(void);
-void Main_ParseParameters(char *first, char *second, char *third, char *fourth);
-void Main_Check_NewRelease(void);
-#if DEVEL_RELEASE == 1
-void Main_Devel_Release(void);
-#endif
-//-----------------------------------
+void clean_exit(int errcode);
+static void drop_privs(void);
+static void time_check(void);
+
+/*******************************************/
 
 int main(int argc, char *argv[])
 {
+   /*
+    * Alloc the global structures
+    * We can access these structs via the macro in ec_globals.h
+    */
+        
+   globals_alloc();
+  
+   GBL_PROGRAM = strdup(EC_PROGRAM);
+   GBL_VERSION = strdup(EC_VERSION);
+   SAFE_CALLOC(GBL_DEBUG_FILE, strlen(EC_PROGRAM) + strlen(EC_VERSION) + strlen("_debug.log") + 1, sizeof(char));
+   sprintf(GBL_DEBUG_FILE, "%s%s_debug.log", GBL_PROGRAM, EC_VERSION);
+   
+   DEBUG_INIT();
+   DEBUG_MSG("main -- here we go !!");
+   
+   /* register the main thread as "init" */
+   ec_thread_register(EC_SELF, "init", "initialization phase");
+   
+   /* activate the signal handler */
+   signal_handler();
+   
+   /* ettercap copyright */
+   fprintf(stdout, "\n" EC_COLOR_BOLD "%s %s" EC_COLOR_END " copyright %s %s\n\n", 
+         GBL_PROGRAM, GBL_VERSION, EC_COPYRIGHT, EC_AUTHORS);
+   
+   /* getopt related parsing...  */
+   parse_options(argc, argv);
 
-#ifdef DEBUG
-   Debug_Init();
-   Debug_msg("Main");
-#endif
+   /* check the date */
+   time_check();
 
-   ECThread_register(pthread_self(), "ettercap");
+   /* load the configuration file */
+   load_conf();
+   
+   /* 
+    * get the list of available interfaces 
+    * 
+    * this function will not return if the -I option was
+    * specified on command line. it will instead print the
+    * list and exit
+    */
+   capture_getifs();
+   
+   /* initialize the user interface */
+   ui_init();
+   
+   /* initialize libpcap */
+   capture_init();
 
-   Main_CheckForRun(argv[0]);     // it is ok ?
+   /* initialize libnet (the function contain all the checks) */
+   send_init();
+ 
+   /* get hardware infos */
+   get_hw_info();
+ 
+   /* 
+    * always disable the kernel ip forwarding (except when reading from file).
+    * the forwarding will be done by ettercap.
+    */
+   if (!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm)
+      disable_ip_forward();
+      
+   /* binds ports and set redirect for ssl wrapper */
+   if (!GBL_OPTIONS->read && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->only_mitm && GBL_SNIFF->type == SM_UNIFIED)
+      ssl_wrap_init();
+   
+   /* 
+    * drop root privileges 
+    * we have alread opened the sockets with high privileges
+    * we don't need any more root privs.
+    */
+   drop_privs();
 
-   Signal_SigBuster();     // signal masking
+/***** !! NO PRIVS AFTER THIS POINT !! *****/
 
-#if DEVEL_RELEASE == 1
-   Main_Devel_Release();
-#endif
+   /* load all the plugins */
+   plugin_load_all();
 
-#ifdef DEBUG
-{
-   int i;
-   for(i=0; i<argc; i++)
-      Debug_msg("Main_ParameterList - [%d] %s", i, argv[i]);
-}
-#endif
+   /* print how many dissectors were loaded */
+   conf_dissectors();
+   
+   /* load the mac-fingerprints */
+   manuf_init();
 
-   Options.delay = DEFAULT_DELAY;               // the default delay between arp replies (ec_doppleganger)
-   Options.storm_delay = DEFAULT_STORM_DELAY;   // the default delay between arp request on start up (ec_inet)
+   /* load the tcp-fingerprints */
+   fingerprint_init();
+   
+   /* load the services names */
+   services_init();
+   
+   /* load http known fileds for user/pass */
+   http_fields_init();
 
+   /* set the encoding for the UTF-8 visualization */
+   set_utf8_encoding(GBL_CONF->utf8_encoding);
+  
+   /* print all the buffered messages */
+   if (GBL_UI->type == UI_TEXT)
+      USER_MSG("\n");
+   
+   ui_msg_flush(MSG_ALL);
 
-   if (Parser_ParseOptions(argc, argv) == 1)    // config file
-      Parser_ParseConfFile(optarg);
+/**** INITIALIZATION PHASE TERMINATED ****/
+   
+   /* 
+    * we are interested only in the mitm attack i
+    * if entered, this function will not return...
+    */
+   if (GBL_OPTIONS->only_mitm)
+      only_mitm();
+   
+   /* create the dispatcher thread */
+   ec_thread_new("top_half", "dispatching module", &top_half, NULL);
 
-   if (Options.version)
-      Main_Check_NewRelease();
+   /* this thread becomes the UI then displays it */
+   ec_thread_register(EC_SELF, GBL_PROGRAM, "the user interface");
+   ui_start();
 
-   if (!strcmp(Options.netiface, ""))        // set the default interface
-   {
-      if (Inet_FindIFace(Options.netiface) == -1)
-         Error_msg("No suitable Network Interface found !!");
-   }
-   else if ( Inet_CorrectIface(Options.netiface) < 0)
-#ifdef LINUX
-      Error_msg("%s (%s)", strerror(errno), Options.netiface);
-#else
-      Error_msg("Network Interface %s is NOT valid !!", Options.netiface);
-#endif
+/******************************************** 
+ * reached only when the UI is shutted down 
+ ********************************************/
 
-   if (Options.filter) Main_CheckForFilters();
+   /* flush the exit message */
+   ui_msg_flush(MSG_ALL);
+   
+   /* stop the mitm attack */
+   mitm_stop();
 
-   pipe(pipe_inject);      // create the pipes with illithid
-   pipe(pipe_kill);
+   /* terminate the sniffing engine */
+   EXECUTE(GBL_SNIFF->cleanup);
+   
+   /* kill all the running threads but the current */
+   ec_thread_kill_all();
+  
+   /* clean up the UI */
+   ui_cleanup();
 
-   if (Options.normal)
-      Main_Normal();
-   else
-      Main_Interactive();
-
-return 0;
-}
-
-
-
-
-void Main_Usage(void)
-{
-
-#ifdef DEBUG
-   Debug_msg("Main_Usage");
-#endif
-
-   fprintf (stdout, "\n\033[01m\033[1m%s %s (c) 2001 %s\033[0m\n\n", PROGRAM, VERSION, AUTHORS);
-   fprintf (stdout, "\nUsage: %s [OPTION] [HOST:PORT] [HOST:PORT] [MAC] [MAC]\n\n", PROGRAM);
-
-   fprintf (stdout, "Sniffing method:\n");
-   fprintf (stdout, "  -a, --arpsniff               ARPBASED sniffing (specifying two host)\n");
-   fprintf (stdout, "                               SMARTARP (specifying one host but with the list)\n");
-   fprintf (stdout, "                               PUBLICARP (specifying only one host silently)\n");
-   fprintf (stdout, "                               in silent mode : must specify both IP and MAC\n");
-   fprintf (stdout, "                                 i.e.: ettercap -Nza IP IP MAC MAC    (ARPBASED)\n");
-   fprintf (stdout, "                                       ettercap -Na IP MAC           (SMARTCARP)\n");
-   fprintf (stdout, "                                       ettercap -Nza IP MAC          (PUBLICARP)\n");
-   fprintf (stdout, "  -s, --sniff                  IPBASED sniffing\n");
-   fprintf (stdout, "                               you can specify the ANY ip that means ALL hosts\n");
-   fprintf (stdout, "                                 e.g.: ettercap -Nzs ANY:80  (sniff only http)\n");
-   fprintf (stdout, "  -m, --macsniff               MACBASED sniffing \n");
-   fprintf (stdout, "                                 e.g.: ettercap -zm MAC1 MAC2\n");
-   fprintf (stdout, "                                       ettercap -Nm MAC\n");
-
-   fprintf (stdout, "\nGeneral options:\n");
-   fprintf (stdout, "  -N, --simple                 NON interactive mode (without ncurses)\n");
-   fprintf (stdout, "  -z, --silent                 silent mode (no arp storm on start up)\n");
-   fprintf (stdout, "  -O, --passive                passive scanning of the LAN\n");
-   fprintf (stdout, "  -b, --broadping              broadcast ping instead of arp storm on start up\n");
-   fprintf (stdout, "  -D, --delay <n sec>          the dalay between arp replies (default is 30 sec)\n");
-   fprintf (stdout, "  -Z, --stormdelay <n usec>    the dalay between arp request (def is 1500 usec)\n");
-   fprintf (stdout, "  -S, --spoof <IP>             on start up send request with this IP\n");
-   fprintf (stdout, "  -H, --hosts <IP1[,IP2][,..]> on start up scan only these hosts\n");
-   fprintf (stdout, "  -d, --dontresolve            don't resolve the IPs (speed up the startup)\n");
-   fprintf (stdout, "  -i, --iface <iface>          network interface to be used\n");
-   fprintf (stdout, "  -n, --netmask <netmask>      the netmask used to scan the lan\n");
-   fprintf (stdout, "  -e, --etterconf <filename>   load options from a config file\n");
-   fprintf (stdout, "  -j, --loadhosts <filename>   load hosts list from a file\n");
-   fprintf (stdout, "  -k, --savehosts              save hosts list to a file\n");
-   fprintf (stdout, "  -v, --version                check for the latest ettercap version\n");
-   fprintf (stdout, "  -y, --yes                    in combination with -v auto answer yes\n");
-   fprintf (stdout, "  -h, --help                   this help screen\n");
-
-   fprintf (stdout, "\nSilent mode options (combined with -N):\n");
-   fprintf (stdout, "  -u, --udp                    sniff only udp connection (default is tcp)\n");
-   fprintf (stdout, "  -R, --reverse                sniff all the connection but the selected one\n");
-#ifdef PERMIT_PLUGINS
-   fprintf (stdout, "  -p, --plugin <name>          run the \"name\" plugin (\"list\" for available ones)\n");
-#endif
-   fprintf (stdout, "  -l, --list                   list all hosts in the lan\n");
-   fprintf (stdout, "  -C, --collect                collect users and passwords only\n");
-   fprintf (stdout, "                               this options must be used with a sniffing method\n");
-   fprintf (stdout, "                                    Eg: ettercap -NCzs\n");
-   fprintf (stdout, "  -f, --fingerprint <host>     do OS fingerprinting on HOST\n");
-   fprintf (stdout, "  -x, --hexview                display data in hex mode\n");
-   fprintf (stdout, "  -L, --logtofile              logs all data to specific file(s)\n");
-   fprintf (stdout, "  -q, --quiet                  \"demonize\" ettercap (useful with -L)\n");
-   fprintf (stdout, "  -w, --newcert                create a new SSL cert file for HTTPS dissector\n");
-   fprintf (stdout, "  -F, --filter <filename>      load  \"filename\" as the filter chain file\n");
-   fprintf (stdout, "  -c, --check                  check for other poisoners in the LAN\n");
-   fprintf (stdout, "  -t, --linktype               tries to indentify the LAN type (switch or hub)\n");
-   fprintf (stdout, "\n");
-
-   exit (0);
-}
-
-
-
-void Main_Interactive(void)
-{
-#ifdef HAVE_NCURSES
-
-#ifndef CYGWIN
-   struct winsize  ws = {0, 0, 0, 0};
-
-   #ifdef DEBUG
-      Debug_msg("Main_Interactive");
-   #endif
-
-#endif
-
-#ifndef CYGWIN
-   if ( ioctl(0, TIOCGWINSZ, &ws) < 0)          // syscall for the window size
-      Error_msg("ec_main:%d ioctl(TIOCGWINSZ) | ERRNO : %d | %s", __LINE__, errno, strerror(errno));
-
-   if ( (ws.ws_row < 25) || (ws.ws_col < 80) )
-   {
-      char *p;
-      short cols = ws.ws_col;
-      short rows = ws.ws_row;
-
-      #ifdef DEBUG
-         Debug_msg("Main_Interactive -- screen wide %dx%d (TIOCGWINSZ)", ws.ws_row, ws.ws_col);
-      #endif
-
-      if ((p = getenv("LINES")))
-         rows = atoi(p);
-      if ((p = getenv("COLUMNS")))
-         cols = atoi(p);
-
-      #ifdef DEBUG
-         Debug_msg("Main_Interactive -- screen wide %sx%s (getenv)", getenv("LINES"), getenv("COLUMNS"));
-      #endif
-
-      if (rows < 25 || cols < 80)
-         Error_msg("Screen must be at least 25x80 !!");
-
-   }
-#endif
-
-#ifdef PERMIT_PLUGINS
-   Plugin_LoadAll();
-#endif
-
-   if (!Options.silent) printf("Building host list for netmask %s, please wait...\n", Inet_MySubnet());
-   number_of_hosts_in_lan = Inet_HostInLAN();
-
-   Interface_InitTitle(Host_In_LAN[0].ip, Host_In_LAN[0].mac, Inet_MySubnet());
-   Interface_InitScreen();
-   Interface_Run();
-#else
-   #ifdef DEBUG
-      Debug_msg("Ncurses not supported -- turning to non interactive mode...");
-   #endif
-   fprintf(stdout, "\nNcurses not supported -- turning to non interactive mode...\n\n");
-   Main_Normal();
-#endif
-
-#ifdef DEBUG
-   Debug_msg("Main_Interactive_END");
-#endif
+   return 0;
 }
 
 
-
-
-void Main_Normal(void)
+/* 
+ * drop root privs 
+ */
+static void drop_privs(void)
 {
+   u_int uid, gid;
+   char *var;
 
-#ifdef DEBUG
-   Debug_msg("Main_Normal");
-#endif
-
-   printf ("\n\033[01m\033[1m%s %s (c) 2001 %s\033[0m\n\n", PROGRAM, VERSION, AUTHORS);
-   printf ("Your IP: %s with MAC: %s on Iface: %s\n", Inet_MyIPAddress(), Inet_MyMACAddress(), Options.netiface);
-
-#ifdef PERMIT_PLUGINS
-   if (Options.plugin || Options.arpsniff || Options.sniff  || Options.macsniff)
-      Plugin_LoadAll();
-#endif
-
-   if (Options.list || Options.check || Options.arpsniff ||
-       Options.sniff  || Options.macsniff || Options.link ||
-       Options.passive || Options.hoststofile)
-   {
-      if (!Options.silent) printf("Building host list for netmask %s, please wait...\n", Inet_MySubnet());
-      number_of_hosts_in_lan = Inet_HostInLAN();
-   }
-
-   if (Options.hoststofile)
-   {
-      fprintf(stdout, "\nHost list dumped into file: %s\n\n", Inet_Save_Host_List());
-      exit(0);
-   }
-
-   if (Options.list)
-      Simple_HostList();
-
-   if (Options.check)
-      Simple_CheckForPoisoner();
-
-   if (Options.link)
-      Simple_CheckForSwitch();
-
-   if (Options.finger)
-      Simple_FingerPrint();
-
-#ifdef PERMIT_PLUGINS
-   if (Options.plugin)
-      Simple_Plugin();
-#endif
-
-   if (Options.arpsniff || Options.sniff  || Options.macsniff)
-      Simple_Run();
-
-   if (Options.passive)
-      Simple_PassiveScan();
-
-   printf("\n");
-#ifdef DEBUG
-   Debug_msg("Main_Normal_END");
-#endif
-
-exit(0);
-}
-
-
-
-void Main_CheckForRun(char *program_argv0)
-{
-
-#ifdef DEBUG
-   Debug_msg("Main_CheckForRun");
-#endif
-
+   /* are we root ? */
    if (getuid() != 0)
-   {
-      Options.normal = 1;
-      Error_msg("Sorry UID %d, must be root to run %s !!", getuid(), PROGRAM);
-   }
+      return;
 
-   if (!strstr(program_argv0, PROGRAM))      // just for script-kiddies ;)
-      Error_msg("ehi guy ! my name is \"%s\" ! I really don't like \"%s\"...", PROGRAM, program_argv0);
-
-}
-
-
-
-void Main_CheckForFilters(void)
-{
-
-#ifdef DEBUG
-   Debug_msg("Main_CheckForFilters");
-#endif
-
-   switch(FilterDrop_Validation(Filter_Array_Dest))
-   {
-      case 1:
-         fprintf(stdout, "CAUTION: the source filter chain contains a loop...\n");
-         fprintf(stdout, "ettercap may hang up. please review your filter chain...  [press RETURN to continue]\n\n");
-         getchar();
-         break;
-      case 2:
-         Error_msg("CAUTION: a filter in the source chain has a jump outside the chain !!!\n"
-                   "ettercap will sig fault. review your filter chain immediately !!\n\n");
-         break;
-   }
-   switch( FilterDrop_Validation(Filter_Array_Dest))
-   {
-      case 1:
-         fprintf(stdout, "CAUTION: the dest filter chain contains a loop...\n");
-         fprintf(stdout, "ettercap may hang up. please review your filter chain...  [press RETURN to continue]\n\n");
-         getchar();
-         break;
-      case 2:
-         Error_msg("CAUTION: a filter in the dest chain has a jump outside the chain !!!\n"
-                   "ettercap will sig fault. review your filter chain immediately !!\n\n");
-         break;
-   }
-
-}
-
-
-
-#if DEVEL_RELEASE == 1
-void Main_Devel_Release(void)
-{
-
-   fprintf (stdout, "\n\n");
-   fprintf (stdout, "==============================================================================\n");
-   fprintf (stdout, "  %s %s IS STILL IN DEVELOPMENT STATE. ABSOLUTELY NO WARRANTY !\n\n", PROGRAM, VERSION);
-   fprintf (stdout, "  if you are a betatester please report bugs to :\n");
-   fprintf (stdout, "      http://ettercap.sourceforge.net/forum/viewforum.php?forum=7\n\n");
-   fprintf (stdout, "  or send an email to:\n");
-   fprintf (stdout, "      alor@users.sourceforge.net\n");
-   fprintf (stdout, "      crwm@freemail.it\n\n");
-//   fprintf (stdout, "  if you are NOT a betatester, I don't know where you downloaded this release\n");
-//   fprintf (stdout, "  but this is NOT for you, so don't blame us for any bugs or problems !\n");
-   fprintf (stdout, "==============================================================================\n");
-   fprintf (stdout, "\n\n");
-// if (!Options.normal)
-// {
-//    fprintf(stdout, "Press return to continue...");
-//    getchar();
-// }
-}
-#endif
-
-
-void Main_Check_NewRelease(void)
-{
-   char answer;
-   socket_handle sock;
-   char *ptr;
-   char *latest;
-   char getmsg[512];
-   char buffer[4096];
-   char host[] = "ettercap.sourceforge.net";
-   char page[] = "/latest.php";
-//   char host[] = "zefiro.alor.org";
-//   char page[] = "/ettercap/latest.php";
-
-#ifdef DEBUG
-   Debug_msg("Main_Check_NewRelease -- now is %s", VERSION);
-#endif
-
-   memset(buffer, 0, sizeof(buffer));
-
-   fprintf (stdout, "\nCurrent version is : \033[01m\033[1m%s\033[0m\n", VERSION);
-
-   if (!Options.yes)
-   {
-      fprintf (stdout, "\n\nDo you want to check for the latest version ? (y/n) ");
-      fflush(stdout);
-      fflush(stdin);
-      answer = getchar();
-   }
+   /* get the env variable for the UID to drop privs to */
+   var = getenv("EC_UID");
+   
+   /* if the EC_UID variable is not set, default to GBL_CONF->ec_uid (nobody) */
+   if (var != NULL)
+      uid = atoi(var);
    else
-      answer = 'y';
+      uid = GBL_CONF->ec_uid;
+   
+   /* get the env variable for the GID to drop privs to */
+   var = getenv("EC_GID");
+   
+   /* if the EC_UID variable is not set, default to GBL_CONF->ec_gid (nobody) */
+   if (var != NULL)
+      gid = atoi(var);
+   else
+      gid = GBL_CONF->ec_gid;
+   
+   DEBUG_MSG("drop_privs: setuid(%d) setgid(%d)", uid, gid);
+   
+   /* drop to a good uid/gid ;) */
+   if ( setgid(gid) < 0 )
+      ERROR_MSG("setgid()");
+   
+   if ( setuid(uid) < 0 )
+      ERROR_MSG("setuid()");
 
-   fprintf(stdout, "\n\n");
-
-   if (answer == 'y' || answer == 'Y')
-   {
-      fprintf (stdout, "Connecting to http://%s...\n", host);
-      sock = Inet_OpenSocket(host, 80);
-
-      fprintf (stdout, "Requesting %s...\n\n", page);
-      snprintf(getmsg, sizeof(getmsg), "GET %s HTTP/1.0\r\n"
-                                       "Host: %s\r\n"
-                                       "User-Agent: %s (%s).\r\n"
-                                       "\r\n", page, host, PROGRAM, VERSION );
-      Inet_Http_Send(sock, getmsg);
-
-#ifdef DEBUG
-   Debug_msg("Main_Check_NewRelease - SEND -----------------------\n\n%s\n\n", getmsg);
-   Debug_msg("Main_Check_NewRelease - ENDSEND --------------------");
-#endif
-
-      Inet_Http_Receive(sock, buffer, sizeof(buffer));
-
-#ifdef DEBUG
-   Debug_msg("Main_Check_NewRelease - RECEIVE --------------------\n\n%s\n\n", buffer);
-   Debug_msg("Main_Check_NewRelease - ENDRECEIVE -----------------");
-#endif
-
-      Inet_CloseSocket(sock);
-
-      if (!strlen(buffer))
-         Error_msg("The server didn't replied");
-
-      ptr = strstr(buffer, "\r\n\r\n") + 4;  // skip the headers.
-      if (strncmp(ptr, "LATEST: ", 8))
-         Error_msg("Error parsing the response... \n\n");
-
-      ptr +=8;
-      latest = strdup(strtok(ptr, "\n"));
-      if ( strncmp(latest, VERSION, 5) == 0)
-         Error_msg("You already have the latest ettercap release (\033[01m\033[1m%s\033[0m)\n\n", latest);
-      else if (strncmp(latest, VERSION, 5) < 0)
-      {
-         #ifdef DEBUG
-            Debug_msg("You have a newer release than the official one (%s)", latest);
-         #endif
-         fprintf(stdout, "You have a newer release (\033[01m\033[1m%s\033[0m) than the official one (\033[01m\033[1m%s\033[0m)\n\n", VERSION, latest);
-         fprintf(stdout, "\033[01m\033[1m%s\033[0m is currently under development... use at you own risk... ;)\n\n", VERSION);
-         exit(0);
-      }
-      else
-      {
-         fprintf(stdout, "The latest release is \033[01m\033[1m%s\033[0m\n\n", latest);
-         ptr += 6;
-         fprintf(stdout, "NEW in this release:\n%s\n\n", ptr);
-         if (!Options.yes)
-         {
-            fprintf(stdout, "Do you want to wget it ? (y/n)");
-            fflush(stdout);
-            fflush(stdin);
-            while ( (answer = getchar()) == '\n');
-         }
-         else
-            answer = 'y';
-
-         fprintf(stdout, "\n\n");
-
-         if (answer == 'y' || answer == 'Y')
-         {
-            char wget[100];
-            snprintf(wget, sizeof(wget), "http://%s/download/ettercap-%s.tar.gz", host, latest);
-            if ( execl( WGET_PATH, "wget", wget, NULL) == -1 )
-               Error_msg("Cannot execute wget ! Auto update cannot download the file...\n");
-         }
-      }
-   }
-   exit(0);
+   DEBUG_MSG("privs: UID: %d %d  GID: %d %d", (int)getuid(), (int)geteuid(), (int)getgid(), (int)getegid() );
+   USER_MSG("Privileges dropped to UID %d GID %d...\n\n", (int)getuid(), (int)getgid() ); 
 }
 
+
+/*
+ * cleanly exit from the program
+ */
+
+void clean_exit(int errcode)
+{
+   DEBUG_MSG("clean_exit: %d", errcode);
+  
+   INSTANT_USER_MSG("\nTerminating %s...\n", GBL_PROGRAM);
+
+   /* kill all the running threads but the current */
+   ec_thread_kill_all();
+
+   /* close the UI */
+   ui_cleanup();
+
+   /* call all the ATEXIT functions */
+   exit(errcode);
+}
+
+
+static void time_check(void)
+{
+   /* 
+    * a nice easter egg... 
+    * just to waste some time of code reviewers... ;) 
+    *
+    * and no, you can't simply remove this code, you'll break the license...
+    *
+    * trust me, it's not evil ;) only a boring afternoon, and nothing to do...
+    */
+   time_t K9=time(NULL);char G5P[1<<6],*o=G5P,*O;uint U4M, _,__=0; char dMG[]= 
+   "\n*\n^1U4Mm\x04wW#K\x2e\x0e+X\x7f\f,N'U!I-L5?";struct{char X5T[7];int dMG;
+   int U4M;} X5T[]={{"N!WwFr", 0x414c6f52,0},{"S6FfUe", 0x4e614741,0}};sprintf
+   (G5P,"%s",ctime(&K9));o+=4;O=strchr(o+4,' ');*O=0; for(U4M=(1<<5)-(1<<2)+1;
+   U4M>0;U4M--)dMG[U4M]=dMG[U4M]^dMG[U4M-1];for(U4M=0;U4M<sizeof(X5T)/sizeof(*
+   X5T);U4M++){for(_=(1<<2)+1; _>0;_--)X5T[U4M].X5T[_]=X5T[U4M].X5T[_]^X5T[U4M
+   ].X5T[_-1];if(!strcmp(X5T[U4M].X5T,o)){char T0Q[]="\n\0O!M4\x14r\x1doO;T0Q"
+   "(\bm\x19m\bz\x19x\b(A2\x12s\x1d=X5T=Q&G5Pp\x03l\n~\th\x1a\x7f_dMG\x06hH-@"
+   "!H$\x04s\x1av\x1a:X=\x1d|\f|\x0ek\ba\0t\x11u[u[{^-m\fb\x16\x7f\x19v\x04oA"
+   "\x2e\\;1;K9\\/\\|9w#f4\x1a\x34\x1a\x1a";for(_=(1<<7)-(1<<3)-(1<<2)+1;_>0;_
+   --)T0Q[_]=T0Q[_]^T0Q[_-1];write(1,dMG,1);while(__++<1<<5)printf("%c",(1<<5)
+   +(1<<3)+(1<<1));X5T[U4M].dMG=ntohl(X5T[U4M].dMG);printf(dMG,&X5T[U4M].dMG);
+   while(--__) printf("%c",(1<<6)-(1<<4)-(1<<3)+(1<<1)); printf(T0Q,&X5T[U4M].
+   dMG);getchar();break;}}
+}
 
 /* EOF */
 
+// vim:ts=3:expandtab
 
