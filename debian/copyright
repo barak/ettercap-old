@@ -1,0 +1,14 @@
+This package was debianized by Murat Demirten <murat@debian.org> on
+Wed, 19 Dec 2001 13:08:46 +0200.
+
+It was downloaded from http://ettercap.sourceforge.net
+
+Upstream Author(s): 	Alberto Ornaghi <alor@users.sourceforge.net>
+			Marco Valleri <crwm@freemail.it>
+
+Copyright:
+
+Ettercap is licensed under the terms of the GNU GPL.
+
+The GPL licence can be found in /usr/share/common-licenses on modern
+Debian systems.

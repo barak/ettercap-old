@@ -1,0 +1,23 @@
+#!/bin/sh
+
+#DEBHELPER#
+
+set -e
+
+case "$1" in
+  configure)
+
+	ln -s /etc/ettercap /usr/share/ettercap
+	exit 0 ;;
+
+  abort-upgrade|abort-remove|abort-deconfigure)
+
+
+    exit 0 ;;
+  *)
+    echo "ERROR: ettercap postinst called with unknown argument \"$1\"."
+    echo "Aborting configuration of ettercap package."
+    exit 1 ;;
+esac
+
+exit

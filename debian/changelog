@@ -1,0 +1,28 @@
+ettercap (1:0.6.4-1) unstable; urgency=low
+
+  * New upstream release.
+  * Fixes long description line bug of ettercap. (Closes: #130953)
+  * Fixes long description line bug of ettercap-plugins. (Closes: #130952)
+  
+ -- Murat Demirten <murat@debian.org>  Fri, 21 Feb 2002 22:36:17 +0200
+
+ettercap (0.6.4.cvs20020101-1) unstable; urgency=low
+
+  * Fixed packaging problems which prevents automatic rebuilding for
+    ports other than mipsel. 
+  * Configuration files go to /etc/ettercap directory.
+  * Better description field
+  * CVS snapshot used which doesn't have some plugin config file problems. 
+  
+ -- Murat Demirten <murat@debian.org>  Tue, 1 Jan 2002 18:11:41 +0200
+
+ettercap (0.6.3.1-1) unstable; urgency=low
+
+  * Initial Release (Closes: #112980)
+
+ -- Murat Demirten <murat@debian.org>  Wed, 19 Dec 2001 13:08:46 +0200
+
+
+Local variables:
+mode: debian-changelog
+End:

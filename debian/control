@@ -1,0 +1,35 @@
+Source: ettercap
+Section: non-US
+Priority: optional
+Maintainer: Murat Demirten <murat@debian.org>
+Build-Depends: debhelper (>> 3.0.0), libncurses5-dev, libssl-dev
+Standards-Version: 3.5.2
+
+Package: ettercap
+Architecture: any
+Depends: ${shlibs:Depends}
+Recommends: ettercap-plugins
+Description: Multipurpose sniffer/interceptor/logger for switched LAN
+ Ettercap supports active and passive dissection of many protocols 
+ (even ciphered ones) and includes many feature for network and host 
+ analysis.
+ .
+ Data injection in an established connection and filtering (substitute
+ or drop a packet) on the fly is also possible, keeping the connection
+ synchronized.
+ .
+ Many sniffing modes were implemented to give you a powerful and complete 
+ sniffing suite. It's possible to sniff in four modes: IP Based, MAC Based,
+ ARP Based (full-duplex) and PublicARP Based (half-duplex).
+ .
+ It has the ability to check whether you are in a switched LAN or
+ not, and to use OS fingerprints (active or passive) to let you know the
+ geometry of the LAN.
+ 
+Package: ettercap-plugins
+Architecture: any
+Depends: ${shlibs:Depends}, ettercap
+Description: Miscellaneous plugins for ettercap
+ It includes H00_lurker, H10_phantom, H20dwarf, H99_dummy, arpcop, banshee,
+ basilisk, beholder, dummy, golem, imp, leech, ooze, phantom, shadow,
+ spectre, thief, zaratan and triton plugins. 

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+#DEBHELPER#
+
+set -e
+
+rm -f /usr/share/ettercap
+
+exit
