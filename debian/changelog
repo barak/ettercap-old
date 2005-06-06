@@ -1,9 +1,3 @@
-ettercap (1:0.7.3-0bpo1) sarge-backports; urgency=low
-
-  * Rebuilt for Sarge.
-
- -- Sylvain Beucler <beuc@beuc.net>  Fri, 23 Jun 2006 13:42:48 +0000
-
 ettercap (1:0.7.3-1) unstable; urgency=low
 
   * New upstream release (Closes: #270978 #156770 #312226 #205624)
