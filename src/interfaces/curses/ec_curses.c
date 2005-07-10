@@ -172,7 +172,7 @@ static void curses_msg(const char *msg)
    if (sysmsg_win == NULL)
       return;
 
-   wdg_scroll_print(sysmsg_win, EC_COLOR, (char *)msg);
+   wdg_scroll_print(sysmsg_win, EC_COLOR, "%s", (char *)msg);
 }
 
 

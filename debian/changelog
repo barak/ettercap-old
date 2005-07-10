@@ -1,3 +1,13 @@
+ettercap (1:0.7.1-1sarge1) stable-security; urgency=high
+
+  * Non-maintainer upload.
+  * Fix format string vulnerability in curses_msg() in
+    src/interfaces/curses/ec_curses.c, backported from version
+    0.7.3 (CAN-2005-1796; Closes: #311615).
+    Thanks to Martin Pitt for reporting this vulnerability.
+
+ -- Roger Leigh <rleigh@debian.org>  Sun, 10 Jul 2005 09:13:32 +0100
+
 ettercap (1:0.7.1-1) unstable; urgency=low
 
   * New upstream release
