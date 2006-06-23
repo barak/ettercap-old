@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk.c,v 1.28 2004/09/16 04:16:32 daten Exp $
+    $Id: ec_gtk.c,v 1.39 2004/12/21 11:24:02 alor Exp $
 */
 
 #include <ec.h>
@@ -45,6 +45,7 @@ static GtkWidget     *textview = NULL;
 static GtkTextBuffer *msgbuffer = NULL;
 static GtkTextMark   *endmark = NULL;
 static GtkAccelGroup *accel_group = NULL;
+static gboolean       progress_cancelled = FALSE;
 
 /* proto */
 
@@ -54,6 +55,8 @@ void gtkui_exit(void);
 
 void gtkui_message(const char *msg);
 void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void));
+
+char *gtkui_utf8_validate(char *data);
    
 static void gtkui_init(void);
 static void gtkui_cleanup(void);
@@ -61,7 +64,7 @@ static void gtkui_msg(const char *msg);
 static void gtkui_error(const char *msg);
 static void gtkui_fatal_error(const char *msg);
 static gboolean gtkui_flush_msg(gpointer data);
-static void gtkui_progress(char *title, int value, int max);
+static int gtkui_progress(char *title, int value, int max);
 
 static void gtkui_setup(void);
 
@@ -77,6 +80,8 @@ static void gtkui_unified_sniff_default(void);
 static void gtkui_bridged_sniff(void);
 static void bridged_sniff(void);
 static void gtkui_pcap_filter(void);
+static void gtkui_set_netmask(void);
+static gboolean gtkui_progress_cancel(GtkWidget *window, gpointer data);
 
 GtkTextBuffer *gtkui_details_window(char *title);
 void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
@@ -118,7 +123,6 @@ void set_gtk_interface(void)
    ops.type = UI_GTK;
    
    ui_register(&ops);
-   
 }
 
 
@@ -190,11 +194,15 @@ static void gtkui_cleanup(void)
 static void gtkui_msg(const char *msg)
 {
    GtkTextIter iter;
+   gchar *unicode = NULL;
 
    DEBUG_MSG("gtkui_msg: %s", msg);
 
+   if((unicode = gtkui_utf8_validate((char *)msg)) == NULL)
+         return;
+
    gtk_text_buffer_get_end_iter(msgbuffer, &iter);
-   gtk_text_buffer_insert(msgbuffer, &iter, msg, -1);
+   gtk_text_buffer_insert(msgbuffer, &iter, unicode, -1);
    gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW (textview), 
                                 endmark, 0, FALSE, 0, 0);
    return;
@@ -214,11 +222,15 @@ gboolean gtkui_flush_msg(gpointer data)
 static void gtkui_error(const char *msg)
 {
    GtkWidget *dialog;
+   gchar *unicode = NULL;
    
    DEBUG_MSG("gtkui_error: %s", msg);
 
+   if((unicode = gtkui_utf8_validate((char *)msg)) == NULL)
+            return;
+
    dialog = gtk_message_dialog_new(GTK_WINDOW (window), GTK_DIALOG_MODAL, 
-                                   GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", msg);
+                                   GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", unicode);
    gtk_window_set_position(GTK_WINDOW (dialog), GTK_WIN_POS_CENTER);
 
    /* blocking - displays dialog waits for user to click OK */
@@ -299,45 +311,90 @@ void gtkui_input(const char *title, char *input, size_t n, void (*callback)(void
 /* 
  * show or update the progress bar
  */
-static void gtkui_progress(char *title, int value, int max)
+static int gtkui_progress(char *title, int value, int max)
 {
-   static GtkWidget *dialog = NULL;
-   static GtkWidget *pbar = NULL;
-   
-   /* the first time, create the object */
-   if (pbar == NULL) {
-      dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-      gtk_window_set_title(GTK_WINDOW (dialog), EC_PROGRAM);
-      gtk_window_set_modal(GTK_WINDOW (dialog), TRUE);
-      gtk_window_set_position(GTK_WINDOW (dialog), GTK_WIN_POS_CENTER);
-      gtk_container_set_border_width(GTK_CONTAINER (dialog), 5);
-    
-      pbar = gtk_progress_bar_new();
-      gtk_container_add(GTK_CONTAINER (dialog), pbar);
-      gtk_widget_show(pbar);
+   static GtkWidget *progress_dialog = NULL;
+   static GtkWidget *progress_bar = NULL;
+   static GtkWidget *hbox, *button;
 
-      gtk_widget_show(dialog);
+#ifndef OS_MINGW
+   /* FIXME: try to understand why it does not work under mingw.
+    * (look even in ec_scan.c
+    */
+   gdk_threads_enter();
+#endif
+   
+   if (progress_cancelled == TRUE) {
+      progress_dialog = NULL;
+      progress_bar = NULL;
+      progress_cancelled = FALSE;
+#ifndef OS_MINGW
+      gdk_threads_leave();
+#endif
+      return UI_PROGRESS_INTERRUPTED;
+   }
+
+   /* the first time, create the object */
+   if (progress_bar == NULL) {
+      progress_dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+      gtk_window_set_title(GTK_WINDOW (progress_dialog), EC_PROGRAM);
+      gtk_window_set_modal(GTK_WINDOW (progress_dialog), TRUE);
+      gtk_window_set_position(GTK_WINDOW (progress_dialog), GTK_WIN_POS_CENTER);
+      gtk_container_set_border_width(GTK_CONTAINER (progress_dialog), 5);
+      g_signal_connect(G_OBJECT (progress_dialog), "delete_event", G_CALLBACK (gtkui_progress_cancel), NULL);
+
+      hbox = gtk_hbox_new(FALSE, 3);
+      gtk_container_add(GTK_CONTAINER (progress_dialog), hbox);
+      gtk_widget_show(hbox);
+    
+      progress_bar = gtk_progress_bar_new();
+      gtk_box_pack_start(GTK_BOX (hbox), progress_bar, TRUE, TRUE, 0);
+      gtk_widget_show(progress_bar);
+
+      button = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+      gtk_box_pack_start(GTK_BOX (hbox), button, FALSE, FALSE, 0);
+      g_signal_connect(G_OBJECT (button), "clicked", G_CALLBACK (gtkui_progress_cancel), progress_dialog);
+      gtk_widget_show(button);
+
+      gtk_widget_show(progress_dialog);
    } 
    
    /* the subsequent calls have to only update the object */
-   gtk_progress_bar_set_text(GTK_PROGRESS_BAR (pbar), title);
-   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR (pbar), (gdouble)((gdouble)value / (gdouble)max));
+   gtk_progress_bar_set_text(GTK_PROGRESS_BAR (progress_bar), title);
+   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR (progress_bar), (gdouble)((gdouble)value / (gdouble)max));
 
+#ifndef OS_MINGW
+   gdk_threads_leave();
+#else
    /* a nasty little loop that lets gtk update the progress bar immediately */
    while (gtk_events_pending ())
       gtk_main_iteration ();
-
+#endif
+   
    /* 
     * when 100%, destroy it
     */
    if (value == max) {
-      gtk_widget_hide(dialog);
-      gtk_widget_destroy(pbar);
-      gtk_widget_destroy(dialog);
-      dialog = NULL;
-      pbar = NULL;
+      gtk_widget_destroy(progress_dialog);
+      progress_dialog = NULL;
+      progress_bar = NULL;
+#ifndef OS_MINGW
+      gdk_threads_leave();
+#endif
+      return UI_PROGRESS_FINISHED;
    }
 
+   return UI_PROGRESS_UPDATED;
+}
+
+static gboolean gtkui_progress_cancel(GtkWidget *window, gpointer data) {
+   progress_cancelled = TRUE;
+
+   /* the progress dialog must be manually destroyed if the cancel button is used */
+   if(data != NULL && GTK_IS_WIDGET(data))
+       gtk_widget_destroy(data);
+
+   return(FALSE);
 }
 
 /*
@@ -432,7 +489,12 @@ static void gtkui_setup(void)
       { "/Sniff/Set pcap filter...",    "p",       gtkui_pcap_filter,   0, "<StockItem>", GTK_STOCK_PREFERENCES },
       { "/_Options",                    "<shift>O", NULL, 0, "<Branch>" },
       { "/Options/Unoffensive", NULL, toggle_unoffensive, 0, "<ToggleItem>" },
-      { "/Options/Promisc mode", NULL, toggle_nopromisc,  0, "<ToggleItem>" }
+      { "/Options/Promisc mode", NULL, toggle_nopromisc,  0, "<ToggleItem>" },
+      { "/Options/Set netmask", "n", gtkui_set_netmask,   0, "<Item>"}
+#ifndef OS_WINDOWS
+     ,{"/_Help",          NULL,         NULL,             0, "<Branch>" },
+      {"/Help/Contents", " ",           gtkui_help,       0, "<StockItem>", GTK_STOCK_HELP }
+#endif
    };
    gint nmenu_items = sizeof (file_menu) / sizeof (file_menu[0]);
 
@@ -680,8 +742,9 @@ static void gtkui_unified_sniff(void)
       iface_desc = gtk_entry_get_text(GTK_ENTRY (GTK_COMBO (iface_combo)->entry));
       for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
          if(!strncmp(dev->description, iface_desc, IFACE_LEN)) {
-            if (GBL_OPTIONS->iface == NULL) 
-               SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+            
+            SAFE_FREE(GBL_OPTIONS->iface);
+            SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
 
             strncpy(GBL_OPTIONS->iface, dev->name, IFACE_LEN);
             break;
@@ -707,18 +770,20 @@ static void gtkui_unified_sniff(void)
 /* 
  * start unified sniffing with default interface
  */
-static void gtkui_unified_sniff_default(void) {
+static void gtkui_unified_sniff_default(void) 
+{
    char err[PCAP_ERRBUF_SIZE];
    
    DEBUG_MSG("gtkui_unified_sniff_default");
 
-   if (GBL_OPTIONS->iface == NULL) { 
+   /* the ec_capture will find the interface for us */
+   if (GBL_OPTIONS->iface == NULL) {
       char *iface;
-      
+
       SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
       iface = pcap_lookupdev(err);
       ON_ERROR(iface, NULL, "pcap_lookupdev: %s", err);
-
+   
       strncpy(GBL_OPTIONS->iface, iface, IFACE_LEN - 1);
    }
 
@@ -808,8 +873,9 @@ static void gtkui_bridged_sniff(void)
       iface_desc = gtk_entry_get_text(GTK_ENTRY (GTK_COMBO (combo1)->entry));
       for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
          if(!strncmp(dev->description, iface_desc, IFACE_LEN)) {
-            if(GBL_OPTIONS->iface == NULL)
-               SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
+            
+            SAFE_FREE(GBL_OPTIONS->iface);
+            SAFE_CALLOC(GBL_OPTIONS->iface, IFACE_LEN, sizeof(char));
 
             strncpy(GBL_OPTIONS->iface, dev->name, IFACE_LEN);
             break;                      
@@ -827,8 +893,9 @@ static void gtkui_bridged_sniff(void)
       iface_desc = gtk_entry_get_text(GTK_ENTRY (GTK_COMBO (combo2)->entry));
       for(dev = (pcap_if_t *)GBL_PCAP->ifs; dev != NULL; dev = dev->next) {
          if(!strncmp(dev->description, iface_desc, IFACE_LEN)) {
-            if(GBL_OPTIONS->iface_bridge == NULL)
-               SAFE_CALLOC(GBL_OPTIONS->iface_bridge, IFACE_LEN, sizeof(char));
+               
+            SAFE_FREE(GBL_OPTIONS->iface_bridge);
+            SAFE_CALLOC(GBL_OPTIONS->iface_bridge, IFACE_LEN, sizeof(char));
 
             strncpy(GBL_OPTIONS->iface_bridge, dev->name, IFACE_LEN);
             break;
@@ -873,6 +940,33 @@ static void gtkui_pcap_filter(void)
     * the interface for other user input
     */
    gtkui_input("Pcap filter :", GBL_PCAP->filter, PCAP_FILTER_LEN, NULL);
+}
+
+/*
+ * set a different netmask than the system one 
+ */
+static void gtkui_set_netmask(void)
+{
+   struct in_addr net;
+   
+   DEBUG_MSG("gtkui_set_netmask");
+  
+   if (GBL_OPTIONS->netmask == NULL)
+      SAFE_CALLOC(GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, sizeof(char));
+
+   /* 
+    * no callback, the filter is set but we have to return to
+    * the interface for other user input
+    */
+   gtkui_input("Netmask :", GBL_OPTIONS->netmask, IP_ASCII_ADDR_LEN, NULL);
+
+   /* sanity check */
+   if (strcmp(GBL_OPTIONS->netmask, "") && inet_aton(GBL_OPTIONS->netmask, &net) == 0)
+      ui_error("Invalid netmask %s", GBL_OPTIONS->netmask);
+            
+   /* if no netmask was specified, free it */
+   if (!strcmp(GBL_OPTIONS->netmask, ""))
+      SAFE_FREE(GBL_OPTIONS->netmask);
 }
 
 /* used for Profile and Connection details */
@@ -930,9 +1024,13 @@ GtkTextBuffer *gtkui_details_window(char *title)
 void gtkui_details_print(GtkTextBuffer *textbuf, char *data)
 {
    GtkTextIter iter;
+   gchar *unicode;
+
+   if((unicode = gtkui_utf8_validate(data)) == NULL)
+      return;
 
    gtk_text_buffer_get_end_iter(textbuf, &iter);
-   gtk_text_buffer_insert(textbuf, &iter, data, -1);
+   gtk_text_buffer_insert(textbuf, &iter, unicode, -1);
 }
 
 /* hitting "Enter" key in dialog does same as clicking OK button */
@@ -1141,6 +1239,26 @@ void gtkui_filename_browse(GtkWidget *widget, gpointer data)
       gtk_entry_set_text(GTK_ENTRY (data), filename);
    }
    gtk_widget_destroy(dialog);
+}
+
+/* make sure data is valid UTF8 */
+char *gtkui_utf8_validate(char *data) {
+   const gchar *end;
+   char *unicode = NULL;
+
+   unicode = data;
+   if(!g_utf8_validate (data, -1, &end)) {
+      /* if "end" pointer is at begining of string, we have no valid text to print */
+      if(end == unicode) return(NULL);
+
+      /* cut off the invalid part so we don't lose the whole string */
+      /* this shouldn't happen often */
+      unicode = (char *)end;
+      *unicode = 0;
+      unicode = data;
+   }
+
+   return(unicode);
 }
 
 /* EOF */

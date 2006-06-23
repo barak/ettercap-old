@@ -6,6 +6,35 @@ Legenda:
 
 =========================================
 
+NG-0.7.3         20050528
+
+   + added the INC (+=) and DEC (-=) operators to the filter engine
+   !! fixed the compilation of some plugins
+   !! fixed a segfault in the isolate plugin
+   !! fixed a bug in the dhcp spoofing module
+   !! fixed a serious security bug
+
+
+NG-0.7.2         20041221
+
+   + the hosts scan can now be canceled by the user (ctrl+q)
+   + the netmask for the scan can now be specified within the GUI
+   + checksum_check was renamed to checksum_warning
+     and a new option to prevent the check was introduced
+     (see the man page etter.conf(5) for details)
+   + added the help menu (inline man pages)
+   + wins support for the dns_spoof plugin
+   + new plugin: repoison_arp
+   !! do not drop privs under windows (useless) 
+   !! fixed the mmap problem under windows
+   !! fixed file operation under windows (O_BINARY related)
+   !! fixed the IRC password collector (\r \n related)
+   !! fixes the dumping of the profiles to a file (fingerprint not recorded)
+   !! the remote flag is now reset when the arp poisoning is stopped
+   !! fixed the ebcdic visualization
+   !! fixed the autoadd plugin when a target is ANY
+
+
 NG-0.7.1         20040920
 
    + added the -s options to issue commands to the gui (useful in scripts)

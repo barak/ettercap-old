@@ -1,5 +1,5 @@
 
-/* $Id: ec_gtk.h,v 1.14 2004/09/16 04:16:32 daten Exp $ */
+/* $Id: ec_gtk.h,v 1.18 2004/10/12 21:43:03 daten Exp $ */
 
 #ifndef EC_GTK_H
 #define EC_GTK_H
@@ -8,9 +8,13 @@
 
 #define LOGO_FILE "ettercap.png"
 
+#ifndef GTK_WRAP_WORD_CHAR
+#define GTK_WRAP_WORD_CHAR GTK_WRAP_WORD
+#endif
+
 struct gtk_conf_entry {
    char *name;
-   unsigned short value;
+   short value;
 };
 
 
@@ -31,6 +35,7 @@ extern void gtkui_details_print(GtkTextBuffer *textbuf, char *data);
 extern void gtkui_dialog_enter(GtkWidget *widget, gpointer data);
 extern gboolean gtkui_context_menu(GtkWidget *widget, GdkEventButton *event, gpointer data);
 extern void gtkui_filename_browse(GtkWidget *widget, gpointer data);
+extern char *gtkui_utf8_validate(char *data);
 
 /* MDI pages */
 extern GtkWidget *gtkui_page_new(char *title, void (*callback)(void), void (*detacher)(GtkWidget *));
@@ -105,10 +110,15 @@ extern void gtkui_plugin_load(void);
 extern void gtkui_show_connections(void);
 
 /* ec_gtk_conf.c */
-extern void gtkui_conf_set(char *name, unsigned short value);
-extern unsigned short gtkui_conf_get(char *name);
+extern void gtkui_conf_set(char *name, short value);
+extern short gtkui_conf_get(char *name);
 extern void gtkui_conf_read(void);
 extern void gtkui_conf_save(void);
+
+#ifndef OS_WINDOWS
+/* ec_gtk_help.c */
+extern void gtkui_help(void);
+#endif
 
 #endif
 

@@ -1,5 +1,5 @@
 
-/* $Id: el.h,v 1.22 2004/07/29 09:46:47 alor Exp $ */
+/* $Id: el.h,v 1.24 2004/09/30 16:01:45 alor Exp $ */
 
 #ifndef EL_H
 #define EL_H
@@ -61,6 +61,11 @@
 
 #define LOOP for(;;)
 
+/* file operations */ 
+#ifndef OS_WINDOWS
+   #define O_BINARY  0
+#endif
+
 struct ip_list {
    struct ip_addr ip;
    SLIST_ENTRY(ip_list) next;
@@ -82,6 +87,7 @@ struct globals {
    char analyze:1;
    char no_headers:1;
    char connections:1;
+   char decode:1;
    char showmac:1;
    char showclient:1;
    char only_source:1;

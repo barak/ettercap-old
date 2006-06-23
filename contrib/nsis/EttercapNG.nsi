@@ -17,7 +17,7 @@
 ;   along with this program; if not, write to the Free Software
 ;   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ;
-;   $Id: EttercapNG.nsi,v 1.5 2004/09/17 19:38:38 alor Exp $
+;   $Id: EttercapNG.nsi,v 1.10 2005/01/04 14:30:49 alor Exp $
 ;
 ; NOTE: this .NSI script is designed for NSIS v2.0+
 
@@ -26,9 +26,9 @@
 
 !define VER_MAJOR 0
 !define VER_MINOR 7
-!define VER_REVISION 1
+!define VER_REVISION 3
 
-!define VER_DISPLAY "0.7.1"
+!define VER_DISPLAY "0.7.3"
 
 ;--------------------------------
 ;Include Modern UI
@@ -41,7 +41,7 @@
    ;Name and file
    Name "Ettercap NG"
    Caption "Ettercap ${VER_DISPLAY} Setup"
-   OutFile "ettercap-0.7.1-win.exe"
+   OutFile "ettercap-NG-${VER_DISPLAY}-win32.exe"
 
    ;Default installation folder
    InstallDir "$PROGRAMFILES\EttercapNG"
@@ -65,6 +65,7 @@
    Var MUI_TEMP
    Var STARTMENU_FOLDER
    Var CHECKFAILED
+   Var DOCUMENTATION
    ; window handlers
    Var NEXTBUTTON
    Var BACKBUTTON
@@ -169,14 +170,14 @@ Section "Ettercap NG core" SecCore
    SetOutPath "$INSTDIR\etc\fonts"
    File ..\..\etc\fonts\*
 
-   SetOutPath "$INSTDIR\lib\pango\1.2.0\modules"
-   File ..\..\lib\pango\1.2.0\modules\*
+   SetOutPath "$INSTDIR\lib\pango\1.4.0\modules"
+   File ..\..\lib\pango\1.4.0\modules\*
 
-   SetOutPath "$INSTDIR\\lib\gtk-2.0\2.2.0\engines"
-   File ..\..\lib\gtk-2.0\2.2.0\engines\*
+   SetOutPath "$INSTDIR\\lib\gtk-2.0\2.4.0\engines"
+   File ..\..\lib\gtk-2.0\2.4.0\engines\*
 
-   SetOutPath "$INSTDIR\\lib\gtk-2.0\2.2.0\loaders"
-   File ..\..\lib\gtk-2.0\2.2.0\loaders\*
+   SetOutPath "$INSTDIR\\lib\gtk-2.0\2.4.0\loaders"
+   File ..\..\lib\gtk-2.0\2.4.0\loaders\*
 
 SectionEnd
 
@@ -212,7 +213,9 @@ Section "Documentation" SecDocs
 
    SetOutPath "$INSTDIR\doc"
 
-   ;ADD YOUR OWN FILES HERE...
+   File ..\..\doc\*.pdf
+
+   IntOp $DOCUMENTATION 0 + 1	; remember this for further use
 
 SectionEnd
 
@@ -252,6 +255,29 @@ Section "-Make the uninstaller"
       ;Create shortcuts
       CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER"
       CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\ettercap.lnk" "$INSTDIR\ettercap.exe" "-G"
+      
+      ; the command propmt to use etterfilter and etterlog
+      ReadRegStr $R1 HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows NT\CurrentVersion" "CurrentVersion"
+      StrCpy $9 $R1 1
+      StrCmp $9 '4' 0 win_2000_XP
+      ; Windows NT 4.0
+         CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\ettercap prompt.lnk" "$SYSDIR\command.com" "" 
+         Goto end
+      win_2000_XP:
+         CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\ettercap prompt.lnk" "$SYSDIR\cmd.exe" "" 
+      end:
+      
+      ; links to the documenation
+      IntCmp $DOCUMENTATION 1 0 no_doc
+      CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER\docs"
+         CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\docs\man-ettercap.lnk" "$INSTDIR\doc\ettercap.pdf" 
+         CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\docs\man-ettercap_curses.lnk" "$INSTDIR\doc\ettercap_curses.pdf" 
+         CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\docs\man-ettercap_plugins.lnk" "$INSTDIR\doc\ettercap_plugins.pdf" 
+         CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\docs\man-etterfilter.lnk" "$INSTDIR\doc\etterfilter.pdf" 
+         CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\docs\man-etterlog.lnk" "$INSTDIR\doc\etterlog.pdf" 
+         CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\docs\man-etter.conf.lnk" "$INSTDIR\doc\etter.conf.pdf" 
+      no_doc:
+      
       CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
 
    !insertmacro MUI_STARTMENU_WRITE_END
@@ -431,7 +457,7 @@ Section "Uninstall"
    Delete "$INSTDIR\*.dll"
    Delete "$INSTDIR\ettercapNG-${VER_DISPLAY}_cvs_debug.log"
 
-   RMDir "$INSTDIR\doc"
+   RMDir /r "$INSTDIR\doc"
    RMDir /r "$INSTDIR\lib"
    RMDir /r "$INSTDIR\etc"
    RMDir /r "$INSTDIR\share"
@@ -440,7 +466,10 @@ Section "Uninstall"
    !insertmacro MUI_STARTMENU_GETFOLDER Application $MUI_TEMP
 
    Delete "$SMPROGRAMS\$MUI_TEMP\ettercap.lnk"
+   Delete "$SMPROGRAMS\$MUI_TEMP\ettercap prompt.lnk"
    Delete "$SMPROGRAMS\$MUI_TEMP\Uninstall.lnk"
+   Delete "$SMPROGRAMS\$MUI_TEMP\docs\*"
+   RMDir /r "$SMPROGRAMS\$MUI_TEMP\docs"
 
    ;Delete empty start menu parent diretories
    StrCpy $MUI_TEMP "$SMPROGRAMS\$MUI_TEMP"

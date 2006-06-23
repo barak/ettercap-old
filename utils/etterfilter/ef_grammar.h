@@ -1,7 +1,7 @@
-/* A Bison parser, made by GNU Bison 1.875.  */
+/* A Bison parser, made by GNU Bison 1.875d.  */
 
 /* Skeleton parser for Yacc-like parsing with Bison,
-   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -39,26 +39,28 @@
      TOKEN_OP_AND = 265,
      TOKEN_OP_OR = 266,
      TOKEN_OP_ASSIGN = 267,
-     TOKEN_OP_CMP_NEQ = 268,
-     TOKEN_OP_CMP_EQ = 269,
-     TOKEN_OP_CMP_LT = 270,
-     TOKEN_OP_CMP_GT = 271,
-     TOKEN_OP_CMP_LEQ = 272,
-     TOKEN_OP_CMP_GEQ = 273,
-     TOKEN_OP_END = 274,
-     TOKEN_PAR_OPEN = 275,
-     TOKEN_PAR_CLOSE = 276,
-     TOKEN_BLK_BEGIN = 277,
-     TOKEN_BLK_END = 278,
-     TOKEN_UNKNOWN = 279,
-     TOKEN_OP_ADD = 280,
-     TOKEN_OP_SUB = 281,
-     TOKEN_OP_DIV = 282,
-     TOKEN_OP_MUL = 283,
-     TOKEN_UMINUS = 284,
-     TOKET_OP_AND = 285,
-     TOKET_OP_OR = 286,
-     TOKET_OP_NOT = 287
+     TOKEN_OP_INC = 268,
+     TOKEN_OP_DEC = 269,
+     TOKEN_OP_CMP_NEQ = 270,
+     TOKEN_OP_CMP_EQ = 271,
+     TOKEN_OP_CMP_LT = 272,
+     TOKEN_OP_CMP_GT = 273,
+     TOKEN_OP_CMP_LEQ = 274,
+     TOKEN_OP_CMP_GEQ = 275,
+     TOKEN_OP_END = 276,
+     TOKEN_PAR_OPEN = 277,
+     TOKEN_PAR_CLOSE = 278,
+     TOKEN_BLK_BEGIN = 279,
+     TOKEN_BLK_END = 280,
+     TOKEN_UNKNOWN = 281,
+     TOKEN_OP_ADD = 282,
+     TOKEN_OP_SUB = 283,
+     TOKEN_OP_DIV = 284,
+     TOKEN_OP_MUL = 285,
+     TOKEN_UMINUS = 286,
+     TOKET_OP_AND = 287,
+     TOKET_OP_OR = 288,
+     TOKET_OP_NOT = 289
    };
 #endif
 #define TOKEN_EOL 258
@@ -71,26 +73,28 @@
 #define TOKEN_OP_AND 265
 #define TOKEN_OP_OR 266
 #define TOKEN_OP_ASSIGN 267
-#define TOKEN_OP_CMP_NEQ 268
-#define TOKEN_OP_CMP_EQ 269
-#define TOKEN_OP_CMP_LT 270
-#define TOKEN_OP_CMP_GT 271
-#define TOKEN_OP_CMP_LEQ 272
-#define TOKEN_OP_CMP_GEQ 273
-#define TOKEN_OP_END 274
-#define TOKEN_PAR_OPEN 275
-#define TOKEN_PAR_CLOSE 276
-#define TOKEN_BLK_BEGIN 277
-#define TOKEN_BLK_END 278
-#define TOKEN_UNKNOWN 279
-#define TOKEN_OP_ADD 280
-#define TOKEN_OP_SUB 281
-#define TOKEN_OP_DIV 282
-#define TOKEN_OP_MUL 283
-#define TOKEN_UMINUS 284
-#define TOKET_OP_AND 285
-#define TOKET_OP_OR 286
-#define TOKET_OP_NOT 287
+#define TOKEN_OP_INC 268
+#define TOKEN_OP_DEC 269
+#define TOKEN_OP_CMP_NEQ 270
+#define TOKEN_OP_CMP_EQ 271
+#define TOKEN_OP_CMP_LT 272
+#define TOKEN_OP_CMP_GT 273
+#define TOKEN_OP_CMP_LEQ 274
+#define TOKEN_OP_CMP_GEQ 275
+#define TOKEN_OP_END 276
+#define TOKEN_PAR_OPEN 277
+#define TOKEN_PAR_CLOSE 278
+#define TOKEN_BLK_BEGIN 279
+#define TOKEN_BLK_END 280
+#define TOKEN_UNKNOWN 281
+#define TOKEN_OP_ADD 282
+#define TOKEN_OP_SUB 283
+#define TOKEN_OP_DIV 284
+#define TOKEN_OP_MUL 285
+#define TOKEN_UMINUS 286
+#define TOKET_OP_AND 287
+#define TOKET_OP_OR 288
+#define TOKET_OP_NOT 289
 
 
 
@@ -106,8 +110,8 @@ typedef union YYSTYPE {
    struct ifblock *ifb;
    struct condition *cnd;
 } YYSTYPE;
-/* Line 1240 of yacc.c.  */
-#line 110 "y.tab.h"
+/* Line 1285 of yacc.c.  */
+#line 115 "ef_grammar.h"
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 # define YYSTYPE_IS_TRIVIAL 1

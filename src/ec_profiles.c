@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_profiles.c,v 1.40 2004/07/01 20:45:43 alor Exp $
+    $Id: ec_profiles.c,v 1.43 2004/12/21 20:27:15 alor Exp $
 */
 
 #include <ec.h>
@@ -184,7 +184,7 @@ static int profile_add_host(struct packet_object *po)
    TAILQ_FOREACH(h, &GBL_PROFILES, next) {
       /* an host is identified by the mac and the ip address */
       /* if the mac address is null also update it since it could
-       * be captured as a DNS packet specifying the GW 
+       * be captured as a DHCP packet specifying the GW 
        */
       if ((!memcmp(h->L2_addr, po->L2.src, MEDIA_ADDR_LEN) ||
            !memcmp(po->L2.src, "\x00\x00\x00\x00\x00\x00", MEDIA_ADDR_LEN) ) &&
@@ -200,7 +200,7 @@ static int profile_add_host(struct packet_object *po)
   
    PROFILE_UNLOCK;
   
-   DEBUG_MSG("profile_add_host");
+   DEBUG_MSG("profile_add_host %x", ip_addr_to_int32(&po->L3.src.addr));
    
    /* 
     * the host was not found, create a new entry 
@@ -668,6 +668,11 @@ int profile_dump_to_file(char *filename)
       
       /* log for each host */
       log_write_info_arp_icmp(&fd, &po);
+      
+      /* log the info. needed to record the fingerprint.
+       * the above function will not log it 
+       */
+      log_write_info(&fd, &po);
       
       LIST_FOREACH(o, &(h->open_ports_head), next) {
          

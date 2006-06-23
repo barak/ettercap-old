@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_filter.c,v 1.54 2004/09/17 19:38:39 alor Exp $
+    $Id: ec_filter.c,v 1.57 2005/01/04 14:30:49 alor Exp $
 */
 
 #include <ec.h>
@@ -26,13 +26,6 @@
 #include <ec_threads.h>
 #include <ec_send.h>
 
-#ifndef OS_WINDOWS
-   /* 
-    * mmap is not available under windows. it is implemented
-    * int ec_os_mingw.c
-    */
-   #include <sys/mman.h>
-#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -40,13 +33,6 @@
 #include <regex.h>
 #ifdef HAVE_PCRE
    #include <pcre.h>
-#endif
-
-#ifndef O_BINARY
-   /* usually this is defined only under windows. so let do nothing
-    * if we are compiling under a different platform
-    */
-   #define O_BINARY  0
 #endif
 
 
@@ -66,6 +52,7 @@ static int compile_regex(struct filter_env *fenv, struct filter_header *fh);
 int filter_engine(struct filter_op *fop, struct packet_object *po);
 static int execute_test(struct filter_op *fop, struct packet_object *po);
 static int execute_assign(struct filter_op *fop, struct packet_object *po);
+static int execute_incdec(struct filter_op *fop, struct packet_object *po);
 static int execute_func(struct filter_op *fop, struct packet_object *po);
 
 static int func_search(struct filter_op *fop, struct packet_object *po);
@@ -117,7 +104,15 @@ int filter_engine(struct filter_op *fop, struct packet_object *po)
             
          case FOP_ASSIGN:
             execute_assign(&fop[eip], po);
-            /* assignment always return true */
+            /* assignment always returns true */
+            flags |= FLAG_TRUE;
+            
+            break;
+            
+         case FOP_INC:
+         case FOP_DEC:
+            execute_incdec(&fop[eip], po);
+            /* inc/dec always return true */
             flags |= FLAG_TRUE;
             
             break;
@@ -280,7 +275,7 @@ static int execute_test(struct filter_op *fop, struct packet_object *po)
          break;
    }
 
-   /* se the pointer to the comparison function */
+   /* set the pointer to the comparison function */
    switch(fop->op.test.op) {
       case FTEST_EQ:
          cmp_func = &cmp_eq;
@@ -393,6 +388,74 @@ static int execute_assign(struct filter_op *fop, struct packet_object *po)
          break;
       default:
          JIT_FAULT("unsupported assign size [%d]", fop->op.assign.size);
+         break;
+   }
+      
+   /* mark the packet as modified */
+   po->flags |= PO_MODIFIED;
+
+   return FLAG_TRUE;
+}
+
+/* 
+ * make an increment or decrement.
+ */
+static int execute_incdec(struct filter_op *fop, struct packet_object *po)
+{
+   /* initialize to the beginning of the packet */
+   u_char *base = po->L2.header;
+
+   /* check the offensiveness */
+   if (GBL_OPTIONS->unoffensive)
+      JIT_FAULT("Cannot modify packets in unoffensive mode");
+   
+   DEBUG_MSG("filter engine: execute_incdec: L%d O%d S%d", fop->op.assign.level, fop->op.assign.offset, fop->op.assign.size);
+   
+   /* 
+    * point to the right base.
+    */
+   switch (fop->op.assign.level) {
+      case 2:
+         base = po->L2.header;
+         break;
+      case 3:
+         base = po->L3.header;
+         break;
+      case 4:
+         base = po->L4.header;
+         break;
+      case 5:
+         base = po->DATA.data;
+         break;
+      default:
+         JIT_FAULT("unsupported inc/dec level [%d]", fop->op.assign.level);
+         break;
+   }
+
+   /* 
+    * inc/dec the value with the proper size.
+    */
+   switch (fop->op.assign.size) {
+      case 1:
+         if (fop->opcode == FOP_INC) 
+            *(u_int8 *)(base + fop->op.assign.offset) += (fop->op.assign.value & 0xff);
+         else
+            *(u_int8 *)(base + fop->op.assign.offset) -= (fop->op.assign.value & 0xff);
+         break;
+      case 2:
+         if (fop->opcode == FOP_INC) 
+            *(u_int16 *)(base + fop->op.assign.offset) += ntohs(fop->op.assign.value & 0xffff); 
+         else
+            *(u_int16 *)(base + fop->op.assign.offset) -= ntohs(fop->op.assign.value & 0xffff); 
+         break;
+      case 4:
+         if (fop->opcode == FOP_INC) 
+            *(u_int32 *)(base + fop->op.assign.offset) += ntohl(fop->op.assign.value & 0xffffffff);
+         else
+            *(u_int32 *)(base + fop->op.assign.offset) -= ntohl(fop->op.assign.value & 0xffffffff);
+         break;
+      default:
+         JIT_FAULT("unsupported inc/dec size [%d]", fop->op.assign.size);
          break;
    }
       
@@ -631,7 +694,7 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
 {
    int fd;
    void *file;
-   size_t size;
+   size_t size, ret;
    
    /* check the offensiveness */
    if (GBL_OPTIONS->unoffensive)
@@ -650,9 +713,17 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
    size = lseek(fd, 0, SEEK_END);
 
    /* load the file in memory */
-   file = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
-   if (file == MAP_FAILED) 
-      JIT_FAULT("Cannot mmap file");
+   SAFE_CALLOC(file, size, sizeof(char));
+ 
+   /* rewind the pointer */
+   lseek(fd, 0, SEEK_SET);
+   
+   ret = read(fd, file, size);
+   
+   close(fd);
+
+   if (ret != size)
+      FATAL_MSG("Cannot read the file into memory");
  
    /* check if we are overflowing pcap buffer */
    if(GBL_PCAP->snaplen - (po->L4.header - (po->packet + po->L2.len) + po->L4.len) <= po->DATA.len + size)
@@ -673,8 +744,7 @@ static int func_inject(struct filter_op *fop, struct packet_object *po)
       po->flags ^= PO_DROPPED;
 
    /* close and unmap the file */
-   close(fd);
-   munmap(file, size);
+   SAFE_FREE(file);
    
    return ESUCCESS;
 }
@@ -858,7 +928,7 @@ int filter_load_file(char *filename, struct filter_env *fenv)
 {
    int fd;
    void *file;
-   size_t size;
+   size_t size, ret;
    struct filter_header fh;
 
    DEBUG_MSG("filter_load_file (%s)", filename);
@@ -882,16 +952,18 @@ int filter_load_file(char *filename, struct filter_env *fenv)
    /* get the size */
    size = lseek(fd, 0, SEEK_END);
 
-   /* 
-    * load the file in memory 
-    * skipping the initial header
-    */
-   file = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-   if (file == MAP_FAILED)
-      FATAL_MSG("Cannot mmap file");
+   /* load the file in memory */
+   SAFE_CALLOC(file, size, sizeof(char));
+ 
+   /* rewind the pointer */
+   lseek(fd, 0, SEEK_SET);
    
-   /* the mmap will remain active even if we close the fd */
+   ret = read(fd, file, size);
+   
    close(fd);
+   
+   if (ret != size)
+      FATAL_MSG("Cannot read the file into memory");
 
    /* make sure we don't override a previous filter */
    filter_unload(fenv);
@@ -958,8 +1030,8 @@ void filter_unload(struct filter_env *fenv)
       i++;
    }
    
-   /* unmap the memory area (from file) */
-   munmap(fenv->map, fenv->len + sizeof(struct filter_header)); 
+   /* free the memory region containing the file */
+   SAFE_FREE(fenv->map);
 
    /* wipe the pointer */
    fenv->map = NULL;

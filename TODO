@@ -4,15 +4,28 @@
 
 >>> things to be fixed
    
-   + FIXING
-      - remove GBL_OPTIONS->quiet from some plugins
+   + remove GBL_OPTIONS->quiet from some plugins
 
    + PCAP RELATED
       - pcap_stat fix (even under linux the stats are cumulative)
 
+   + refresh the host list after the scan
+
+   + libnet_write under windows
+
+   http://ettercap.sourceforge.net/forum/viewtopic.php?p=13789#13789
+
 ============================
   In the next release(s)
 ============================
+   
+   + ETTERLOG
+      - reassemble the stream based on sequence numbers
+      - extractors for HTTP, POP, SMTP, FTP, TFTP
+
+   + resolve ip in the message window
+
+   + use different counters for RX and TX bytes in the connection table
 
    + record the MSS for the packet splitting
 
@@ -29,11 +42,6 @@
       - png output (ala nagios)
 
    + BINDER
- 
-   + ETTERLOG
-      - extract files from streams looking for mime content or protocol
-      - stream functions
-      - extractors for each protocol
 
    + ETTERFILTER
       - possibility to set flags in scripts 

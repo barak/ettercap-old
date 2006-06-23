@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_menus.c,v 1.11 2004/09/16 04:16:32 daten Exp $
+    $Id: ec_gtk_menus.c,v 1.13 2004/12/21 11:24:02 alor Exp $
 */
 
 #include <ec.h>
@@ -61,7 +61,7 @@ GtkItemFactoryEntry gmenu_view[] = {
    {"/View/sep1",                    NULL, NULL,                   0, "<Separator>" },
    {"/View/Resolve IP addresses",    NULL, toggle_resolve,         0, "<ToggleItem>" },
    {"/View/_Visualization method...", "v", gtkui_vis_method,       0, "<StockItem>", GTK_STOCK_PREFERENCES },
-   {"/View/Visualization _regex...",  "r", gtkui_vis_regex,        0, "<StockItem>", GTK_STOCK_FIND },
+   {"/View/Visualization _regex...",  "R", gtkui_vis_regex,        0, "<StockItem>", GTK_STOCK_FIND },
    {"/View/sep1",                    NULL, NULL,                   0, "<Separator>" },
    {"/View/Set the _WEP key...",      "w", gtkui_wep_key,          0, "<StockItem>", GTK_STOCK_FIND }
 };
@@ -99,6 +99,13 @@ GtkItemFactoryEntry gmenu_plugins[] = {
    {"/Plugins/Manage the plugins", "<control>p", gtkui_plugin_mgmt, 0, "<StockItem>", GTK_STOCK_EXECUTE },
    {"/Plugins/Load a plugin...",   NULL,         gtkui_plugin_load, 0, "<StockItem>", GTK_STOCK_OPEN }
 };
+
+#ifndef OS_WINDOWS
+GtkItemFactoryEntry gmenu_help[] = {
+   {"/_Help",                   NULL,         NULL,              0, "<Branch>" },
+   {"/Help/Contents", " ", gtkui_help, 0, "<StockItem>", GTK_STOCK_HELP }
+};
+#endif
 
 GtkItemFactoryEntry tab_menu[] = {
   { "/Detach page",    "<control>D", gtkui_page_detach_current, 0, "<StockItem>", GTK_STOCK_GO_UP },
@@ -172,6 +179,12 @@ void gtkui_create_menu(int live)
       num_items = sizeof (gmenu_plugins) / sizeof (gmenu_plugins[0]);
       gtk_item_factory_create_items (root_menu, num_items, gmenu_plugins, NULL);
    }
+#endif
+
+#ifndef OS_WINDOWS
+   /* Help Menu */
+   num_items = sizeof (gmenu_help) / sizeof (gmenu_help[0]);
+   gtk_item_factory_create_items (root_menu, num_items, gmenu_help, NULL);
 #endif
 
    if(GBL_OPTIONS->reversed) {

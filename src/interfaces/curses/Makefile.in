@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-# $Id: Makefile.am,v 1.10 2004/02/22 12:00:53 alor Exp $
+# $Id: Makefile.am,v 1.11 2004/10/12 14:27:28 alor Exp $
 
 
 SOURCES = $(libec_curses_a_SOURCES)
@@ -57,6 +57,7 @@ libec_curses_a_AR = $(AR) $(ARFLAGS)
 libec_curses_a_LIBADD =
 am_libec_curses_a_OBJECTS = libec_curses_a-ec_curses.$(OBJEXT) \
 	libec_curses_a-ec_curses_filters.$(OBJEXT) \
+	libec_curses_a-ec_curses_help.$(OBJEXT) \
 	libec_curses_a-ec_curses_hosts.$(OBJEXT) \
 	libec_curses_a-ec_curses_live.$(OBJEXT) \
 	libec_curses_a-ec_curses_logging.$(OBJEXT) \
@@ -74,6 +75,7 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/libec_curses_a-ec_curses.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libec_curses_a-ec_curses_filters.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/libec_curses_a-ec_curses_help.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libec_curses_a-ec_curses_hosts.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libec_curses_a-ec_curses_live.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libec_curses_a-ec_curses_logging.Po \
@@ -185,6 +187,8 @@ MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
 MINGW_FALSE = @MINGW_FALSE@
 MINGW_TRUE = @MINGW_TRUE@
+MISSING_BASENAME_FALSE = @MISSING_BASENAME_FALSE@
+MISSING_BASENAME_TRUE = @MISSING_BASENAME_TRUE@
 MISSING_GETOPT_LONG_FALSE = @MISSING_GETOPT_LONG_FALSE@
 MISSING_GETOPT_LONG_TRUE = @MISSING_GETOPT_LONG_TRUE@
 MISSING_INET_ATON_FALSE = @MISSING_INET_ATON_FALSE@
@@ -249,6 +253,7 @@ ac_ct_F77 = @ac_ct_F77@
 ac_ct_OBJDUMP = @ac_ct_OBJDUMP@
 ac_ct_RANLIB = @ac_ct_RANLIB@
 ac_ct_STRIP = @ac_ct_STRIP@
+ac_pt_PKG_CONFIG = @ac_pt_PKG_CONFIG@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -292,6 +297,7 @@ noinst_LIBRARIES = libec_curses.a
 libec_curses_a_CFLAGS = @EC_CFLAGS@ @NCURSINC@ -Iwidgets
 libec_curses_a_SOURCES = ec_curses.c \
                          ec_curses_filters.c \
+                         ec_curses_help.c \
                          ec_curses_hosts.c \
                          ec_curses_live.c \
                          ec_curses_logging.c \
@@ -353,6 +359,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libec_curses_a-ec_curses.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libec_curses_a-ec_curses_filters.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libec_curses_a-ec_curses_help.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libec_curses_a-ec_curses_hosts.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libec_curses_a-ec_curses_live.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libec_curses_a-ec_curses_logging.Po@am__quote@
@@ -436,6 +443,30 @@ libec_curses_a-ec_curses_filters.lo: ec_curses_filters.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/libec_curses_a-ec_curses_filters.Plo' tmpdepfile='$(DEPDIR)/libec_curses_a-ec_curses_filters.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libec_curses_a_CFLAGS) $(CFLAGS) -c -o libec_curses_a-ec_curses_filters.lo `test -f 'ec_curses_filters.c' || echo '$(srcdir)/'`ec_curses_filters.c
+
+libec_curses_a-ec_curses_help.o: ec_curses_help.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libec_curses_a_CFLAGS) $(CFLAGS) -MT libec_curses_a-ec_curses_help.o -MD -MP -MF "$(DEPDIR)/libec_curses_a-ec_curses_help.Tpo" -c -o libec_curses_a-ec_curses_help.o `test -f 'ec_curses_help.c' || echo '$(srcdir)/'`ec_curses_help.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libec_curses_a-ec_curses_help.Tpo" "$(DEPDIR)/libec_curses_a-ec_curses_help.Po"; else rm -f "$(DEPDIR)/libec_curses_a-ec_curses_help.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='ec_curses_help.c' object='libec_curses_a-ec_curses_help.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/libec_curses_a-ec_curses_help.Po' tmpdepfile='$(DEPDIR)/libec_curses_a-ec_curses_help.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libec_curses_a_CFLAGS) $(CFLAGS) -c -o libec_curses_a-ec_curses_help.o `test -f 'ec_curses_help.c' || echo '$(srcdir)/'`ec_curses_help.c
+
+libec_curses_a-ec_curses_help.obj: ec_curses_help.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libec_curses_a_CFLAGS) $(CFLAGS) -MT libec_curses_a-ec_curses_help.obj -MD -MP -MF "$(DEPDIR)/libec_curses_a-ec_curses_help.Tpo" -c -o libec_curses_a-ec_curses_help.obj `if test -f 'ec_curses_help.c'; then $(CYGPATH_W) 'ec_curses_help.c'; else $(CYGPATH_W) '$(srcdir)/ec_curses_help.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libec_curses_a-ec_curses_help.Tpo" "$(DEPDIR)/libec_curses_a-ec_curses_help.Po"; else rm -f "$(DEPDIR)/libec_curses_a-ec_curses_help.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='ec_curses_help.c' object='libec_curses_a-ec_curses_help.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/libec_curses_a-ec_curses_help.Po' tmpdepfile='$(DEPDIR)/libec_curses_a-ec_curses_help.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libec_curses_a_CFLAGS) $(CFLAGS) -c -o libec_curses_a-ec_curses_help.obj `if test -f 'ec_curses_help.c'; then $(CYGPATH_W) 'ec_curses_help.c'; else $(CYGPATH_W) '$(srcdir)/ec_curses_help.c'; fi`
+
+libec_curses_a-ec_curses_help.lo: ec_curses_help.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libec_curses_a_CFLAGS) $(CFLAGS) -MT libec_curses_a-ec_curses_help.lo -MD -MP -MF "$(DEPDIR)/libec_curses_a-ec_curses_help.Tpo" -c -o libec_curses_a-ec_curses_help.lo `test -f 'ec_curses_help.c' || echo '$(srcdir)/'`ec_curses_help.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libec_curses_a-ec_curses_help.Tpo" "$(DEPDIR)/libec_curses_a-ec_curses_help.Plo"; else rm -f "$(DEPDIR)/libec_curses_a-ec_curses_help.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='ec_curses_help.c' object='libec_curses_a-ec_curses_help.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/libec_curses_a-ec_curses_help.Plo' tmpdepfile='$(DEPDIR)/libec_curses_a-ec_curses_help.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libec_curses_a_CFLAGS) $(CFLAGS) -c -o libec_curses_a-ec_curses_help.lo `test -f 'ec_curses_help.c' || echo '$(srcdir)/'`ec_curses_help.c
 
 libec_curses_a-ec_curses_hosts.o: ec_curses_hosts.c
 @am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libec_curses_a_CFLAGS) $(CFLAGS) -MT libec_curses_a-ec_curses_hosts.o -MD -MP -MF "$(DEPDIR)/libec_curses_a-ec_curses_hosts.Tpo" -c -o libec_curses_a-ec_curses_hosts.o `test -f 'ec_curses_hosts.c' || echo '$(srcdir)/'`ec_curses_hosts.c; \

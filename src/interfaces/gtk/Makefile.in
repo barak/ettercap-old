@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-# $Id: Makefile.am,v 1.3 2004/09/16 04:16:32 daten Exp $
+# $Id: Makefile.am,v 1.4 2004/10/12 21:43:03 daten Exp $
 
 
 SOURCES = $(libec_gtk_a_SOURCES)
@@ -69,7 +69,8 @@ am_libec_gtk_a_OBJECTS = libec_gtk_a-ec_gtk.$(OBJEXT) \
 	libec_gtk_a-ec_gtk_view.$(OBJEXT) \
 	libec_gtk_a-ec_gtk_view_connections.$(OBJEXT) \
 	libec_gtk_a-ec_gtk_view_profiles.$(OBJEXT) \
-	libec_gtk_a-ec_gtk_conf.$(OBJEXT)
+	libec_gtk_a-ec_gtk_conf.$(OBJEXT) \
+	libec_gtk_a-ec_gtk_help.$(OBJEXT)
 libec_gtk_a_OBJECTS = $(am_libec_gtk_a_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -77,6 +78,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/libec_gtk_a-ec_gtk.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libec_gtk_a-ec_gtk_conf.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libec_gtk_a-ec_gtk_filters.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/libec_gtk_a-ec_gtk_help.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libec_gtk_a-ec_gtk_hosts.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libec_gtk_a-ec_gtk_live.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/libec_gtk_a-ec_gtk_logging.Po \
@@ -182,6 +184,8 @@ MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
 MINGW_FALSE = @MINGW_FALSE@
 MINGW_TRUE = @MINGW_TRUE@
+MISSING_BASENAME_FALSE = @MISSING_BASENAME_FALSE@
+MISSING_BASENAME_TRUE = @MISSING_BASENAME_TRUE@
 MISSING_GETOPT_LONG_FALSE = @MISSING_GETOPT_LONG_FALSE@
 MISSING_GETOPT_LONG_TRUE = @MISSING_GETOPT_LONG_TRUE@
 MISSING_INET_ATON_FALSE = @MISSING_INET_ATON_FALSE@
@@ -246,6 +250,7 @@ ac_ct_F77 = @ac_ct_F77@
 ac_ct_OBJDUMP = @ac_ct_OBJDUMP@
 ac_ct_RANLIB = @ac_ct_RANLIB@
 ac_ct_STRIP = @ac_ct_STRIP@
+ac_pt_PKG_CONFIG = @ac_pt_PKG_CONFIG@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -286,7 +291,7 @@ DISTCLEANFILES = *~
 noinst_HEADERS = ec_gtk.h
 noinst_LIBRARIES = libec_gtk.a
 libec_gtk_a_CFLAGS = @EC_CFLAGS@ @GTK_CFLAGS@ 
-libec_gtk_a_SOURCES = ec_gtk.c ec_gtk_filters.c ec_gtk_hosts.c ec_gtk_live.c ec_gtk_logging.c ec_gtk_menus.c ec_gtk_mitm.c ec_gtk_offline.c ec_gtk_plugins.c ec_gtk_start.c ec_gtk_targets.c ec_gtk_view.c ec_gtk_view_connections.c ec_gtk_view_profiles.c ec_gtk_conf.c
+libec_gtk_a_SOURCES = ec_gtk.c ec_gtk_filters.c ec_gtk_hosts.c ec_gtk_live.c ec_gtk_logging.c ec_gtk_menus.c ec_gtk_mitm.c ec_gtk_offline.c ec_gtk_plugins.c ec_gtk_start.c ec_gtk_targets.c ec_gtk_view.c ec_gtk_view_connections.c ec_gtk_view_profiles.c ec_gtk_conf.c ec_gtk_help.c
 all: all-am
 
 .SUFFIXES:
@@ -337,6 +342,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libec_gtk_a-ec_gtk.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libec_gtk_a-ec_gtk_conf.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libec_gtk_a-ec_gtk_filters.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libec_gtk_a-ec_gtk_help.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libec_gtk_a-ec_gtk_hosts.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libec_gtk_a-ec_gtk_live.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libec_gtk_a-ec_gtk_logging.Po@am__quote@
@@ -733,6 +739,30 @@ libec_gtk_a-ec_gtk_conf.lo: ec_gtk_conf.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/libec_gtk_a-ec_gtk_conf.Plo' tmpdepfile='$(DEPDIR)/libec_gtk_a-ec_gtk_conf.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libec_gtk_a_CFLAGS) $(CFLAGS) -c -o libec_gtk_a-ec_gtk_conf.lo `test -f 'ec_gtk_conf.c' || echo '$(srcdir)/'`ec_gtk_conf.c
+
+libec_gtk_a-ec_gtk_help.o: ec_gtk_help.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libec_gtk_a_CFLAGS) $(CFLAGS) -MT libec_gtk_a-ec_gtk_help.o -MD -MP -MF "$(DEPDIR)/libec_gtk_a-ec_gtk_help.Tpo" -c -o libec_gtk_a-ec_gtk_help.o `test -f 'ec_gtk_help.c' || echo '$(srcdir)/'`ec_gtk_help.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libec_gtk_a-ec_gtk_help.Tpo" "$(DEPDIR)/libec_gtk_a-ec_gtk_help.Po"; else rm -f "$(DEPDIR)/libec_gtk_a-ec_gtk_help.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='ec_gtk_help.c' object='libec_gtk_a-ec_gtk_help.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/libec_gtk_a-ec_gtk_help.Po' tmpdepfile='$(DEPDIR)/libec_gtk_a-ec_gtk_help.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libec_gtk_a_CFLAGS) $(CFLAGS) -c -o libec_gtk_a-ec_gtk_help.o `test -f 'ec_gtk_help.c' || echo '$(srcdir)/'`ec_gtk_help.c
+
+libec_gtk_a-ec_gtk_help.obj: ec_gtk_help.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libec_gtk_a_CFLAGS) $(CFLAGS) -MT libec_gtk_a-ec_gtk_help.obj -MD -MP -MF "$(DEPDIR)/libec_gtk_a-ec_gtk_help.Tpo" -c -o libec_gtk_a-ec_gtk_help.obj `if test -f 'ec_gtk_help.c'; then $(CYGPATH_W) 'ec_gtk_help.c'; else $(CYGPATH_W) '$(srcdir)/ec_gtk_help.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libec_gtk_a-ec_gtk_help.Tpo" "$(DEPDIR)/libec_gtk_a-ec_gtk_help.Po"; else rm -f "$(DEPDIR)/libec_gtk_a-ec_gtk_help.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='ec_gtk_help.c' object='libec_gtk_a-ec_gtk_help.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/libec_gtk_a-ec_gtk_help.Po' tmpdepfile='$(DEPDIR)/libec_gtk_a-ec_gtk_help.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libec_gtk_a_CFLAGS) $(CFLAGS) -c -o libec_gtk_a-ec_gtk_help.obj `if test -f 'ec_gtk_help.c'; then $(CYGPATH_W) 'ec_gtk_help.c'; else $(CYGPATH_W) '$(srcdir)/ec_gtk_help.c'; fi`
+
+libec_gtk_a-ec_gtk_help.lo: ec_gtk_help.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libec_gtk_a_CFLAGS) $(CFLAGS) -MT libec_gtk_a-ec_gtk_help.lo -MD -MP -MF "$(DEPDIR)/libec_gtk_a-ec_gtk_help.Tpo" -c -o libec_gtk_a-ec_gtk_help.lo `test -f 'ec_gtk_help.c' || echo '$(srcdir)/'`ec_gtk_help.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libec_gtk_a-ec_gtk_help.Tpo" "$(DEPDIR)/libec_gtk_a-ec_gtk_help.Plo"; else rm -f "$(DEPDIR)/libec_gtk_a-ec_gtk_help.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='ec_gtk_help.c' object='libec_gtk_a-ec_gtk_help.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/libec_gtk_a-ec_gtk_help.Plo' tmpdepfile='$(DEPDIR)/libec_gtk_a-ec_gtk_help.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libec_gtk_a_CFLAGS) $(CFLAGS) -c -o libec_gtk_a-ec_gtk_help.lo `test -f 'ec_gtk_help.c' || echo '$(srcdir)/'`ec_gtk_help.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_arp_poisoning.c,v 1.28 2004/07/28 08:06:31 alor Exp $
+    $Id: ec_arp_poisoning.c,v 1.31 2004/11/04 09:23:00 alor Exp $
 */
 
 #include <ec.h>
@@ -104,6 +104,10 @@ static int arp_poisoning_start(char *args)
    if (GBL_PCAP->dlt != IL_TYPE_ETH && GBL_PCAP->dlt != IL_TYPE_TR && GBL_PCAP->dlt != IL_TYPE_FDDI)
       SEMIFATAL_ERROR("ARP poisoning does not support this media.\n");
    
+   /* we need the host list */
+   if (LIST_EMPTY(&GBL_HOSTLIST))
+      SEMIFATAL_ERROR("ARP poisoning needs a non empty hosts list.\n");
+   
    /* wipe the previous lists */
    LIST_FOREACH_SAFE(g, &arp_group_one, next, tmp) {
       LIST_REMOVE(g, next);
@@ -114,7 +118,7 @@ static int arp_poisoning_start(char *args)
       LIST_REMOVE(g, next);
       SAFE_FREE(g);
    }
-
+   
    /* create the list used later to poison the targets */
    if (GBL_OPTIONS->silent && !GBL_OPTIONS->load_hosts)
       ret = create_silent_list();
@@ -147,7 +151,7 @@ static void arp_poisoning_stop(void)
    pid = ec_thread_getpid("arp_poisoner");
    
    /* the thread is active or not ? */
-   if (pid != 0)
+   if (!pthread_equal(pid, EC_PTHREAD_NULL))
       ec_thread_destroy(pid);
    else
       return;
@@ -210,6 +214,8 @@ static void arp_poisoning_stop(void)
       SAFE_FREE(h);
    }
 
+   /* reset the remote flag */
+   GBL_OPTIONS->remote = 0;
 }
 
 
