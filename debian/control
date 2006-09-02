@@ -2,7 +2,7 @@ Source: ettercap
 Section: net
 Priority: optional
 Maintainer: Murat Demirten <murat@debian.org>
-Build-Depends: debhelper (>> 3.0.0), autoconf, automake, libncurses-dev, libgtk2.0-dev, libltdl3-dev, libssl0.9.7, libssl-dev, libpcap0.8-dev, libnet1-dev, libpcre3-dev 
+Build-Depends: debhelper (>> 3.0.0), autoconf, libncurses-dev, libgtk2.0-dev, libltdl3-dev, libssl0.9.7, libssl-dev, libpcap0.8-dev, libnet1-dev, libpcre3-dev 
 Standards-Version: 3.6.1.0
 
 Package: ettercap-common

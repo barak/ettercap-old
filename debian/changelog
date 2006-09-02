@@ -1,3 +1,10 @@
+ettercap (1:0.7.3-1.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Remove the unneccesary Build-Depends on automake. (Closes: #376621)
+
+ -- Eric Dorland <eric@debian.org>  Sat,  2 Sep 2006 18:52:51 -0400
+
 ettercap (1:0.7.3-1) unstable; urgency=low
 
   * New upstream release (Closes: #270978 #156770 #312226 #205624)
@@ -103,6 +110,4 @@ ettercap (0.6.3.1-1) unstable; urgency=low
  -- Murat Demirten <murat@debian.org>  Wed, 19 Dec 2001 13:08:46 +0200
 
 
-Local variables:
-mode: debian-changelog
-End:
+
