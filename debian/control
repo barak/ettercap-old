@@ -2,8 +2,8 @@ Source: ettercap
 Section: net
 Priority: optional
 Maintainer: Murat Demirten <murat@debian.org>
-Build-Depends: debhelper (>> 3.0.0), autoconf, libncurses-dev, libgtk2.0-dev, libltdl3-dev, libssl0.9.7, libssl-dev, libpcap0.8-dev, libnet1-dev, libpcre3-dev 
-Standards-Version: 3.6.1.0
+Build-Depends: debhelper (>> 5), autoconf, libncurses-dev, libgtk2.0-dev, libltdl3-dev, libssl0.9.8, libssl-dev, libpcap0.8-dev, libnet1-dev, libpcre3-dev 
+Standards-Version: 3.7.2
 
 Package: ettercap-common
 Architecture: any
@@ -16,7 +16,7 @@ Description: Common support files and plugins for ettercap
 
 Package: ettercap
 Architecture: any
-Depends: ${shlibs:Depends}, ettercap-common (= ${Source-Version}), debconf
+Depends: ${shlibs:Depends}, ettercap-common (= ${Source-Version})
 Replaces: ettercap-gtk
 Conflicts: ettercap-gtk
 Description: Multipurpose sniffer/interceptor/logger for switched LAN

@@ -1,3 +1,14 @@
+ettercap (1:0.7.3-1.2) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Removed debconf dependency since this program does not use debconf.
+    (Closes: #331818)
+  * Updated dependency on libssl to libssl0.9.8. (Closes: #333637)
+  * Bumped compat to 5.
+  * Bumped Standards-Version to 3.7.2, no changes required. 
+
+ -- Ana Beatriz Guerrero Lopez <ana@debian.org>  Sat,  4 Nov 2006 19:27:51 +0100
+
 ettercap (1:0.7.3-1.1) unstable; urgency=low
 
   * Non-maintainer upload.
