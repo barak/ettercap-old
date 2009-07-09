@@ -7,4 +7,4 @@ ettercap (1:0.7.0-1) unstable; urgency=low
   * Old configuration directory /etc/ettercap doesn't used anymore.
     /etc/etter.conf file should be used.
 
--- Murat Demirten <murat@debian.org>  Wed, 07 Jul 2004 11:32:02 +0300
+ -- Murat Demirten <murat@debian.org>  Wed, 07 Jul 2004 11:32:02 +0300

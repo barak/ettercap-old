@@ -9,13 +9,13 @@
 # Uncomment this to turn on verbose mode. 
 # export DH_VERBOSE=1
 
-# This is the debhelper compatability version to use.
-export DH_COMPAT=5
-
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
 	# Add here commands to configure the package.
+	cp -f /usr/share/misc/config.guess config.guess
+	cp -f /usr/share/misc/config.sub config.sub
+	dh_quilt_patch
 
 	touch configure-stamp
 
@@ -55,6 +55,8 @@ clean:
 	rm -f build-stamp configure-stamp
 
 	# Add here commands to clean up after the build process.
+	dh_quilt_unpatch
+	rm -f config.guess config.sub
 	-$(MAKE) distclean
 
 	rm -f ettercap-gtk
