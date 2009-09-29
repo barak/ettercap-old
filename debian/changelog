@@ -1,3 +1,11 @@
+ettercap (1:0.7.3-2) unstable; urgency=low
+
+  * Ettercap can see wifi traffics with new libpcap (Closes: #385746).
+  * Ettercap now can build with --enable-debug too (Closes: #438185).
+  * Package should not be orphaned (Closes: #543741).
+
+ -- Murat Demirten <murat@debian.org>  Thu, 29 Sep 2009 17:20:41 +0200
+
 ettercap (1:0.7.3-1.4) unstable; urgency=low
 
   * Non-maintainer upload.
