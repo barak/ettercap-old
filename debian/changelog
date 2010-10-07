@@ -1,3 +1,12 @@
+ettercap (1:0.7.3-2.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * 01_pointers_and_ints_dont_mix.diff: Cast to u_char* rather than
+    simply removing the cast.  Updated patch by Robert Edmonds.
+    (Closes: #521857)
+
+ -- Tim Retout <diocles@debian.org>  Thu, 07 Oct 2010 20:34:05 +0100
+
 ettercap (1:0.7.3-2) unstable; urgency=low
 
   * Ettercap can see wifi traffics with new libpcap (Closes: #385746).
