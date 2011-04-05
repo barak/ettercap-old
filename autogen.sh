@@ -1,8 +1,5 @@
 #!/bin/sh
 
-WANT_AUTOMAKE="1.8"
-export WANT_AUTOMAKE
-
 echo
 
 if test x`which autoconf` = x; then
