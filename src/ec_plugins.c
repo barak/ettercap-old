@@ -44,7 +44,10 @@
 #else
    #define SYM_PREFIX ""
 #endif
-         
+
+#ifdef LT_MODULE_EXT
+#define LTDL_SHLIB_EXT LT_MODULE_EXT
+#endif
 
 /* global data */
 

@@ -3,6 +3,8 @@
 
 include $(top_srcdir)/Makefile.am.common
 
+AUTOMAKE_OPTIONS += subdir-objects
+
 SUBDIRS = os interfaces
 
 bin_PROGRAMS = ettercap
