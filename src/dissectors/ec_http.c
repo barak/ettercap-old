@@ -593,7 +593,7 @@ static u_char Parse_Form(u_char *to_parse, char **ret, int mode)
 /* Unescape the string */
 static void Decode_Url(u_char *src)
 {
-   u_char t[3];
+   u_char t[4];
    u_int32 i, j, ch;
 
    /* Paranoid test */
