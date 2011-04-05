@@ -900,12 +900,10 @@ static void split_print_po(struct packet_object *po)
    ret = GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, dispbuf);
    dispbuf[ret] = 0;
         
-   gdk_threads_enter();
    if (!ip_addr_cmp(&po->L3.src, &curr_conn->L3_addr1))
       gtkui_data_print(1, dispbuf, 0);
    else
       gtkui_data_print(2, dispbuf, 0);
-   gdk_threads_leave();
 }
 
 /*
@@ -1066,13 +1064,11 @@ static void join_print_po(struct packet_object *po)
    /* format the data */
    ret = GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, dispbuf);
    dispbuf[ret] = 0;
-        
-   gdk_threads_enter();
+
    if (!ip_addr_cmp(&po->L3.src, &curr_conn->L3_addr1))
       gtkui_data_print(3, dispbuf, 1);
    else
       gtkui_data_print(3, dispbuf, 2);
-   gdk_threads_leave();
 }
 
 /*
