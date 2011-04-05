@@ -143,41 +143,11 @@ if GTK
 ettercap_LDADD += interfaces/gtk/libec_gtk.a
 endif
 
-ettercap_LDFLAGS = -export-dynamic @EC_LIBS@ 
+ettercap_LDADD += @EC_LIBS@
+ettercap_LDFLAGS = -export-dynamic
+
 
 CLEANFILES = *.log *.out core* missing/*.o *~
 
-
-## MISSING FUNCTIONS
-
-missing/strlcat.o:
-	$(COMPILE) @EC_LIBS@ -c missing/strlcat.c -o missing/strlcat.o
-
-missing/strlcpy.o:
-	$(COMPILE) @EC_LIBS@ -c missing/strlcpy.c -o missing/strlcpy.o
-         
-missing/strsep.o:
-	$(COMPILE) @EC_LIBS@ -c missing/strsep.c -o missing/strsep.o
-               
-missing/strcasestr.o:
-	$(COMPILE) @EC_LIBS@ -c missing/strcasestr.c -o missing/strcasestr.o
-                     
-missing/scandir.o:
-	$(COMPILE) @EC_LIBS@ -c missing/scandir.c -o missing/scandir.o
-                           
-missing/memmem.o:
-	$(COMPILE) @EC_LIBS@ -c missing/memmem.c -o missing/memmem.o
-                                 
-missing/memcmp.o:
-	$(COMPILE) @EC_LIBS@ -c missing/memcmp.c -o missing/memcmp.o
-
-missing/basename.o:
-	$(COMPILE) @EC_LIBS@ -c missing/basename.c -o missing/basename.o
-                                       
-missing/getopt.o:
-	$(COMPILE) @EC_LIBS@ -c missing/getopt.c -o missing/getopt.o
-                                             
-missing/getopt_long.o:
-	$(COMPILE) @EC_LIBS@ -c missing/getopt_long.c -o missing/getopt_long.o
 
 # vim:ts=4:noexpandtab
