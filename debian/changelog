@@ -1,3 +1,13 @@
+ettercap (1:0.7.3-2.2) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * 03_fix_ltmain_check.diff: New patch to fix builds with newer
+    grep. (Closes: #634576)
+  * debian/control: Build-Depends against libssl-dev instead of
+    libssl0.9.8. (Closes: #621391)
+
+ -- Tim Retout <diocles@debian.org>  Fri, 29 Jul 2011 19:15:22 +0100
+
 ettercap (1:0.7.3-2.1) unstable; urgency=low
 
   * Non-maintainer upload.
