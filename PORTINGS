@@ -1,0 +1,22 @@
+Portings status
+
+SYSTEM               STATUS                  AUTHOR
+--------------------------------------------------------------------------------
+
+Linux 2.0.x          FULL                    ALoR, NaGA
+
+Linux 2.2.x          FULL                    ALoR, NaGA
+
+Linux 2.4.x          FULL                    ALoR, NaGA
+
+FreeBSD 4.x          FULL                    ALoR
+
+OpenBSD 2.[789]      FULL                    ALoR
+
+NetBSD 1.5.x         FULL                    ALoR
+
+Mac OS X (darwin)    FULL                    ALoR
+
+Solaris 2.x          IN PROGRESS...          ALoR, NaGA
+
+Win32 (cygwin)       IN PROGRESS...          ALoR

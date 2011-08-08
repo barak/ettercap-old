@@ -1,0 +1,360 @@
+===========================================================================
+                                ettercap 0.6.2
+============================================================================
+
+
+       @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@
+       @@        @@@     @@@   @@      @@   @@ @@      @@   @@ @@   @@
+       @@@@@@    @@@     @@@   @@@@@@  @@@@@@  @@      @@@@@@@ @@@@@@
+       @@        @@@     @@@   @@      @@  @@  @@      @@   @@ @@
+       @@@@@@@   @@@     @@@   @@@@@@@ @@  @@@ @@@@@@@ @@   @@ @@
+
+
+
+            @@@@@@@ @@      @@   @@ @@@@@@@ @@@@ @@@@@@@ @@@@@@@
+            @@   @@ @@      @@   @@ @@       @@  @@   @@ @@
+            @@@@@@@ @@      @@   @@ @@  @@@  @@  @@   @@ @@@@@@@
+            @@      @@      @@   @@ @@   @@  @@  @@   @@      @@
+            @@      @@@@@@@ @@@@@@@ @@@@@@@ @@@@ @@   @@ @@@@@@@
+
+
+
+        Bibliothèques nécessaires :             ettercap ;)
+
+        Installation :                          configure --enable-plugins
+                                                make plug-ins
+                                                make plug-ins_install
+
+============================================================================
+                          TABLE DES MATIERES
+============================================================================
+
+
+   1. INSTALLATION..........................................sez.  1
+
+   2. UTILISATION...........................................sez.  2
+
+      2.1   PLUGINS EXTERNES
+         2.1.1   interface ncurses
+         2.1.2   ligne de commande
+      2.2   PLUGINS D'ACCROCHE
+
+   3. CREATION D'UN PLUGIN..................................sez   3
+
+   APPENDICE A: Illithid illustré
+
+============================================================================
+1>                              INSTALLATION
+============================================================================
+
+
+ Pour installer des plugins, vous devez faire :
+
+   configure --enable-plugins  (activé par défaut)
+   make plug-ins
+   make plug-ins_install
+
+ ceci crééra tous les plugins dans le répertoire plugins et les installera
+ dans le répertoire spécifié dans configure.
+
+ Si vous programmez un nouveau plugin, créez simplement un nouveau répertoire
+ du nom de votre plugin dans le répertoire plugins et placez y le code source
+ et un petit Makefile. Les plugins doivent avoir cette forme : ec_'name'.so
+
+ L'installation sera alors automatique.
+
+NOTE :
+
+ La recherche des plugins se fait d'abord dans ./ puis dans le répertoire 
+ d'installation.
+
+
+============================================================================
+2>                           UTILISATION
+============================================================================
+
+2.1   PLUGIN EXTERNE
+
+ Les plugins externes sont ceux dont le type (plug_type) est PT_EXT, et 
+ correspondent aux vieux plugins (avant ettercap 0.6.2)
+
+   2.1.1   INTERFACE NCURSES
+
+      Dans l'interface principale appuyez sur 'p' et vous obtiendrez la liste 
+      de tous les plugins disponibles. Choisissez en un et amusez vous... ;)
+
+   2.1.2   LIGNE DE COMMANDE
+
+       Utilisez:
+
+          ettercap -N -p list
+
+       pour obtenir la liste des plugins disponibles. Puis lancez
+
+          ettercap -N -p "nom du plugin"
+
+       pour executer le plugin en question.
+
+       Exemple :
+ 
+         ettercap -Np ooze ghibli
+
+      lancera "ooze" sur l'hote "ghibli". ( le plugin ooze fait un ping sur
+      l'hote destination...)
+
+      c'est tout !!
+
+2.2 PLUGINS D'ACCROCHE
+
+ Les plugins "d'accroche" ont été introduits dans ettercap 0.6.2 et peuvent
+ interagir avec ettercap. La principale idée est de fournir certains points
+ d'accroche dans le moteur de sniff pour qu'un programmeur puisse lancer
+ ses propres fonctions à ces niveaux.
+ De cette manière quelqu'un peut programmer un plugin qui a besoin de certaines
+ données sniffées, que ce soit sur un lan switché ou non, et tout le travail
+ derrière est effectué par ettercap, et est totalement transparent pour le
+ plugin, même s'il est nécessaire de corrompre les victimes. Seules les données
+ sniffées seront passées au plugin par ettercap. Il y a beaucoup de points
+ d'accroche, donc il peut y avoir différents type de plugins, par exemple un 
+ nouveau dissecteur, ou un plugin de log, ou même un IDS si vous voulez ... ;)
+ Ce type de plugin est chargé par l'interface ou par le fichier de 
+ configuration si vous lancez ettercap par la ligne de commande. Et leur ordre
+ d'exécution est configuré à la manière d'un init.d. Les plugins d'accroche ont
+ un préfix de 4 caractères "Hxx_" qui informent ettercap sur la priorité (xx
+ peut varier de 00 à 99). La raison à cela est que plusieurs plugins peuvent
+ est exécuté séquentiellement sur le même point d'accroche, et que, comme un
+ plugin peut modifier les données sniffées, le prochain sera affecté par les 
+ modifications précédentses.
+
+============================================================================
+3>                         HOW TO CREATE A PLUGIN
+============================================================================
+
+
+ Je pense qu'un exemple est plus efficace que des pages d'explication. Donc
+ j'ai écris deux plugins exemples pour montrer comment écrire un simple plugin.
+ Un, appelé "simplet", pour montrer comment écrire un plugin externe, et un 
+ autre appelé "H99_simplet", pour les plugins d'accroche.
+
+ Cependant il y a quelques instructions que vous devez respecter.
+
+ 1) LES INCLUDES
+
+      #include "../../src/include/ec_main.h"     // pour les variables globales
+      #include "../../src/include/ec_plugins.h"  // pour les entrées/sorties
+
+      ceux-ci sont obligatoires, mais vous pouvez en inclure autant que vous
+      voulez. Pour avoir la liste des API que vous pouvez utiliser, regardez
+      dans ./src/include. Les seuls API que vous ne POUVEZ PAS utiliser dans un
+      plugin sont les ec_interface_*.
+
+ 2) OPERATION DE PLUGIN
+
+      struct plugin_ops ops = {
+         ettercap_version: VERSION,
+         plug_info:        "petite descriptoin",
+         plug_version:     20,
+         plug_type:        PT_HOOK,
+         hook_point:       PCK_DECODED,
+         hook_function:    &dummy_function,
+      };
+
+      tous les plugins doivent remplir cette structure avec les champs 
+      appropriés. Cette structure DOIT être passée à la fonction 
+      Plugin_Register(...) lors de l'initialisation (voir ci-dessus).
+
+      ettercap_version : DOIT correspondre à la VERSION GLOBALE (pour les tests
+                         internes)
+
+      plug_info :        c'est une chaîne de données contenant un description 
+                         courte (50 charactères);
+
+      plug_version :     c'est un caractère indiquant la version (notez que 15
+                         correspond à la version 1.5)
+
+      plug_type :        peut valoir PT_EXT (pour les plugins externes) ou
+                         PT_HOOK (pour les plugins d'accroche)
+ 
+      hook_point :       c'est le point d'accroche (voir ci-dessus pour une 
+                         liste des points d'accroche)
+
+      hook_function :    c'est un pointeur sur la fonction à exécuter au niveau
+                         du point d'accroche. Doit être "int ($func)(void *)"
+
+ 3) INITIALISATION ET FINALISATION
+
+      Tous les plugins DOIVENT contenir deux fonctions. La première pour 
+      l'initialisation et la seconde exécutée lorsque le plugin est déchargé.
+
+      int Plugin_Init(void *params)
+      {
+        /*
+         *  dans cette fonction nous DEVONS appeler la procédure 
+         *  d'enregistrement qui configurera le plugin en fonction de la 
+         *  structure plugin_ops.
+         *  la valeur retournée DOIT être la même que Plugin_Register()
+         *  le pointeur passé en paramètre 'params' DOIT être passé à 
+         *  Plugin_Register()
+         */
+         return Plugin_Register(params, &ops);
+       }
+
+      int Plugin_Fini(void *params)
+      {
+         /*
+          * Ici vous pouvez libérer toutes les ressources allouées
+          */
+         return 0;
+      }
+
+      TRES IMPORTANT : Le plugin ne doit PAS finir par exit() !!
+
+ 4) POINT D'ACCROCHE
+
+      HOOK_NONE           réservé pour les plugins externes
+
+      PCK_RECEIVED_RAW    le plugin est exécuté juste après que le paquet
+                          est reçu, avant que illithid ne le parse, donc
+                          les données modifiées ici vont interférer avec le
+                          boulot d'illithid.
+                          le pointeur void * pointeur sur le buffer 
+                          correspondant au paquet tel qu'il est reçu de la
+                          couche liaison de données, donc vous devrez le 
+                          décapsuler du header ethernet.
+
+      PCK_RECEIVED_STRUCT_FILLED le plugin est exécuté juste après l'analyse 
+                          d'illithid mais avant de passer les données à
+                          ettercap. le pointeur void * correspond à une 
+                          structure SNIFFED_DATA
+
+      PCK_PRE_FORWARD     le plugin est exécuté avant que le paquet ne soit
+                          renvoyé (évidemment seulement si ettercap fait de la
+                          corruption de cache arp). modifier les données ici
+                          changera seulement le paquet forwardé, car illithid 
+                          l'a déjà décodé, enregistré la session correspondante
+                          et envoyé à ettercap les données sniffées.
+                          le pointeur void * pointeur sur le buffer 
+                          correspondant au paquet tel qu'il est reçu de la
+                          couche liaison de données, donc vous devrez le 
+                          décapsuler du header ethernet.
+
+      PCK_DISSECTOR       le plugin est exécuté juste après que les autres 
+                          dissecteur intégrés ont été exécuté.
+                          le pointeur void * correspond à une structure 
+                          DISSECTION.
+
+      PCK_DECODED         le plugin est exécuté après que dissecteurs actifs ont
+                          été exécutés (les dissecteurs actifs sont ceux qui 
+                          modifient les données avant de les envoyer à ettercap.
+                          par exemple SSH, HTTPS, ICQ sont des protocoles 
+                          encryptés, donc les données doivent être décryptées
+                          avant la vue utilisateur)
+                          le pointeur void * pointe sur une structure 
+                          SNIFFED_DATA
+
+
+      reférer vous à l'APPENDICE A pour avoir une vue complète du système
+      d'accroche.
+
+ 5) API ETTERCAP
+       
+      + Plugin_Output()   pareil que printf(), mais nécessaire pour afficher
+                          dans l'interface ncurses.
+
+      + Plugin_Input()    pour demander des données à l'utilisateur.
+
+      NOTE : les plugins d'accroche ne DOIVENT PAS utiliser ces fonctions !!
+ 
+      + Plugin_Hook_Output()  identique aux fonctions ci-dessus pour les
+                              plugins d'accroche.
+
+      NOTE : tous les appels à Plugin_Hook_Output() provoquent le flush de
+             données de sortie précédentes. Donc créez entièrement les données
+             à afficher avant de les envoyer. Vous avez seulement trois lignes
+             de données de sorties et chaque ligne à une longueur minimal de 80
+             mais elle peut être plus large que l'écran;
+
+      + Toutes les autres fonctions dans ec_inet_forge.c, ec_inet.c et
+        ec_decodedata.c vous fournissent un accès simple à l'interface
+        vers la couche réseau.
+
+
+  N'hésitez pas à écrire un email à alor@users.sourceforge.net
+                               ou à crwm@freemail.it
+
+
+============================================================================
+APPENDIX A>                 ILLITHID ILLUSTRE
+============================================================================
+
+ Voici un réprésentation en langague très haut niveau du comportement de
+ illithid :
+
+ loop
+ {
+   Recçoit un paquet de la couche liaison de données
+
+   HOOK POINT: PCK_RECEIVED_RAW  (void * pointer -> received buffer)
+
+   Analyse le buffer à travers les couches 2, 3 et 4
+
+   *** Seuls les paquets UDP et TCP sont acceptés ci-desssous ***
+
+   Remplit la structure CONNECTION
+
+   Exécute les dissecteurs intégrés (qui remplissent les champs user, pass et 
+   info)
+
+   HOOK POINT: PCK_DISSECTOR  (void * pointer -> DISSECTION structure)
+
+   Met à jour le tableau des connexions affiché par ettercap
+
+   if (connection_mode == 0)
+   {
+      Remplit la structure SNIFFED_DATA
+
+      HOOK POINT: PCK_RECEIVED_STRUCT_FILLED (void * pointer -> SNIFFED_DATA)
+
+      Exécute les dissecteurs de données intégrés (ex SSH, HTTPS, ICQ, etc)
+
+      HOOK POINT: PCK_DECODED  (void * pointer -> SNIFFED_DATA)
+
+      Place SNIFFED_DATA dans le buffer pour ettercap
+   }
+
+   if (man_in_the_middle)
+   {
+
+      if (filter_activated)
+      {
+         Exécute le moteur de filtrage sur le paquet
+
+         HOOK POINT: ????  (void * pointer -> ????)
+      }
+
+      Crée une session interne (une par connexion) avec les données sensibles
+      pour maintenir la connexion synchronisée
+
+      HOOK POINT: PCK_PRE_FORWARD (void * pointer -> to be sent buffer)
+
+      Renvoie le paquet à la couche liaison de donnée
+   }
+
+   if (pending_killing_request)
+   {
+      Tue la connexion
+   }
+
+   if (pending_inject_request)
+   {
+      Injecte des caractères dans la couche liaison de données
+
+      Met à jour la sessions interne (numéro de séquence, ...)
+   }
+
+ }
+
+
+0xABADC0DE==============================================================EC-2K
+
+  Traduction : Julien Bordet (Bordet_J@yahoo.com)

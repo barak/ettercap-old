@@ -1,0 +1,675 @@
+dnl
+dnl    ettercap -- configure script
+dnl
+dnl    Copyright (C) 2001  ALoR <alor@users.sourceforge.net>, NaGA <crwm@freemail.it>
+dnl
+dnl    This program is free software; you can redistribute it and/or modify
+dnl    it under the terms of the GNU General Public License as published by
+dnl    the Free Software Foundation; either version 2 of the License, or
+dnl    (at your option) any later version.
+dnl
+dnl    This program is distributed in the hope that it will be useful,
+dnl    but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl    GNU General Public License for more details.
+dnl
+dnl    You should have received a copy of the GNU General Public License
+dnl    along with this program; if not, write to the Free Software
+dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+dnl
+dnl    $Id: configure.in,v 1.24 2002/02/11 20:46:50 alor Exp $
+dnl
+
+AC_INIT(src/ec_main.c)
+AC_CONFIG_HEADER(config.h)
+
+SB=`./shtool echo -n -e %B`
+EB=`./shtool echo -n -e %b`
+
+AC_SUBST(SB)
+AC_SUBST(EB)
+
+VERSION=`grep VERSION ./src/include/ec_main.h | cut -f2 -d"\""`
+AC_SUBST(VERSION)
+
+PROG=`grep PROGRAM ./src/include/ec_main.h | cut -f2 -d"\""`
+AC_SUBST(PROG)
+
+EC_MESSAGE(Configuring $PROG-$VERSION)
+
+SERIAL=`date +%Y%m%d`
+AC_SUBST(SERIAL)
+
+RELEASE=1
+AC_SUBST(RELEASE)
+
+SOURCES=`ls ./src/ec_*.c | awk ' { printf "%s ", $1 } '`
+AC_SUBST(SOURCES)
+
+
+dnl =========================================
+dnl   Enable Developmen feature or portings
+dnl =========================================
+
+AC_ARG_ENABLE(devel, [  --enable-devel          enable the undeveloped (alpha) features.],
+[ case "$enableval" in
+   yes)
+      development=1
+      ;;
+   no)
+      development=0
+      ;;
+esac ],
+   development=0
+)
+
+dnl ================
+dnl   Check the OS
+dnl ================
+
+AC_CANONICAL_SYSTEM
+case "$target_os" in
+*linux*)
+	EC_LINUX_KERNEL()
+	OS=LINUX
+	OS_OPT=
+	;;
+*freebsd*)
+	EC_FREEBSD_VERSION()
+	OS=FREEBSD
+	OS_OPT=
+	;;
+*netbsd*)
+	OS=NETBSD
+	OS_OPT=
+	;;
+*openbsd*)
+	OS=OPENBSD
+	OS_OPT=
+	;;
+*darwin*)
+	EC_DARWIN_KERNEL()
+	OS=MACOSX
+	OS_OPT=
+	STRIPOPTION="-x"
+	;;
+*cygwin*)
+	if test $development -ne 1; then
+   	echo
+   	echo "CYGWIN PORTING IS IN PROGRESS..."
+   	echo "STAY TUNED FOR THE NEXT RELEASE"
+   	echo
+   	echo "you can try to compile and run it"
+   	echo "by configuring with the --enable-devel flag"
+   	echo "TRY AT YOUR OWN RISK"
+   	echo
+   	exit
+   fi
+	OS=CYGWIN
+	OS_OPT=
+	;;
+*solaris*)
+	if test $development -ne 1; then
+   	echo
+   	echo "WE ARE VERY VERY SORRY, BUT STILL NO SOLARIS PORT"
+   	echo "WE ARE WORKING ON IT..."
+   	echo "IF YOU WANT TO CONTRIBUTE WITH PORTING:"
+   	echo "run  ./configure --enable-devel "
+   	echo "and report bugs"
+   	echo
+   	exit
+   fi
+	OS=SOLARIS
+	OS_OPT=
+	;;
+*)
+	echo
+	echo "NOT A SUPPORTED SYSTEM / OR SYSTEM NOT RECOGNIZED"
+	echo
+	cat PORTINGS
+	echo
+	exit
+	;;
+esac
+
+AC_SUBST(OS)
+AC_SUBST(OS_OPT)
+AC_SUBST(STRIPOPTION)
+
+dnl ======================
+dnl   Initialize prefix.
+dnl ======================
+
+AC_PREFIX_DEFAULT(/usr/local)
+
+if test "$prefix" = "NONE"; then
+	prefix="/usr/local"
+fi
+
+
+dnl ========================
+dnl   Check the C compiler
+dnl ========================
+
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+AC_PROG_GCC_TRADITIONAL
+
+dnl ======================
+dnl   Machine Endianness
+dnl ======================
+
+AC_C_BIGENDIAN
+
+dnl ======================
+dnl   OS specific checks
+dnl ======================
+
+
+if test "$OS" = "LINUX"; then
+
+	dnl ===========================
+	dnl   Check for Socket Packet
+	dnl ===========================
+
+		EC_PF_PACKET()
+		EC_SOCK_PACKET()
+
+		if test "$ac_cv_ec_nopf" = 1 && test "$ac_cv_ec_nosock" = 1; then
+			AC_MSG_WARN(*************************************);
+			AC_MSG_WARN(* You can't create Socket Packet !! *);
+			AC_MSG_WARN(*************************************);
+			exit;
+		fi
+
+	dnl ===========================================
+	dnl   Check for /proc/sys/net/ipv4/ip_forward
+	dnl ===========================================
+
+		AC_PATH_PROGS(IPFORWARD,ip_forward,no,/proc/sys/net/ipv4)
+		if test "$IPFORWARD" = no; then
+			AC_MSG_WARN(*****************************************************************)
+			AC_MSG_WARN(* /proc/sys/net/ipv4/ip_forward not found !!                    *)
+			AC_MSG_WARN(* please disable manually ip_forwarding before running ettercap *)
+			AC_MSG_WARN(*****************************************************************)
+		else
+			AC_DEFINE(HAVE_PROC_FORWARDING)
+		fi
+
+fi
+
+
+
+if test "$OS" = "FREEBSD" -o "$OS" = "OPENBSD" -o "$OS" = "NETBSD" -o "$OS" = "MACOSX"; then
+
+	AC_MSG_CHECKING(link-layer packet interface)
+
+	if test -r /dev/bpf0 ; then
+		AC_MSG_RESULT(found bpf)
+	elif test -c /dev/bpf0 ; then
+		AC_MSG_RESULT(found bpf)
+	else
+		AC_MSG_WARN(*********************************************************);
+		AC_MSG_WARN(* /dev/bpf0 not found !! please reconfigure your kernel *);
+		AC_MSG_WARN(*********************************************************);
+		exit;
+	fi
+
+fi
+
+
+
+if test "$OS" = "SOLARIS"; then
+
+	AC_CHECK_HEADERS(sys/bufmod.h sys/dlpi_ext.h)
+	AC_MSG_CHECKING(for /dev/dlpi device)
+	if test -c /dev/dlpi; then
+		AC_MSG_RESULT(yes)
+		AC_DEFINE(HAVE_DEV_DLPI)
+	else
+		AC_MSG_RESULT(no)
+		dir="/dev/dlpi"
+		AC_MSG_CHECKING(for $dir directory)
+		if test -d $dir ; then
+			AC_MSG_RESULT(yes)
+			AC_DEFINE_UNQUOTED(DLPI_DEV_PREFIX, "$dir")
+		else
+			AC_MSG_RESULT(no)
+		fi
+	fi
+
+fi
+
+if test "$OS" = "CYGWIN"; then
+
+	AC_MSG_CHECKING(for WinPcap developer's pack)
+	AC_ARG_WITH(wpdpack,
+	[  --with-wpdpack=DIR      use WinPcap developer's pack in DIR],
+	[ AC_MSG_RESULT($withval)
+		if test -f $withval/include/packet32.h -a -f $withval/lib/packet.a; then
+			COPTS="$COPTS -I$withval/include"
+			LIBS="$LIBS -L$withval/lib -lpacket -lws2_32"
+		else
+			AC_MSG_ERROR(packet32.h or packet.a not found in $withval)
+		fi ],
+	[ for dir in ${prefix} ${HOME}/WPdpack ; do
+			if test -f ${dir}/include/packet32.h -a -f ${dir}/lib/packet.a; then
+				COPTS="$COPTS -I${dir}/include"
+				LIBS="$LIBS -L${dir}/lib -lpacket -lws2_32"
+				have_pcap=yes
+				break;
+			fi
+	  done
+	  if test "$have_pcap" != yes; then
+			AC_MSG_ERROR(WinPcap developer's pack not found)
+	  fi
+	  AC_MSG_RESULT(yes) ])
+
+fi
+
+dnl ===========================
+dnl   Check for programs path
+dnl ===========================
+
+AC_PATH_PROG(WGET_PATH, "wget")
+  if test -n "$WGET_PATH"; then
+    AC_DEFINE_UNQUOTED(WGET_PATH, "$WGET_PATH")
+  else
+    AC_DEFINE_UNQUOTED(WGET_PATH, "")
+  fi
+
+
+dnl =====================
+dnl   Check for headers
+dnl =====================
+
+AC_HEADER_STDC
+AC_HEADER_DIRENT
+AC_HEADER_TIME
+AC_CHECK_HEADERS(getopt.h)
+AC_CHECK_HEADERS(fcntl.h termios.h ctype.h)
+AC_CHECK_HEADERS(sys/time.h sys/utsname.h)
+AC_CHECK_HEADERS(ifaddrs.h)
+
+dnl These are required !!
+AC_CHECK_HEADERS(unistd.h stdlib.h signal.h stdarg.h sys/ioctl.h,,
+	AC_MSG_WARN(**************************************************);
+	AC_MSG_WARN(* REQUIRED !! I cant believe U don't have this !!*);
+	AC_MSG_WARN(**************************************************);
+	exit)
+
+AC_CHECK_HEADERS(dirent.h errno.h,,
+	AC_MSG_WARN(***************);
+	AC_MSG_WARN(* REQUIRED !! *);
+	AC_MSG_WARN(***************);
+	exit)
+
+AC_CHECK_HEADERS(net/ethernet.h net/if_arp.h net/if.h)
+AC_CHECK_HEADERS(netinet/ip.h netinet/ip_icmp.h netinet/tcp.h)
+AC_CHECK_HEADERS(sys/sockio.h)
+
+
+dnl ==================================================================
+dnl   Checks for typedefs, structures, and compiler characteristics.
+dnl ==================================================================
+
+AC_STRUCT_TM
+EC_SOCKLEN_CHECK
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_C_CONST
+AC_LBL_SOCKADDR_SA_LEN
+AC_LBL_UNALIGNED_ACCESS
+
+dnl =====================
+dnl   Check for libs
+dnl =====================
+
+AC_FUNC_MALLOC
+AC_FUNC_MEMCMP
+AC_TYPE_SIGNAL
+AC_FUNC_VPRINTF
+EC_PTHREAD_CHECK()
+AC_SEARCH_LIBS(log,c m)
+AC_SEARCH_LIBS(pow,c m)
+AC_SEARCH_LIBS(gethostbyname,c nsl,,AC_MSG_ERROR(libnsl not found.))
+AC_SEARCH_LIBS(socket,c socket,,AC_MSG_ERROR(libsocket not found.))
+AC_SEARCH_LIBS(dn_expand,c resolv,,)
+AC_CHECK_FUNCS(getifaddrs)
+AC_CHECK_FUNCS(gettimeofday)
+AC_CHECK_FUNCS(vsnprintf)
+AC_CHECK_FUNCS(select strdup strerror strstr strsignal)
+AC_CHECK_FUNCS(uname)
+
+
+dnl ===============================
+dnl   Check for non standard libs
+dnl ===============================
+
+MISSING=""
+MISSLIBS=""
+
+AC_CHECK_FUNCS(getopt_long,,MISSING="$MISSING ./src/missing/getopt.c ./src/missing/getopt1.c"
+                            MISSLIBS="$MISSLIBS ./src/missing/getopt.o ./src/missing/getopt1.o")
+AC_CHECK_FUNCS(strlcat,,MISSING="$MISSING ./src/missing/strlcat.c"
+                        MISSLIBS="$MISSLIBS ./src/missing/strlcat.o")
+AC_CHECK_FUNCS(strlcpy,,MISSING="$MISSING ./src/missing/strlcpy.c"
+                        MISSLIBS="$MISSLIBS ./src/missing/strlcpy.o")
+AC_CHECK_FUNCS(strsep,,MISSING="$MISSING ./src/missing/strsep.c"
+                       MISSLIBS="$MISSLIBS ./src/missing/strsep.o")
+AC_CHECK_FUNCS(memmem,,MISSING="$MISSING ./src/missing/memmem.c"
+                       MISSLIBS="$MISSLIBS ./src/missing/memmem.o")
+AC_CHECK_FUNCS(inet_aton,,MISSING="$MISSING ./src/missing/inet_aton.c"
+                          MISSLIBS="$MISSLIBS ./src/missing/inet_aton.o")
+AC_CHECK_FUNCS(scandir,,MISSING="$MISSING ./src/missing/scandir.c"
+                        MISSLIBS="$MISSLIBS ./src/missing/scandir.o")
+
+AC_SUBST(MISSING)
+AC_SUBST(MISSLIBS)
+
+
+dnl =======================================
+dnl   Check user defined --enable-FEATURE
+dnl =======================================
+
+EC_MESSAGE(Checking user defined options)
+
+dnl -----------------------
+dnl -- NCURSES INTERFACE --
+dnl -----------------------
+
+check_ncurses=0
+AC_MSG_CHECKING([if --enable-ncurses option is specified])
+AC_ARG_ENABLE(ncurses, [  --enable-ncurses        enable the ncurses interface.],
+[ case "$enableval" in
+	yes)
+		AC_MSG_RESULT(yes.)
+		check_ncurses=1
+		;;
+	no)  AC_MSG_RESULT(no.)
+		;;
+esac ],
+	AC_MSG_RESULT(yes. enabled by default.)
+	check_ncurses=1
+)
+
+ac_cv_ec_ncurses=no
+ac_cv_ec_form=no
+
+if test $check_ncurses -ne 0; then
+	ncurses_warn=0
+	curses_warn=0
+
+	AC_CHECK_HEADERS(ncurses.h,,ncurses_warn=1)
+	AC_CHECK_LIB(ncurses,newpad,,ncurses_warn=1)
+
+	if test $ncurses_warn -ne 1; then
+		AC_DEFINE(HAVE_NCURSES,1)
+		ac_cv_ec_ncurses=yes
+	else
+		AC_CHECK_HEADERS(curses.h,,curses_warn=1)
+		AC_CHECK_LIB(curses,newpad,,curses_warn=1)
+		AC_CHECK_LIB(curses,mvwgetnstr,,curses_warn=1)
+
+		if test $curses_warn -ne 1; then
+			AC_DEFINE(HAVE_NCURSES,1)
+			ac_cv_ec_ncurses=yes
+		else
+			AC_MSG_WARN(***********************************************)
+			AC_MSG_WARN(* NCURSES are NOT available in your system !! *)
+			AC_MSG_WARN(* Interactive mode will not be supported!     *)
+			AC_MSG_WARN(***********************************************)
+		fi
+	fi
+
+	form_warn=0
+
+	if test "$ncurses_warn$curses_warn" = "00"; then
+		AC_CHECK_HEADERS(form.h,,form_warn=1)
+		AC_CHECK_LIB(form,form_win,,form_warn=1)
+
+		if test $form_warn -ne 1; then
+			AC_DEFINE(HAVE_FORM,1)
+			ac_cv_ec_form=yes
+		else
+			AC_MSG_WARN(**********************************************)
+			AC_MSG_WARN(* FORM are NOT available in your system !!   *)
+			AC_MSG_WARN(* some interface will be less pleasureful... *)
+			AC_MSG_WARN(**********************************************)
+		fi
+	fi
+fi
+
+
+
+
+dnl -----------
+dnl -- DEBUG --
+dnl -----------
+
+AC_MSG_CHECKING([if --enable-debug option is specified])
+AC_ARG_ENABLE(debug, [  --enable-debug          create a file for debugging messages.],
+[ case "$enableval" in
+	yes)
+		DEBUG="-DDEBUG"
+		CFLAGS="-g -ggdb -Wmissing-prototypes -Werror -Wall"
+		AC_MSG_RESULT(yes)
+		ac_cv_ec_debug=yes
+		;;
+	no)  AC_MSG_RESULT(no.)
+		CFLAGS="-O3 -funroll-loops -fomit-frame-pointer -Wall"
+		ac_cv_ec_debug=no
+		;;
+esac ],
+	AC_MSG_RESULT(no. disabled by default.)
+	CFLAGS="-O3 -funroll-loops -fomit-frame-pointer -Wall"
+	ac_cv_ec_debug=no
+)
+AC_SUBST(DEBUG)
+
+dnl -------------
+dnl -- PLUGINS --
+dnl -------------
+
+check_plugins=0
+AC_MSG_CHECKING([if --enable-plugins option is specified])
+AC_ARG_ENABLE(plugins, [  --enable-plugins        enable the use of plugins in ettercap.],
+[ case "$enableval" in
+	yes)
+		AC_MSG_RESULT(yes.)
+		check_plugins=1
+		;;
+	no)  AC_MSG_RESULT(no.)
+		ac_cv_ec_plugin=no
+		;;
+esac ],
+	AC_MSG_RESULT(yes. enabled by default.)
+	check_plugins=1
+)
+
+
+if test $check_plugins -ne 0; then
+	plugins_warn=0
+	AC_CHECK_HEADERS(dlfcn.h,,plugins_warn=1)
+	AC_SEARCH_LIBS(dlopen, dl c,,plugins_warn=1)
+
+	if test $plugins_warn -ne 1; then
+		AC_DEFINE(PERMIT_PLUGINS,1)
+		ac_cv_ec_plugin=yes
+		AC_MSG_CHECKING([for gcc option to produce PIC])
+		if test "$OS" = "MACOSX"; then
+			PICFLAG="-bundle -undefined $ac_cv_ec_undefined -bundle_loader ../../ettercap"
+		elif test "$OS" = "SOLARIS"; then
+			PICFLAG="-fPIC -DPIC -shared"
+		elif test "$OS" = "CYGWIN"; then
+			PICFLAG="-DPIC -shared"
+		else
+			LIBS="$LIBS -rdynamic"
+			PICFLAG="-fPIC -DPIC -shared"
+		fi
+		AC_MSG_RESULT($PICFLAG)
+		AC_SUBST(PICFLAG)
+	else
+		AC_MSG_WARN(***********************************************)
+		AC_MSG_WARN(* Plugins are NOT supported by your system !! *)
+		if test "$OS" = "MACOSX"; then
+			AC_MSG_WARN(*                                             *)
+			AC_MSG_WARN(* You have to install the dlcompat library... *)
+		fi
+		AC_MSG_WARN(***********************************************)
+	   ac_cv_ec_plugin=no
+	fi
+fi
+
+
+dnl ---------
+dnl -- SSH --
+dnl ---------
+
+check_ssh=0
+AC_ARG_WITH(openssl, [  --with-openssl=DIR      use OpenSSL in DIR],
+[ case "$withval" in
+	no)
+		AC_MSG_CHECKING(for OpenSSL)
+		AC_MSG_RESULT(no)
+		ac_cv_ec_ssh=no
+		;;
+	*)
+		AC_MSG_CHECKING(for OpenSSL in $withval)
+		check_ssh=1
+		ssl_path=$withval
+		;;
+	esac ],
+	[ AC_MSG_CHECKING(for OpenSSL in ${prefix})
+	check_ssh=1
+	ssl_path=${prefix}
+	]
+)
+
+
+if test $check_ssh -ne 0; then
+
+	if test -f $ssl_path/include/openssl/ssl.h; then
+		COPTS="$COPTS -I$ssl_path/include"
+		LIBS="$LIBS -L$ssl_path/lib -lssl -lcrypto"
+		AC_DEFINE(HAVE_OPENSSL,1)
+		ac_cv_ec_ssh=yes
+		AC_MSG_RESULT(yes)
+	elif test -f $ssl_path/ssl/include/openssl/ssl.h; then
+		COPTS="$COPTS -I$ssl_path/ssl/include"
+		LIBS="$LIBS -L$ssl_path/ssl/lib -lssl -lcrypto"
+		AC_DEFINE(HAVE_OPENSSL,1)
+		ac_cv_ec_ssh=yes
+		AC_MSG_RESULT(yes)
+	elif test -f /usr/include/openssl/ssl.h; then
+		LIBS="$LIBS -lssl -lcrypto"
+		AC_DEFINE(HAVE_OPENSSL,1)
+		ac_cv_ec_ssh=yes
+		AC_MSG_RESULT(yes)
+	else
+		AC_MSG_RESULT(no)
+		ac_cv_ec_ssh=no
+		AC_MSG_WARN(**********************************************)
+		AC_MSG_WARN(* OpenSSL is NOT installed in your system !! *)
+		AC_MSG_WARN(* SSH support will NOT be available...       *)
+		AC_MSG_WARN(**********************************************)
+	fi
+
+	AC_PATH_PROG(OPENSSL_PATH, "openssl",, "$PATH:/usr/local/ssl/bin")
+	if test -n "$OPENSSL_PATH"; then
+	  AC_DEFINE_UNQUOTED(OPENSSL_PATH, "$OPENSSL_PATH")
+	else
+	  AC_DEFINE_UNQUOTED(OPENSSL_PATH, "")
+	fi
+
+fi
+
+
+dnl -----------
+dnl -- HTTTS --
+dnl -----------
+
+AC_MSG_CHECKING([if --enable-https option is specified])
+AC_ARG_ENABLE(https, [  --enable-https          permit https dissection (invasive).],
+[ case "$enableval" in
+	yes)
+		if test "$OS" = "MACOSX" -o "$OS" = "SOLARIS" -o "$OS" = "CYGWIN"; then
+			AC_MSG_RESULT(NOT available on this OS)
+			ac_cv_ec_https=no
+		else
+			AC_DEFINE(PERMIT_HTTPS,1)
+			AC_MSG_RESULT(yes)
+			ac_cv_ec_https=yes
+		fi
+		;;
+	no)  AC_MSG_RESULT(no)
+		ac_cv_ec_https=no
+		;;
+	esac ],
+	if test "$OS" = "MACOSX" -o "$OS" = "SOLARIS" -o "$OS" = "CYGWIN"; then
+		AC_MSG_RESULT(NOT available on this OS)
+		ac_cv_ec_https=no
+	elif test "$OS" = "OPENBSD" -o "$OS" = "FREEBSD" -o "$OS" = "NETBSD"; then
+		AC_MSG_RESULT(no.)
+		ac_cv_ec_https=no
+		AC_MSG_WARN(***************************************************)
+		AC_MSG_WARN(* HTTPS dissection in in ALPHA state under BSD... *)
+		AC_MSG_WARN(* I discourage you to enable it.                  *)
+		AC_MSG_WARN(* But if you want use at your own risk            *)
+		AC_MSG_WARN(***************************************************)
+	else
+		AC_MSG_RESULT(yes. enabled by default.)
+		AC_DEFINE(PERMIT_HTTPS,1)
+		ac_cv_ec_https=yes
+	fi
+
+)
+
+
+dnl ===============
+dnl   FINISHED !!
+dnl ===============
+
+AC_SUBST(COPTS)
+
+EC_MESSAGE(Writing output files)
+
+PLUGINS=`ls ./plugins | grep -v -E "Make|CVS" | awk ' { printf "%s ", $1 } '`
+AC_SUBST(PLUGINS)
+
+makeplug=`ls ./plugins | grep -v -E "Make|CVS" | awk '{ printf("plugins/%s/Makefile ", $1) }'`
+
+AC_OUTPUT(ettercap.spec ettercap.8 Makefile $makeplug plugins/Makefile)
+
+
+dnl ===============
+dnl   THE SUMMARY
+dnl ===============
+
+
+EC_MESSAGE(Ettercap has been configured as follow)
+
+echo "=================================================="
+echo
+	EC_CHECK_OPTION(" Install directory: ",${prefix})
+echo
+echo
+	EC_CHECK_OPTION(" DEBUG mode ....... ",${ac_cv_ec_debug})
+	EC_CHECK_OPTION(" NCURSES support .. ",${ac_cv_ec_ncurses})
+	EC_CHECK_OPTION(" FORM support ..... ",${ac_cv_ec_form})
+	EC_CHECK_OPTION(" PLUGIN support ... ",${ac_cv_ec_plugin})
+	EC_CHECK_OPTION(" SSH support ...... ",${ac_cv_ec_ssh})
+	EC_CHECK_OPTION(" HTTPS support .... ",${ac_cv_ec_https})
+echo
+echo "=================================================="
+echo
+echo
+echo For a list of all possible make processes, type \`${SB}make help${EB}\`
+echo
+echo
+
+
+
+EC_CHECK_DATE()
+

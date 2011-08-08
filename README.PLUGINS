@@ -1,0 +1,348 @@
+============================================================================
+                                ettercap 0.6.4
+============================================================================
+
+
+       @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@
+       @@        @@@     @@@   @@      @@   @@ @@      @@   @@ @@   @@
+       @@@@@@    @@@     @@@   @@@@@@  @@@@@@  @@      @@@@@@@ @@@@@@
+       @@        @@@     @@@   @@      @@  @@  @@      @@   @@ @@
+       @@@@@@@   @@@     @@@   @@@@@@@ @@  @@@ @@@@@@@ @@   @@ @@
+
+
+
+            @@@@@@@ @@      @@   @@ @@@@@@@ @@@@ @@@@@@@ @@@@@@@
+            @@   @@ @@      @@   @@ @@       @@  @@   @@ @@
+            @@@@@@@ @@      @@   @@ @@  @@@  @@  @@   @@ @@@@@@@
+            @@      @@      @@   @@ @@   @@  @@  @@   @@      @@
+            @@      @@@@@@@ @@@@@@@ @@@@@@@ @@@@ @@   @@ @@@@@@@
+
+
+
+         Required Libraries:              ettercap ;)
+
+         Installation:                    configure --enable-plugins
+                                          make plug-ins
+                                          make plug-ins_install
+
+
+============================================================================
+                              TABLE OF CONTENTS
+============================================================================
+
+
+   1. INSTALLATION..........................................sez.  1
+
+   2. HOW TO USE THEM.......................................sez.  2
+
+      2.1   EXTERNAL PLUGIN
+         2.1.1   ncurses interface
+         2.1.2   command line
+      2.2   HOOKIN PLUGIN
+
+
+   3. HOW TO CREATE A PLUGIN................................sez   3
+
+   APPENDIX A:  Illithid illustrated
+
+============================================================================
+1>                              INSTALLATION
+============================================================================
+
+
+ To install plugins you have to run:
+
+   configure --enable-plugins  (enabled by default)
+   make plug-ins
+   make plug-ins_install
+
+ this will make all the plugins in the plugins directory and install them in
+ the same dir as the one specified in configure.
+
+ If you code a new plugin, simply create a new dir in the plugins directory
+ with the name of your plugin and put the source code and a little Makefile
+ in it. Plugins must have a name in this form:  ec_`name`.so
+
+ Installation process will then be automatic.
+
+NOTE:
+
+ The plugins are searched first in ./ and then in the installation dir.
+
+
+============================================================================
+2>                            HOW TO USE THEM
+============================================================================
+
+2.1   EXTERNAL PLUGINS
+
+ The external plugins are those who have the plug_type == PT_EXT and they
+ are the same as the old plugins (prior to ettercap 0.6.2)
+
+   2.1.1   NCURSES INTERFACE
+
+      Within the main interface press 'p' and you'll get the list of the
+      available plugins. Select one and have fun... ;)
+
+
+   2.1.2   COMMAND LINE
+
+      Use:
+
+         ettercap -Np list
+
+      to get the list of the available plug-ins. Then use:
+
+         ettercap -Np plugin_name
+
+      to execute the specified plugin.
+
+      Example:
+
+         ettercap -Np ooze ghibli
+
+      will launch "ooze" on host "ghibli". ( ooze plugin pings the dest host)
+
+      that's all !!
+
+
+2.2   HOOKING PLUGINS
+
+ Hooking plugins were introduced in ettercap 0.6.2 and they can interact with
+ ettercap. The main idea is to provide some hook point in the sniffing engine
+ so a programmer can run his own function at those points.
+ In this way one can code a plugin that need some sniffed data, disregarding
+ if it is on a switched lan or not, all the backend is done by ettercap, and
+ it is totally transparent to the plugin even if is necessary to poison the
+ victims. Only the sniffed data will be passed to the plugin by ettercap.
+ There are many hook points, so there can be different type of plugins, for
+ example a new dissector, or a logger, even a IDS if you want... ;)
+ This type of plugin are loaded through the interface or through the conf
+ file if you run ettercap from command line. And their order of execution
+ is extablished in an init.d style. The hooking plugins have a 4 letter
+ prefix "Hxx_" that tells ettercap the priority (xx can variate from 00 to 99)
+ This is done because plugins at the same hookpoint are executed sequentially
+ and since a plugin can modify the sniffed data, the next one will suffer
+ of the previous modifications.
+
+
+============================================================================
+3>                         HOW TO CREATE A PLUGIN
+============================================================================
+
+
+ I believe that an example tells much more than thousand words. So I write
+ two plugin templates to demonstrate how to write a simple plugin.
+ One, called "dummy", to demostrate how to write an external plugin, and one
+ called "H99_dummy", for hooking plugins.
+
+ However here there are some directive you have to respect.
+
+ 1) THE INCLUDES
+
+      #include "../../src/include/ec_main.h"       // for global variables
+      #include "../../src/include/ec_plugins.h"    // for input/output
+
+      these are required, but you can include as many includes as you want.
+      in order to have a list of API that you can use, look in ./src/include
+      the only APIs you CAN'T use from a plugin are the ec_interface_* ones.
+
+ 2) PLUGIN OPERATION
+
+      struct plugin_ops ops = {
+         ettercap_version: VERSION,
+         plug_info:        "little description",
+         plug_version:     20,
+         plug_type:        PT_HOOK,
+         hook_point:       PCK_DECODED,
+         hook_function:    &dummy_function,
+      };
+
+      for every plugin you have to fill this structure with the appropriate
+      fields. This structure MUST be passed to Plugin_Register(...) at the
+      initialization point (see below).
+
+      ettercap_version: MUST be the global VERSION (used for internal check)
+
+      plug_info:        is a string containing a short description (50 char)
+
+      plug_version:     is a char indicating the versione (note that 15 will
+                        be displayed as 1.5 )
+
+      plug_type:        can be PT_EXT (for external plugin) or PT_HOOK (for
+                        hooking one)
+
+      hook_point:       is the hooking point (see below for a list of
+                        hookable points)
+
+      hook_function:    is a pointer to the function to be executed at the
+                        hook point. It must be "int (*func)(void *)"
+
+
+ 3) INITIALIZATION AND FINALIZATION
+
+      Every plugin MUST contain two function. One for the initialization and
+      one executed when the plugin is unloaded.
+
+      int Plugin_Init(void *params)
+      {
+         /*
+          *  in this fuction we MUST call the registration procedure that
+          *  will set up the plugin according to the plugin_ops structure.
+          *  the returned value MUST be the same as Plugin_Register()
+          *  the opaque pointer params MUST be passed to Plugin_Register()
+          */
+         return Plugin_Register(params, &ops);
+      }
+
+      int Plugin_Fini(void *params)
+      {
+         /*
+          * Here you can free all allocated resources
+          */
+         return 0;
+      }
+
+      VERY IMPORTANT: The plugin must NOT end with exit() !!
+
+ 4) HOOKING POINT
+
+      HOOK_NONE         this is reserved for external plugin
+
+      PCK_RECEIVED_RAW  the plugin is executed right after the packet is
+                        received, before the illithid parsing, so modifying
+                        data here will interfere with illithid job.
+                        the void * pointer points to a RAW_PACKET structure
+                        which contains two field : 1) buffer (a pointer to
+                        the raw packet as received from Link Layer) 2) len
+                        (an integer pointer to the len of the packet)
+                        TIP: if you want the packet to be dropped by ettercap
+                        simply set the len to 0.
+
+      PCK_RECEIVED_STRUCT_FILLED the plugin is executed after illithid
+                        parsing but before passing it to ettercap.
+                        the void * pointer points to a SNIFFED_DATA structure
+
+      PCK_PRE_FORWARD   the plugin is executed before packet forwarding
+                        (ovbiously only if ettercap are doing arp poisoning).
+                        modifying data here will change only the forwarded
+                        packet, illithid as already decoded it, stored its
+                        session and sent to ettercap the sniffed data.
+                        the void * pointer points to the raw packet buffer
+                        ready to be sent on Link Layer, so you have to decode
+                        it from ethernet header.
+
+      PCK_DISSECTOR     the plugin is executed after othre built-in dissectors
+                        have been executed.
+                        the void * pointer points to a DISSECTION structure
+
+      PCK_DECODED       the plugin is executed after active dissectors have
+                        been executed. (active dissector are those who modify
+                        the data before sending it to ettercap. for example
+                        SSH, HTTPS, ICQ are ciphered protocol, so data must
+                        be deciphered before the user view)
+                        the void * pointer points to a SNIFFED_DATA structure
+
+
+      refear to the APPENDIX A in order to have a complete view of the hooking
+      system.
+
+
+ 5) ETTERCAP API
+
+      + Plugin_Output()    same as printf(), but required in order to output
+                           to ncurses interface.
+
+      + Plugin_Input()     to acquire data from user.
+
+      NOTE: hooking plugin MUST NOT use these function !!
+
+
+      + Plugin_Hook_Output()  same as above but for hooking plugins
+
+
+      + All the other functions in ec_inet_forge.c, ec_inet.c and
+        ec_decodedata.c provides you a simple access to the link layer
+        interface.
+
+
+feel free to write an email to the developer to have further informations.
+
+
+
+============================================================================
+APPENDIX A>                 ILLITHID ILLUSTRADED
+============================================================================
+
+
+ Here is rapresented in Very-High-Level-Language the illithid behaviour:
+
+
+ loop
+ {
+   Receives a single packet from Link Layer
+
+   HOOK POINT: PCK_RECEIVED_RAW  (void * pointer -> received buffer)
+
+	if (len <= 0) continue;
+
+   Parses the buffer through Layer 2, 3 and 4
+
+   *** Only UDP and TCP packet are accepted below ***
+
+   Fills the CONNECTION structure
+
+   Executes the built-in dissectors (which fill user, pass and info fields)
+
+   HOOK POINT: PCK_DISSECTOR  (void * pointer -> DISSECTION structure)
+
+   Updated the connection array displayed by ettercap
+
+   if (connection_mode == 0)
+   {
+      Fills the SNIFFED_DATA structure
+
+      HOOK POINT: PCK_RECEIVED_STRUCT_FILLED (void * pointer -> SNIFFED_DATA)
+
+      Executes the built-in data dissectors  (es. SSH, HTTPS, ICQ etc)
+
+      HOOK POINT: PCK_DECODED  (void * pointer -> SNIFFED_DATA)
+
+      Puts the SNIFFED_DATA into the buffer for ettercap
+   }
+
+   if (man_in_the_middle)
+   {
+
+      if (filter_activated)
+      {
+         Executes the filtering engine on that packet
+
+         HOOK POINT: ????  (void * pointer -> ????)
+      }
+
+      Creates internal session (one per connection) with sensitive data in
+      order to maintain the connection syncronized
+
+      HOOK POINT: PCK_PRE_FORWARD (void * pointer -> to be sent buffer)
+
+      Forwars the packet into the Link Layer
+   }
+
+   if (pending_killing_request)
+   {
+      Kills that connection
+   }
+
+   if (pending_inject_request)
+   {
+      Injects chars on Link Layer
+
+      Updates the internal session (sequence number, etc etc)
+   }
+
+ }
+
+
+
+0xABADC0DE==============================================================EC-2K

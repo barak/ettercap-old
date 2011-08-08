@@ -1,0 +1,61 @@
+                       -- ZARATAN PLUGIN HOWTO --
+
+This plugin is usefull to sniff, as local, GRE-redirected remote traffic.
+You can use it in normal sniffing mode or even in ARPsniffing to make mitm
+attacks on remote traffic (like filtering/hijacking/injection or ssh-mitm)
+The basic idea is to create a GRE tunnel that sends all the traffic on router
+interface to your machine...then zaratan will decapsulate it and re-route it
+for you.
+
+First of all you have to have an "enable" access on a remote cisco router then....
+
+--If you want to use it in ARP mode:
+
+Edit the etter.conf file.
+Insert in the OPTIONS field "-H <gateway_ip>".
+Comment all the other unusefull fields.
+Set the GWIP field with your gateway's ip again.
+Now launch ettercap -e etter.conf.
+Select the gateway as SOURCE and press 'a' button.
+Activate zaratan plugin and deactivate all other plugins (it's more secure).
+Ping your gateway and you will see the plugin output
+"Redirect tunnel to x.x.x.x".
+Remember this IP (later known as FakeIP).
+
+
+--If you want to use it in normal sniffing mode:
+
+Simply launch ettercap then press 's' button and activate zaratan plugin.
+Ping your gateway and you will see again plugin output
+"Rediret tunnel to x.x.x.x"
+Once again this is our FakeIP.
+
+
+Now on the remote cisco router....
+
+Set up the tunnel0 interface with mode GRE ip encapsulation.
+Set up, as source, router's serial interface and, as dest, our FakeIP.
+Setup an access list that permits hosts and ports you want to sniff
+(tcp any any for example) but not the traffic with type of srvice equal to 7,
+cause all the traffic  redirected/generated from zaratan has this tos,
+and we don't want to redirect it again in the tunnel
+(pay attention to traffic direction!).
+Set up a route-map that has previous access list and, as next-hop, an ip
+address on the same subnet of the tunnel0's ip address.
+Set up the route-map on both serial and ethernet interface of the router.
+Have fun.
+
+--------------------------------------------------------------------------
+We have intentionally omitted a step-by-step router configuration to avoid
+kiddies-use of this tool. You have at least to know basic cisco router
+configuration and to understand basically how this plugin works to play
+this trick.
+--------------------------------------------------------------------------
+
+Remember that you have to bind, on your machine, a public address or a
+static natted one, cause the router has to reach our FakeIP.
+You can use it even on a PPP connection if you have two machines,
+something like ipchains and a hub (btw you can think about it by yourself) :)
+
+Thanks to H-Team (vale, omone, birillo, kiodo and nick) for the help during
+zaratn testing.

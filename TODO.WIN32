@@ -1,0 +1,8 @@
+
+	- nacurses   sigfauls
+
+	- PacketSendPacket doesn't work  and sigfaults if launched with ncurses !! damned curses !!
+
+	- from console the termios is disabled (I must press enter after any input)
+
+	- disable and enable ip forwarding (see the registry key)

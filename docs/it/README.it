@@ -1,0 +1,779 @@
+============================================================================
+                                ettercap 0.5.2                    2001-07-07
+============================================================================
+
+      Anche se dotati di scarso intelletto essi sono crudeli ed astuti!
+
+
+       @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@
+       @@        @@@     @@@   @@      @@   @@ @@      @@   @@ @@   @@
+       @@@@@@    @@@     @@@   @@@@@@  @@@@@@  @@      @@@@@@@ @@@@@@
+       @@        @@@     @@@   @@      @@  @@  @@      @@   @@ @@
+       @@@@@@@   @@@     @@@   @@@@@@@ @@  @@@ @@@@@@@ @@   @@ @@
+
+
+                     Scanner\interceptor multiscopo
+
+
+            Librerie Richieste :    nessuna :)  (opzionali ncurses 4.2)
+
+            Librerie Opzionali:     openssl     (se si vuole il supporto ssh)
+
+            Installazione:          configure
+                                    make
+                                    make install
+
+                     (opzionale)    make plug-ins
+                                    make plug-ins_install
+
+               (se sei pigro usa)   make-complete_install
+
+============================================================================
+            INTRODUZIONE
+============================================================================
+
+Kiddie:     Un mio amico mi ha detto che è possibile fare dello sniffing
+            su  una LAN .... Così mi sono comprato uno switch ;)
+
+Nagor:      mmhhh....
+
+Kiddie:     Adesso la mia LAN è SICURA ! Non puoi sniffare i miei
+            pacchetti ... ah ah ah
+
+Nagor:      Ne sei sicuro ? Guarda ettercap che fa il suo lavoro ...
+
+Kiddie:     Oh mio Dio ... Sta sniffando tutto il mio traffico !!
+            Userò solo connessioni cifrate sulla mia LAN, così ettercap
+            non può sniffarle ! ah ah ah
+
+Nagor:      mmhh....
+
+Kiddie:     Adesso sto usando SSH. La mia LAN è sicura !
+
+Nagor:      Ne sei sicuro ? Guarda ettercap che fa il suo lavoro ...
+
+Kiddie:     Merda !! grrrr...
+
+
+ "un falso senso di sicurezza, è peggio della insicurezza" -- Steve Gibson
+
+ ehi gente... sveglia ! la rete NON è sicura !!
+
+ ettercap dimostra che è ora di incoraggiare e supportare la ricerca sui
+ protocolli internet al fine di renderli più sicuri.
+
+============================================================================
+            LICENZA
+============================================================================
+
+   GNU GENERAL PUBLIC LICENSE
+
+   vedere COPYING per i dettagli
+
+============================================================================
+            AUTORI
+============================================================================
+
+   Alberto Ornaghi (ALoR) <alor@users.sourceforge.net>
+
+   Marco Valleri (NaGA) <crwm@freemail.it>
+
+
+============================================================================
+                             TABELLA DEI CONTENUTI
+============================================================================
+
+
+  1. DISCLAIMER............................................sez.  1
+
+  2. INSTALLAZIONE.........................................sez.  2
+
+  3. COME USARE ETTERCAP...................................sez.  3
+
+    3.1   interfaccia ncurses
+    3.2   riga di comando
+
+  4. PROBLEMI..............................................sez   4
+     comuni problemi risolti (LEGGERE PRIMA DI INVIARE UNA MAIL)
+
+  5. PAGINA TECNICA........................................sez   5
+
+    5.1   Lista degli host
+    5.2   Sniffing basato su IP
+    5.3   Sniffing basato su MAC
+    5.4   Sniffing basato su ARP
+
+      5.4.1    arp poisoning
+      5.4.2    characters injection
+      5.4.3    active protocol dissection
+      5.4.4    SSH1 man-in-the-middle
+      5.4.5    packet filtering
+
+  6. PLUG-INS..............................................sez.  6
+
+  7. INFORMAZIONI INUTILI..................................sez.  7
+
+
+============================================================================
+1>                               DISCLAIMER
+============================================================================
+
+ Questo software è dato "così come è" e senza alcuna espressa o implicita
+ garanzia, inclusa, senza limitazioni, la garanzia implicita di commercio e
+ e sviluppo per qualsiasi scopo particolare.
+
+
+============================================================================
+2>                              INSTALLAZIONE
+============================================================================
+ La maniera più semplice per compilare ettercap è:
+
+    ./configure
+
+    make
+
+    make install
+
+ Ora dovreste essere in grado di usare ettercap (si installa di default
+ nella directory /usr/local/bin )
+ Ci sono molte opzioni utili nel configure: provate ad usare --help.
+
+ Se volete dare il bit di suid ad ettercap, lasciando la possibilià agli
+ altri utenti, non solo root, di usare il programma, usate --enable-suid
+ prima di applicare il suid ad ettercap con il chmod, altrimenti scarterà
+ il bit di suid.
+
+ Se avete dei problemi con le  plug-ins. Disabilitatele con il commando
+ --disable-plugins.
+
+ Se avete installato OpesSSl in una DIR differente da quella standard usate
+ --with-openssl=<DIR>
+
+ Se ricevete un errore di link all'OpenSSl con ettercap, provate a
+ ricomplilare OpenSSL con "Config shared && make && make install" (A me
+ funziona ;) )
+
+ Se avete ancora dei problemi, mandate una e-mail ad uno degli autori
+ (alor@users.sourceforge.net o crwm@freemail.it).
+
+ Anche il sito di ettercap su sourceforge potrebbe avere l'informazione che
+ cercate e anche alter utili informazioni, ultimi bug e versioni aggiornate
+ (http://ettercap.sourceforge.net).
+
+ La notifica di bug è ben accetta. Vi preghiamo di riportare tutti i
+ problemi durante il processo di configurazione e di make, includendo una
+ copia del config.status, config.cache and config.log, e anche tutte le
+ attinenti diagnostiche del compilatore. Se avete problemi durante
+ l'esecuzione del programma, configuartelo con l'opzione --enable-debug e
+ mandateci anche una copia di ettercap_debug.log e anche una piccola
+ descrizione della vostra configurazione (es. versioni del Kernel e delle
+ Glibc) quando riportate un sigfault o altri strani comportamenti.
+
+============================================================================
+3>                           COME USARE ETTERCAP
+============================================================================
+
+ Ci sono due interfacce grafiche principali, entrambe in modalià testo,
+ una in bianco e nero,e un'altra con la colorazione e i pieni caratteri
+ offerti dalla libreria ncurses.
+
+ 3.1 INTERFACCIA NCURSES
+
+ Cominciamo a spiegare l'ultima:
+
+ Se ettercap è mandato in esecuzione senza parametri (guardare più avanti,
+ per le opzioni da riga di comando) esso userà l'interfaccia fornita dalla
+ ncurses (si noterà un piccolo ritardo nella scansione della vostra LAN =).
+ La finestra princiaple è suddivisa in 3 sottosezioni: alta,centrale,bassa.
+ In quella alta c'è il diagramma della connessione, che mostra le due
+ macchine di cui sniffare il traffico o con cui cooperare.
+
+ Sotto potete notare la lista degli host noti nella LAN in oggetto (con hub
+ o switch) che potete raggiungere: selezionatene una coppia per sniffare il
+ loro traffico.
+ Le due colonne identiche ti permettono di selezionare I sopracitati host:
+ selezionate con le frecce un ip attivo (premendo il tasto [invio]) dalla
+ colonna di sinistra.
+ Ora passate alla colonna di destra (tasto [tab]), e muovetevi coi tasti
+ freccia selzionando il secondo ip. Questo rappresenta il percorso di cui
+ volete sniffare il traffico (ed eventualmente a cui connettersi/o fare
+ poison).
+ Ovviamente non potete sceglire lo stesso ip come origine o destinazione,
+ ma in alcun caso siete forzati a scegliere il vostro ip.
+ Nella finestra in basso, c'è una specie di barra di stato, che vi fornisce
+ Informazioni addizionale sugli host appena selezionati, stato corrente e
+ eventualti altri importanti suggerimenti.
+ A questo punto possiamo selezionare altre opzioni, quali per prima la 'p'
+ opzione plug-in (queste sono caratteristiche separate, programmate al di
+ fuori di questo progetto, con un ampia copertura di applicazioni, non
+ spiegabili in questo punto: c'è uno speciale README-PLUGIN per queste).
+ O l'abilità con il tasto 'c' di accertarsi se qualche altro programma
+ 'diabolico' sta girando sulla propria LAN, e vi avverte di possibili
+ intercettazioni di dati. Ma ricordatevi che in ogni punto del programma
+ potete sempre premere 'h' per l'aiuto, e una finestruccia di aiuto apparirà
+ come per magia indicandovi le opzioni possibili allo stato attuale del
+ vostro lavoro!
+
+ Queste finestre di aiuto dovrebbero bastare da sole,così probabilmente non
+ sarà bisogno nella lettura del questa seziona, ad ogni modo: noterete che
+ la finestra superiore aggiornerà mentre si seleziona l'ip sorgente ed l'ip
+ destinazione ed infine mostra lo stato attuale se siete in connect o sniff
+ (rispettivamente premendo 'a' e 's' o 'm'. )
+
+ I filtri basati sullo sniff IP cercano nell?'ntestazione IP per
+ l'individuazione degli IP. Questo è l'approccio vecchio stile, usato dalla
+ maggior parte dei programmi. Per la ricerca dei MAC i filtri fanno una
+ analisi dell'intestazione ETH. Questo metodo è utile si si vogliono
+ sniffare connessioni tra gli host locali verso gli host esterni attraverso
+ un gateway (si seleziona semplicemente l'host e il gateway come,
+ rispettivamente, sorgente e destinazione) Per ultima c'è l'opzione connect,
+ che come detto, fa in modo che voi, se il vostro host risulta connesso ad
+ una LAN switchata,  facciate del poisonig sulla cache ARP, permettendovi
+ di fare lo sniff del traffico sulla vostra rete come se foste su una rete
+ con un hub. Con questa opzione voi potete specificare uno o due host. Se
+ se ne seleziona solo uno si entra nel modo PublicARP e voi impersonerete
+ l'IP scelto con il  vostro. Se si specificano entrambi gli host si entrerà
+ nel modo ARPBased permettendovi di vedere il traffico bidirezionale tra
+ essi.
+
+ LISTA DELLE CONNESSIONI:
+
+ In ogni caso, ora siete entrati nella seconda fase: la finestra centrale
+ ora vi farà vedere la lista delle connessioni attive tra due IP, se ce
+ ne sono. Così come eventuali connessioni aperte, che voi potete
+ selezionare come al  solito, dandovi modo di entrare nella terza fase:
+ lo sniff vero e proprio! =)
+ Nel frattempo si può tenere sotto controllo lo stato delle connessioni
+ (attive, chiuse, etc) e monitorare il tipo di traffico/porte attive
+ (ftp,ssh,web,etc).
+ E' anche possibile uccidere qualsiasi connessione attiva.
+ Se il protocollo applicativo è supportato da ettercap vengono mostrate
+ delle informazioni aggiuntive nella finestra inferiore sulla connessione
+ selezionata, come ad esempio UTENTI e PASSWORD utilizzate da sessioni
+ interattive. Se state utilizzando il modo ARPBased potete attivare
+ l' ACTIVE PROTOCOL DISSECTION che vi permetterà di leggere del perticolare
+ traffico cifrato come ssh.
+
+ CREAZIONE DEI PACCHETTI:
+
+ Con 'x' voi potete creare il vostro pacchetto dal livello Ethernet fino al
+ livello Application. Di base durante la creazione di un pacchetto i campi
+ vengono riempiti con le proprietà della connessione selezionata. Lo stesso
+ si può fare nella lista degli host (la prima interfaccia) ma i campi non
+ sono autocompletati se non si seleziona l?host bersaglio. Tutti i campi
+ possono essere modificati a vostro piacimento e per i protocolli non
+ supportati vi è la possibilità di costruire delle intestazioni RAW fatte
+ di stringhe esadecimali.
+
+ Es.:  assumete di voler creare un pacchetto RIP:
+       completeremo i campi fino all'intestazione UDP (porta 520) e nel
+       payload scriveremo "\x01\x02\x00\x00\xFF\xFF\x00\x02here the pass"
+       abbiamo costruito l?intestazione RIP con sequeze esadecimali.
+
+ SNIFFING:
+
+ Ora avendo selezionato una connessione attiva: due sottofinestre appaiono
+ in quella principale. Vi mostrano il pacchetto origine che passa attraverso
+ il vostro computer prima di raggiungere l'host di destinazione, voi state
+ sniffando il traffivo senza che se ne accorgano. Ci sono varie opzioni di
+ visualizzazione: il flusso può essere in formato esadecimale (tasto 'x') o
+ ascii ('a') che è specificatamente decodificato per i protocolli
+ supportati. Alcuni tipi di decodifica hanno bisogno che l'opzione ACTIVE
+ DISSECTION PROTOCOL sia attivo. Si può anche fare in modo che che il flusso
+ di dati venga sospeso (si blocca solo la visualizzazione, la decodifica
+ continua in backgroud), come una specie di scroll-lock (tasto 's'),
+ affinchè si possa analizzare meglio il traffico decodificato.
+
+ Infine ecco un'opzione troppo carina : INJECT.
+
+ Con il tasto 'i' voi potete inviare alcuni caratteri nel traffico,
+ scegliendone la direzione, in modo da poter aggiungere comandi al flusso
+ (cioè voi potete sniffare una connessione telnet ed essere in grado di
+ mandare comandi alla macchina target come ad esempio iniviando 'ls' o
+ qualsiasi cosa vogliate, ed esso verrà eseguito come se fosse originato
+ dalla macchina sorgente. Allo stesso modo potete creare un falso output
+ sulla macchina sorgente, non corrispondente al vero output).
+
+ NOTA:  La feature INJECT supporta le sequenze di escape. Potete fare delle
+        inject multi linea.
+ NOTA:  ricordatevi di terminare i vostri inserimenti con \n\r se volete
+        fare delle inject sui server.
+
+ Ultimo, ma non meno importante, PACKET FILTERING:
+
+ Premendo 'f' vi viene presentata una maschera che vi chiede di mettere dei
+ filtri. Ponete attenzione alla finestra attiva, perch‚ l?origine e la
+ destinazione sono differenti. Potete inserire filtri di ricerca per una
+ stringa particolare (anche esadecimale) Nel carico TCP o UDP e modificarla
+ con una stringa vostra o eliminare il pacchetto intero.
+
+ Comandi disponibili con la maschera dei filtri :
+
+  F10 o ESC-- esci dalla form
+  ^N       -- prossimo campo               ^P  -- campo precedente
+  Home     -- primo campo                  End -- ultimo campo
+  ^L       -- campo a sinistra             ^R  -- go campo a destra
+  ^U       -- scorri in alto               ^D  -- scorri in basso
+  ^W       -- prossima parola              ^B  -- parola precedente
+  ^S       -- vai all'inizio del campo     ^E  -- vai alla fine del campo
+  ^H       -- elimina carattere precedente ^Y  -- cancella la linea
+  ^G       -- elimina parola corrente      ^C  -- cancella fino a fine linea
+  ^K       -- cancella fino a fine campo   ^X  -- pulisci il campo
+  ^] o Ins -- cambia la modalità di inserimento
+
+ Per una spiegazione dettagliata su come filtrare una connessione
+ leggetevi il paragrafo 5.4.5
+
+ C'è anche un opzione che scrive l'output del flusso su un file, premete
+ 'l' poi leggetevelo con calma o fatelo parsare a degli script.
+ Potete anche inserire un filtro con la regola 'Log' e solo i pacchetti
+ corrispondenti verranno scritti su file.
+
+ Come potrete notare, utilizzare il programma sarà molto più
+ semplice quando lo proverete dopo aver letto le istruzioni. Gli aiuti
+ sono anche una buona risosorsa su cui contare mentre state lavorandoci.
+ (semplicemente 'h')
+
+ 3.2 LINEA DI COMANDO
+
+ Bene eccovi due comandi classici che vi risponderanno con la lista delle
+ opzioni :
+
+ ettercap --help e man ettercap
+
+ NOTA: Alcune opzioni sono disponibili solo con l'interfaccia visuale
+
+       - Packet factory
+       - Injection
+
+ Cominciando con il modo non interattivo (-N) sono disponibili alcune
+ opzioni legate all'interattività : si puo attivare un piccolo help,
+ cambiare la vista al volo tra ascii ed esadecimale. Allo stesso modo si
+ possono configurare molte opzioni dalla riga di comando e vederle già
+ attive e funzionanti in modalità interattiva.
+
+ Ora c'è anche la possibilità di utilizzare comandi + corti, specificando
+ uno o + host da sniffare (se siete in modalità silenziosa, è possibile uno
+ o nessuno usano l'opzione -z, come sniffit che sniffa dappertutto =)
+
+ Es:
+
+  ettercap -Nsz  (sniffa dati da ogni ip)
+
+  ettercap -NCsz  (colleziona solo UTENTI E PASSWORD da ogni IP)
+
+  ettercap -NCsz ghibli meltemi (colleziona solo da "ghibli" a "meltemi")
+
+ NOTA: Se avete cominciato in modo interattivo (senza -N) potrebbe essere
+ necessario specificare 'r' per rinfrescare l'ip della lista degli host se
+ siete ritornati con 'q' alla prima interfaccia, fintantochè nessuna lista
+ è stata generata all'inizio a causa dell'opzione -z.
+
+       es: ettercap -zs ghibli meltemi          o
+           ettercap -zm 00:A0:24:4C:00:F9 00:A0:24:36:00:C2
+
+ OK questo è tutto ...
+
+ Divertitevi e aspettate la prossima versione, che includerà ssh handling,
+ con cui potrete fare scherzo divertenti ai vostri amici, specialmente se
+ sono quelli che pensano che ssh sia non sniffabile e crittograficamnte
+ indistruttibile, meglio ancora se credono che gli switch facciano il loro
+ lavoro! =)
+
+============================================================================
+4>                             PROBLEMI
+============================================================================
+
+ Ci sono realmente molte cose che potrebbero accaderevi durante
+ l'installazione di questo programma. Così non incolpateci nel caso di
+ incidenti o delle ore spese per provare a compilare ecc.. In questa
+ condizione, finchè non raggiungeremo la versione * molto * stabile, non ci
+ sarà sezione di analisi guasti.Ma faremo del nostro meglio, proveremo a
+ compilare su molte macchine, facendo pi— port possibili, e puliremo tutto.
+ Per ora la cosa principale era scrivere le idee base e vederle funzionare.
+ Quando lo scheletro principale sarà completo ci saranno molte utili
+ aggiunte.
+
+ La cosa migliore da fare se vi serve supporto o aiuto per la compilazione è
+ leggervi il forum sul sito web di ettercap. Qui potrete trovari molte
+ soluzioni per i problemi comuni.
+
+ Poi noi scriveremo una specie di FAQ e una lista di problemi risolti o una
+ sezione 'TODO' in questa sezione.
+
+ VERSIONE RPM:
+
+ Vogliamo informarvi del fatto che ci sono problemi in particolare quando
+ si installa la versione binaria dell?RPM di ettercap, incluse le ncurses
+ le quali possono facilmente essere non-trovate: semplicemente provate ad
+ aggiungere --nodeps alla linea di comando dell-RPM.
+
+ COMPILAZIONE CON OPENSSL:
+
+ Ettercap ha bisogno della versione ?shared? di OpenSSL così se avete dei
+ problimi linkando ettercap provate a ricompilare OpenSSl con :
+
+ "config shared && make && make install"
+
+
+ poi editate il file /etc/ld.so.conf e aggiungete il path di installazione
+ poi eseguite "ldconfig"
+
+ INIZIO TROPPO LENTO:
+
+ Se il messaggio "Building host list for netmask 255.255.255.0,
+ please wait..." Viene visualizzato per + di 5-10 secondi, probabilmente
+ la vostra gethostbyaddr() è troppo lenta nella risoluzione degli IP, allora
+ provate ad eseguire ettrcap con lopzione -d evitando la risoluzione degli
+ IP.
+
+============================================================================
+5>                             PAGINE TECNICHE
+============================================================================
+
+
+ 5.1   LISTA DEGLI HOST
+
+ Quando ettercap viene esguito, esso crea la lista degli host presenti
+ nella lan. Mandando una ARP REQUEST per ogni ip nella lan (prendendo spunto
+ dall' ip e dalla netmask del vostro host), è possibile ottenere le ARP
+ REPLY in modo da ottenere la lista delgi host che rispondono sulla lan.
+ Con questo metodo anche le macchine Windows, rispondono al call-for-reply
+ (non sarebbe la stessa cosa con i brodacast ping la cui risposta è inibita
+ nelle macchine Windows). State molto attenti se la netmask è di classe B
+ (255.255.0.0) perchè ettercap manderà 255*255 = 65025 richieste di ARP,
+ e durerà + di un minuto !! (il delay tra 2 richieste è di circa un
+ 1 millisecondo).
+
+ 5.2   SNIFF BASATO SULL'IP
+
+ Questo è il modo di sniffare 'vecchio stile'
+ Mette la scheda di rete in modo promiscuo e poi sniffa ogni pacchetto che
+ corrisponde al filtro ip.
+ Se state usando l?interfaccia ncurses, il filtro ip è fatto così:
+ ip sorgente, porta sorgente, ip destinazione, porta destinazione; in
+ entrambe le direzioni della connessione.
+ Invece usando la riga di comando, si possono fare filtri ip personalizzati.
+ Si possono specificare o il sorgente, o la destinazione o entrambi, e per
+ ogni modo possono essere specificate o no le porte.
+
+ ESEMPI:
+
+     ettercap -N -s ghibli
+     ettercap -N -s ghibli:23
+
+ Il primo snifferà tutte le connessioni verso l'host "ghibli"
+ Il secondo snifferà tutte le connessioni sulla porta 23 dell'host "ghibli"
+
+     ettercap -N -s ghibli meltemi
+     ettercap -N -s ghibli:23  meltemi
+     ettercap -N -s ANY:23
+
+ Il primo snifferà tutte le connessioni tra "ghibli" e "meltemi"
+ Il secondo solo le connessioni verso la porta 23 di ghibli da "meltemi"
+ Il terzo sniffa tutto il traffico di ogni host sulla porta 23 (telnet)
+
+ 5.3   SNIFF BASATO SU MAC
+
+ Mette la scheda di rete in modo promiscuo e poi sniffa ogni pacchetto che
+ corrisponde al filtro MAC.Il filtro MAC è fatto dando gli IP dei due host.
+ Ettercap cercherà nella lista degli host i due IP e assocerà i MAC corretti
+ al filtro.In questo modo specificando un gateway e un host si otterrano
+ tutte le connessioni tra l?host e internet.
+
+ Esempi:
+ assumiamo che ?meltemi? è un gateway verso internet.
+
+ ettercap -N -m ghibli meltemi
+
+ questo ci ritornerà tutte le connessioni che ?ghibli? fa verso internet.
+
+ 5.4 SNIFF BASATO SU ARP
+
+ Questo metodo non mette la scheda di rete in modalità promiscua.
+ Non è necessaria in quanto tutti i pacchetti sono mandati a noi.
+ Lo switch ci manderà ogni pacchetto, cos? abbiamo un buon metodo per
+ sniffare le LAN switchate. Vediamo come sia possible:
+ Quando selezionate questo metodo, ettercap avvelenerà la cache ARP dei 2
+ host, identificandosi come l?altro host (per capire meglio guardate la
+ prossima sezione) Una volta avvelenate le cache ARP, i due host cominciano
+ la connessione, ma i loro pacchetti verranno inviati a noi, noi li
+ salveremo e poi, li manderemo verso la giusta parte della connessione.
+ Così la connessione è trasparente alle vittime, non intuendo che il loro
+ traffico è sniffato. L'unico metodo per scoprire che c'è un
+ man-in-the-middle nella vostra connessione è monitorare la cache ARP
+ e controllare che non ci siano 2 host con il medesimo MAC! Questo è quello
+ che facciamo, per scoprire se qualcun altro sta avvelenando la cache ARP,
+ mandando un avviso, che il nostro traffico è sotto controllo! =)
+
+     HOST 1  - - - - - - - - - - - - - - - - - - - -> HOST 2
+  (avvelenato)                                     (avvelenato)
+       |                                               ^
+       |                                               |
+        ------------> HOST ATTACCANTE -----------------
+                      ( ettercap )
+
+ Legenda:
+             - - - ->   Connessione logica
+             ------->   Connessione reale
+
+ Ok, bello! Tuttavia, come posso avvelenare la cache ARP ?
+
+ 5.4.1    ARP POISONING
+
+ Il protocollo ARP ha una insicurezza intrinseca. Per far in modo di ridurre
+ il traffico sul cavo, esso inserisce una entry nella cache ARP anche se
+ nessuno lo ha richiesto. In altre parole, OGNI risposta ARP che va a buon
+ fine sarà inserita nella tabella ARP.Così, sfruttando questa
+ 'caratteristica', si mandano delle false risposte ARP ai due host che
+ dovremo sniffare. Nelle risposte diremo al primo host che il MAC address
+ del secondo host è quello della nostra interfaccia di rete e lo stesso
+ faremo col secondo host in modo da creare un perfetto man-in-the-middle tra
+ i due host, e 'legalmente' riceveremo i loro pacchetti!!
+
+ ESEMPI:
+
+ HOST 1:  mac: 01:01:01:01:01:01      ATTACKER HOST: mac: 03:03:03:03:03:03
+           ip: 192.168.0.1                            ip: 192.168.0.3
+
+
+ HOST 2:  mac: 02:02:02:02:02:02
+           ip: 192.168.0.2
+
+ noi manderemo delle risposte ARP a:
+
+      HOST 1 dicendo che 192.168.0.2 ha come MAC 03:03:03:03:03:03
+      HOST 2 dicendo che 192.168.0.1 ha come MAC 03:03:03:03:03:03
+
+ Adesso essi sono avvelenati !! Essi manderanno i loro paccheti a noi!
+ Poi se noi riceviamo pacchetti da:
+      HOST 1 li gireremo a 02:02:02:02:02:02
+      HOST 2 li gireremo a 01:01:01:01:01:01
+
+ Semplice, no ?
+
+
+ 5.4.1.1  PUBLIC ARP
+
+ Per sniffare le connessioni da un dato host verso tutti gli altri su una
+ rete switchata, e' possibile usare il PUBLIC ARP mode.
+ con questo metodo, ettercap mandera' in broadcast una ARP reply con
+ l'indirizzzo della vittima e il mac di ettercap. tutti gli host metteranno
+ questa risposta nella cache e manderanno i loro pacchetti a ettercap, che
+ li forwardera' al giusto host.
+ ma c'e' un problema, anche la vittima riceve questa reply ed e' possibile
+ che si accorga di un conflitto di ip (come succede per win2000).
+ nasce quindi lo SMART PUBLIC ARP
+
+
+ 5.4.1.2  SMART ARP
+
+ Le risposte sono mandate selettivamente a tutti gli host tranne alla
+ vittima. in questo modo si evita il conflitto tra ip.
+
+ NOTA: per poter effettuare SMART ARP ettercap ha bisogno dell'intera lista
+       degli host. quindi e' sconsigliato usare l'opzione -b. ed e' comunque
+       impossibile usare tale modalita' se si usa -z.
+
+ la modalita' e' selta automaticamente. se ettercap possiede la lista,
+ usera' SMART ARP altrimenti PUBLIC ARP.
+
+
+ 5.4.2 CHARACTERS INJECTION
+
+ Noi abbiamo comiciato dicendo che i pacchetti sono fatti per noi ......
+ E i pacchetti non arriveranno a destinazione finchè non li manderemo loro.
+ Ma cosa succede se noi li cambiamo?
+ Si esatto, essi raggiungono la destinazione con la nostra modifica.
+ Noi possiamo modificare, aggiungere, e cancellare i contenuti di questi
+ pacchetti, semplicemente ricalcolando il checksum  e sostituendolo al
+ traffico. Ma possiamo fare molto molto di pi—: possiamo inserire pacchetti
+ nella connessione. Noi possiamo creare i nostri pacchetti con la giusta
+ sequenza e numeri di riconoscimento e li mandiamo all'host desiderato.
+ Quando i prossimi pacchetti passerano attraverso di noi, semplicemente
+ sottrarremo o aggiungeremo il numero progressivo con la quantità di dati
+ che abbiamo iniettato finchè il collegamento è vivo, impedendo che il
+ collegamento venga rifiutato (questo fino a che non chiudiamo il ettercap,
+ che mantiene i numeri progressivi corretti, dopo l'uscita dal programma,
+ il collegamento deve essere RESETTATO o tutto il traffico futuro verrebbe
+ rifiutato, bloccando la rete della stazione di lavoro di sorgente).
+
+ NOTA: L'immissione di caratteri supporta le sequenze di escape. Si possono
+       fare inserimenti multi-riga
+
+       eg: "this on line one \n this on line two \n and so on..."
+       eg: "this in hex mode: \x65\x6c\x6c\x65"
+       eg: "this in oct mode: \101\108\108\101"
+
+ NOTA: ricordatevi di terminare I vostri inserimenti con \n\r se volete
+       inserire comandi sul server.
+
+
+ 5.4.3 ACTIVE PROTOCOL DISSECTION (per il modo ARPBASED)
+
+ Per vedere i flussi fortemente criptati avete bisogno di agire direttamente
+ sul flusso. Per esempio avete bisogno di cambiare le chiavi del pacchetto
+ (tecnica del ma-in-the-middle). In casi particolari può portare ad un
+ errore nel protocollo, so state attenti ad utilizzare questa
+ caratteristica. Il metodo usato varia molto a seconda del protocollo
+ utilizzato ed è + difficile da spiegare che da codificare.
+ Così, ci dispiace, ma se siete veramente interessati al funzionamento
+ esaminatevi il codice.
+
+ 5.4.4 SSH1 MAN-IN-THE-MIDDLE
+
+ Quando la connessione parte (ricordatevi che noi siamo i master-of-packets,
+ tutti I pacchetti passano attraverso noi) viene sostituita la chiave
+ pubblica del server con una generata al volo e salvata in una lista in modo
+ da poterla riutilizzare in seguito e in modo da ricordarci che quel server
+ è già stato avvelenato. Poi il client manda il pacchetto contenente la
+ chiave cifrata di sessione con la nostra chiave, così saremo in grado di
+ decifrarlo e sniffare la chiave 3DES reale di sessione. Adesso noi
+ criptiamo il pacchetto con la chiave pubblica corretta del server e la
+ manderemo al demone SSH. La connessione si stabilisce normalmente, ma noi
+ possediamo la chiave di sessione!!! Ora noi possiamo decifrare tutto il
+ traffico e sederci guardando il flusso di dati! La connessione rimane
+ attiva anche se noi chiudiamo ettercap, perch‚ ettercap non funziona da
+ proxy per esse (come invece fa dsniff). Dopo lo scambio di chiavi ettercap
+ diviene uno solo uno spettatore .... ;)
+
+
+5.4.5 PACKET FILTERING
+
+ Cosi' come avviene per l'injecting, possiamo modificare i numeri di sequenza
+ se necessario.
+ Cone la macchina virtuale dei filtri, e' possibile programmare una catena dei
+ filtri per ottenere il filtro, anche complesso, che si desidera
+ Una catena di filtri e' un semplice array di filtri che puo' essere visto come
+ una serie di istruzione di una macchina virtuale. L'entry point del programma
+ e' il filtro numero 0 (zero). E' possibile specificare dei salti se il filtro
+ e' valutato vero o altri salti se il filtro e' falso. Un filtro e' ritenuto
+ vero quando la tripletta <porta sorgente, porta destinazione, payload> e'
+ (in AND logico) uguale a quelli specificati dal filtro. La stringa NULLA e'
+ sempre valutata vera.
+ Se il filtro corrisponde, sara' eseguita l'azione corrispondente
+ (Log, Replace or Drop) e l'instruction pointer sara' settato al prossimo
+ filtro della catena. Quando si raggiunge un filtro con un salto vuoto, la
+ catena viene interrotta e il pacchetto e' forwardato al destinatario.
+ In questo modo, e' possibile creare filtri che cercando determinate stringhe
+ (anche esadecimali) nel payload TCP o UDP e le sostituiscono con altre oppure
+ droppare l'intero pacchetto. E' possibile usare i wildcard nella stringa da
+ cercare con la speciale notazione [n*] dove n indica il numero di caratteri
+ jolly.
+ e.g.
+
+   supponiamo una sequenza di dati in questo modo:
+
+      packet 1:   "var1=123&var2=400"
+      packet 2:   "var1=124&var2=420"
+      packet 3:   "var1=125&var2=460"
+      packet 4:   "var1=126&var2=540"
+      packet 5:   "var1=127&var2=700"
+      ...
+      ...
+
+   vogliamo assignare alla var1 un valore, non curandoci del suo valore
+   corrente. il nostro filtro sara:
+
+         Search:  "var1=[3*]"
+         Replace: "var1=000"
+
+   l'output del filtro sara il seguente:
+
+      packet 1:   "var1=000&var2=400"
+      packet 2:   "var1=000&var2=420"
+      packet 3:   "var1=000&var2=460"
+      packet 4:   "var1=000&var2=540"
+      packet 5:   "var1=000&var2=700"
+      ...
+      ...
+
+
+ NOTA: i wildcard possono essere usati solo alla fine della stringa !!
+ e.g.
+         "var1=[5*]"             OK
+         "[4*]=123"              NON PERMESSO
+         "var1=[3*]&pippo"       E' TRASFORMATO IN "var1=[3*]"
+         "var1=[3*]&var2=[3*]"   NON PERMESSO
+                                 per fare sostituzioni multiple, bisogna
+                                 creare due fitri. uno che sostituisce la
+                                 var1 e che salta a quello che sostituisce
+                                 la var2
+                                 i.e:  0 | var1=[3*] R var1=000  | => 1
+                                       1 | var2=[3*] R var2=111
+
+
+ E' possibile cercare stringhe anche in questo formato "\x72\x6f\x6f\x74".
+
+
+ NOTA: La maschera converte gli spazi, così se volete cercare 'ettercap ',
+       dovete settare un filtro come 'ettercap\x20'. '\x20' si traformerà
+       in ' '. E se volete cercare la stringa "[*]", dovete escapearla.
+
+ NOTA: Se il payload eccede la giusta MTU (cioè se ad esempio rimpiazzate
+       un stringa cercata con una molto + grossa), il filtro silenziosamente
+       fallisce lasciando intoccato il payload (il controllo viene fatto
+       prima della modifica), così attenzione a ciò che filtrate a e a come
+       ........ ;)
+
+============================================================================
+6>                                 PLUG-INs
+============================================================================
+
+
+ guardate README.PLUGINS
+
+
+============================================================================
+7>                            INFORMAZIONI INUTILI
+============================================================================
+
+
+Progetto inziato        :  2000-11-25
+
+Ultima release staÿbile :  0.5.2    Il nostro software non ha mai bug,
+                                    svilluppa solo funzioni random
+
+Pubblicato il           :  2001-07-07  Ogni volta che un codice funziona
+                                       è gia' obsoleto
+
+Editor :                   vi, vim, gvim, mcedit, UltraEdit
+
+
+ringraziamenti :           The IEEE 802.3  standard  :)
+                           ISO/OSI organization
+                           Andrew S.Tanenbaum
+                           Berkeley University
+
+                           the SiLAB (Laboratorio universitario)
+                           JJ's corner PUB
+
+ALoR ringrazia:            VMWare staff ;)
+                           elle (lei sa per che cosa ...)
+                           Raptor
+                           la mia autoradio
+
+
+NaGA ringrazia:            Heineken Inc.
+                           Il mio lettore MP3
+                           N-Team
+                           MegaBug
+
+
+Fanculo a :                tutte le tipe che se la menano ;)
+                           mcedit (it sucks!)
+
+
+Motto :                    La specializzazione è per gli insetti,
+                           l'uomo deve saper fare ogni cosa!
+
+Chi siamo :                Se pensi di conoscerci ? NON E' VERO
+                           Se non ci conosci ? CI CONOSCERAI
+
+Shakespeare :              question = ( to ) ? be : !be;
+
+Traduzione :               Ares <ares@inwind.it>
+
+0xABADC0DE================================================================EC-2K
+
+

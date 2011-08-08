@@ -1,0 +1,75 @@
+==================
+  TODO for 0.6.x
+==================
+
+   + PORTING TO SUNOS      (TO BE TESTED, TESTED and TESTED...)
+      + ifr.ifru_mtu
+      + Promisc mode doesn't work
+      + void Inet_DisableForwarding(void)
+      + void Inet_RestoreForwarding(void)
+      + char *Inet_MacFromIP(unsigned long ip)
+
+   + PORTING TO 64 bit ARCH
+
+   + SELECTIVE LOGGING FROM SNIFFING INTERFACE
+
+   + TCP + UDP sniffing default for console mode
+
+   + MULTI-POISONING
+      - allow multi target in arp based mode
+      - hybrid sniffing
+
+   + PASSIVE SCANNING
+      - PASV mode in ftp must not be shown in the open ports
+         (227 Entering Passive Mode (192,168,0,30,78,85)) -->  78*256 + 85
+
+   + BUG FIXING
+      - Public session removal  ack without psh  and datalen =0
+      - unicode user for samba
+
+   + CODE TUNING
+      - Convert some structures to speed up the ncurses interface
+
+   + HTTPS
+      - porting to BSD  (damned routing socket system !! it doesn't permit our dirty job...)
+
+   + NEW DISSECTOR
+      - TACACS dissector
+      - ICQ 2001
+      - new netbios
+
+==================
+  LONG TERM TODO
+==================
+
+   + SFTP
+   + FTP-SSL
+
+   + RESEARCH
+      - How does IPSec work ?
+      - How does VPN work ?
+      - How does Kerberos work ?
+
+   + Protocol Injection
+      - with ncurses form (different injector for different protocol)
+
+   + Decodedata
+      - add other protocol dissectors
+         . as many as possible... POSTGRESQL CVS TDS TACACS
+      - data dissectors
+         . as many as possible... ICQ
+
+   + Inet
+      - handle fragmented packets
+
+   + Ncurses interface
+      - better winch handling... (i'm too lazy to do this...)
+
+
+=================
+  TODO NEVER ;)    or very very very long term todo... :)
+=================
+
+   + GTK+ interface
+
+   + Kettercap (KDE interface)

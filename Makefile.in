@@ -1,0 +1,182 @@
+
+# $Id: Makefile.in,v 1.16 2002/02/11 20:31:55 alor Exp $
+
+SOURCES  = @SOURCES@
+DESTS    = $(SOURCES:.c=.o)
+
+MISSING  = @MISSING@
+MISSDESTS= $(MISSING:.c=.o)
+
+DESTDIR  =
+CC       = @CC@
+LIBS     = @LIBS@ @LDFLAGS@
+MISSLIBS = @MISSLIBS@
+DEFS     = @DEFS@ -D@OS@ @OS_OPT@
+INSTALL  = @INSTALL@
+
+prefix      = @prefix@
+exec_prefix = @exec_prefix@
+
+BINDIR   = @sbindir@
+MANDIR   = @mandir@
+DATADIR  = @datadir@/@PROG@
+PLUGDIR  = @libdir@/@PROG@
+DOCDIR   = ${prefix}/share/doc/@PROG@
+DOC      = COPYING README README.PLUGINS README.WIN32 CHANGELOG HISTORY AUTHORS TODO THANKS KNOWN-BUGS PORTINGS INSTALL ./plugins/H01_zaratan/ZARATAN.HOWTO
+
+DEBUG    = @DEBUG@
+CFLAG    = @CFLAGS@
+COPTS    = -I. @COPTS@
+
+PROG     = @PROG@
+VERSION  = @VERSION@
+
+ALLOPT   = $(DEBUG) $(CFLAG) $(COPTS)
+
+
+.c.o:
+	$(CC) $(ALLOPT) $(DEFS) -c -o $@ $<
+
+all: @PROG@
+
+@PROG@: path $(DESTS) $(MISSDESTS)
+	$(CC) $(ALLOPT) $(DEFS) -o $@ $(DESTS) $(MISSLIBS) $(LIBS)
+	@echo
+	@echo "@SB@ $(PROG) is ready... @EB@"
+	@echo
+
+path:
+	@echo "#define DATA_PATH \"$(DATADIR)\"" > ./src/include/ec_install_path.h
+	@echo "#define PLUGIN_PATH \"$(PLUGDIR)\"" >> ./src/include/ec_install_path.h
+	@touch ./src/ec_inet.c
+
+install: @PROG@ strip
+	$(INSTALL) -d $(DESTDIR)$(BINDIR)
+	$(INSTALL) -m 700 $(PROG) $(DESTDIR)$(BINDIR)
+	$(INSTALL) -d $(DESTDIR)$(DATADIR)
+	$(INSTALL) -m 644 ./share/[a-z]* $(DESTDIR)$(DATADIR)
+	$(INSTALL) -m 644 ./etter.mime $(DESTDIR)$(DATADIR)
+	$(INSTALL) -m 644 ./etter.conf $(DESTDIR)$(DATADIR)
+	$(INSTALL) -m 644 ./etter.dns $(DESTDIR)$(DATADIR)
+	$(INSTALL) -m 644 ./etter.filter $(DESTDIR)$(DATADIR)
+	$(INSTALL) -m 644 ./etter.filter.ssh $(DESTDIR)$(DATADIR)
+	$(INSTALL) -m 644 ./etter.passive.os.fp $(DESTDIR)$(DATADIR)
+	$(INSTALL) -m 644 ./etter.ssl.crt $(DESTDIR)$(DATADIR)
+	$(INSTALL) -d $(DESTDIR)$(DOCDIR)
+	$(INSTALL) -m 644 $(DOC) $(DESTDIR)$(DOCDIR)
+	$(INSTALL) -m 644 ./docs/[a-z]*/[a-z]* $(DESTDIR)$(DOCDIR)
+	$(INSTALL) -d $(DESTDIR)$(MANDIR)/man8
+	$(INSTALL) -m 644 $(PROG).8 $(DESTDIR)$(MANDIR)/man8/$(PROG).8
+	@echo
+	@echo "=============================================================="
+	@echo
+	@echo "@SB@ $(PROG)@EB@     installed in @SB@$(DESTDIR)$(BINDIR) @EB@"
+	@echo "@SB@ shared files@EB@ installed in @SB@$(DESTDIR)$(DATADIR) @EB@"
+	@echo "@SB@ man pages@EB@    installed in @SB@$(DESTDIR)$(MANDIR)/man8/ @EB@"
+	@echo "@SB@ DOCS@EB@         installed in @SB@$(DESTDIR)$(DOCDIR) @EB@"
+	@echo
+	@echo "=============================================================="
+	@echo
+
+plug-ins: path
+	cd plugins && make && cd ..
+	cp -f ./plugins/[a-zH]*/ec_*.so ./
+	@echo
+	@echo "@SB@ $(PROG) plugins are ready... @EB@"
+	@echo
+
+plug-ins_install:
+	cd plugins && make install DESTDIR=$(DESTDIR) && cd ..
+	@echo
+	@echo "=============================================================="
+	@echo
+	@echo "@SB@ PLUGINS@EB@     installed in @SB@$(DESTDIR)$(PLUGDIR) @EB@"
+	@echo
+	@echo "=============================================================="
+	@echo
+
+complete_install: install plug-ins_install
+
+uninstall:
+	rm -f $(DESTDIR)$(MANDIR)/man8/$(PROG).8
+	rm -f $(DESTDIR)$(BINDIR)/$(PROG)
+	rm -fR $(DESTDIR)$(DATADIR)
+	rm -fR $(DESTDIR)$(PLUGDIR)
+	rm -fR $(DESTDIR)$(DOCDIR)
+	@echo
+	@echo "@SB@ $(PROG) uninstalled from your system... @EB@"
+	@echo
+
+strip: @PROG@
+	strip @STRIPOPTION@ $(PROG)
+
+distro: distclean
+	-@rm -f FILES
+	-@rm -f ./src/include/ec_install_path.h
+	-@md5sum `find . -name '*' | grep -v CVS` > FILES.tmp 2> /dev/null
+	-@grep -v CVS FILES.tmp > FILES
+	-@rm -f FILES.tmp
+	shtool fixperm ./
+	cd .. && tar cvfz $(PROG)-$(VERSION).tar.gz ./$(PROG)-$(VERSION) --exclude *.prj --exclude *.spec --exclude CVS\
+	&& mv $(PROG)-$(VERSION).tar.gz ./$(PROG)-$(VERSION)/ && cd $(PROG)-$(VERSION)
+
+clean:
+	rm -f $(DESTS) $(MISSDESTS) $(PROG) $(PROG).exe
+	rm -f `find . -name '*.bak'`
+	rm -f core *.core core*
+	cd plugins && make clean && cd ..
+
+check:
+	@echo
+	@echo "@SB@ Checking files... @EB@"
+	@echo
+	md5sum -c FILES
+
+distclean: clean
+	rm -f config.h config.cache config.log config.status
+	rm -f $(PROG)-*.tar.gz
+	rm -f $(PROG)-*.rpm
+	rm -f $(PROG).8
+	rm -f *.log
+	rm -f Makefile *~
+	cd plugins && make distclean && cd ..
+	rm -f plugins/Makefile
+	rm -f ec_*.so
+
+
+help:
+	@echo
+	@echo " @SB@make@EB@                  compiles only ettercap"
+	@echo " @SB@make install@EB@          compiles and installs ettercap in $(DESTDIR)$(BINDIR)"
+	@echo " @SB@make plug-ins@EB@         compiles only the plugins"
+	@echo " @SB@make plug-ins_install@EB@ compiles and installs plugins in $(DESTDIR)$(PLUGDIR)"
+	@echo " @SB@make complete_install@EB@ all the above"
+	@echo
+	@echo " @SB@make uninstall@EB@        removes ettercap and plugins from your system"
+	@echo
+	@echo " @SB@make check@EB@            checks the md5sum of the extracted files"
+	@echo
+
+# only for me...
+
+rpm: distro
+	rm -f $(PROG)-*.rpm
+	cp -f $(PROG)-$(VERSION).tar.gz /usr/src/redhat/SOURCES/
+	rpm -ba $(PROG).spec
+	mv /usr/src/redhat/RPMS/i?86/$(PROG)-$(VERSION)-@RELEASE@.i?86.rpm ./
+	mv /usr/src/redhat/SRPMS/$(PROG)-$(VERSION)-@RELEASE@.src.rpm ./
+	rm -Rf /usr/src/redhat/*/ettercap*
+	chmod 644 $(PROG)-$(VERSION)*
+
+snapshot:
+	@echo
+	@echo "@SB@ Making tarball... @EB@"
+	@rm -f ettercap
+	@./shtool tarball -o $(PROG)-$(VERSION)-@SERIAL@.tar.gz -c 'gzip -9' -e '\.o,\.prj,\.gz,\.bak,\.so,\.log,CVS' ./ etter.*
+	@chmod 644 $(PROG)-$(VERSION)-@SERIAL@.tar.gz
+	@ls --si -s $(PROG)-$(VERSION)-@SERIAL@.tar.gz
+
+winbin: @PROG@
+	@echo
+	@echo "@SB@ Making zip file... @EB@"
+	@zip -9 -j $(PROG)-$(VERSION)-win32.zip ./$(PROG).exe /bin/cygwin1.dll $(DOC)

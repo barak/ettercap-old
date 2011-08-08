@@ -1,0 +1,459 @@
+.\"  ettercap -- utilitaire sniffeur/intercepteur pour LAN switché basé sur ncurses
+.\"
+.\"  Copyright (C) 2001  ALoR <alor@users.sourceforge.net>, NaGA <crwm@freemail.it>
+.\"
+.\"  This program is free software; you can redistribute it and/or modify
+.\"  it under the terms of the GNU General Public License as published by
+.\"  the Free Software Foundation; either version 2 of the License, or
+.\"  (at your option) any later version.
+.\"
+.\"  This program is distributed in the hope that it will be useful,
+.\"  but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"  GNU General Public License for more details.
+.\"
+.\"  You should have received a copy of the GNU General Public License
+.\"  along with this program; if not, write to the Free Software
+.\"  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, U
+.\"
+.\" $Id: ettercap.fr.8.in,v 1.2 2001/09/27 19:07:40 alor Exp $
+.\"
+.de Sp
+.if n .sp
+.if t .sp 0.4
+..
+.TH ETTERCAP "8" "@SERIAL@" "ettercap @VERSION@"
+.SH NOM
+.B ettercap @VERSION@ \- sniffeur multiusage pour LAN switchés
+
+.SH SYNOPSIS
+.B ettercap
+[\fIOPTION\fR] [\fIHOST:PORT\fR] [\fIHOST:PORT\fR] [\fIMAC\fR] [\fIMAC\fR]
+
+.SH DESCRIPTION
+Ettercap a été créé comme un sniffer pour LAN switchés (et évidemment pour
+les "hubbés" aussi), mais durant le processus de développement il a acquis
+de plus en plus de fonctionnalités qui l'ont transformé en un outil puissant
+et flexible pour les attaques de l'intercepteur.
+Il supporte la dissection active et passive de beaucoup de protocoles (même les
+protocoles cryptés) et inclue beaucoup de fonctionnalités pour l'analyse de réseau et d'hôtes (comme l'identification distante de systèmes d'exploitation).
+.PP
+Il utilise cinq méthodes de sniffing :
+.br
++ IPBASED, les paquets sont filtrés à partir des IP/Port sources et IP/Ports destinations
+.br
++ MACBASED, les paquets sont filtrés à partir des adresses MAC source et destination (utile pour sniffer les connections à travers une passerelle)
+.br
++ ARPBASED, utilise la corruption de cache arp pour sniffer sur un LAN switché entre deux hôtes (attaque de l'intercepteur full-duplex).
+.br
++ SMARTARP, utilise la corruption de cache arp pour sniffer sur un LAN switché d'une victime vers tous les autres hôtes, en connaissant la liste de tous les hôtes présents (attaque de l'intercepteur full-duplex).
+.br
++ PUBLICARP utilise la corruption de cache arp pour sniffer sur un LAN switché d'une victime vers tous les autres hôtes (half-duplex).
+.br
+Avec cette méthode les réponses ARP sont envoyées en broadcast, mais si ettercap dispose de la liste complète des hôtes (au démarrage il a scanné l'ensemble du LAN), la méthode SMARTARP est automatiquement sélectionnée, et les réponses ARP sont envoyées à tous les hôtes sauf la victime, évitant ainsi les conflits d'adresse MAC, comme avec win2K.
+.PP
+Les fonctionnalités les plus utiles d'ettercap sont :
+.PP
+.B L'injection de caractères dans une connexion établie :
+vous pouvez injecter des caractères au serveur (pour émuler des commandes) ou au client (émulant ainsi des réponses) tout en maintenant la connexion ouverte !!
+.PP
+.B support du SSH1 :
+vous pouvez sniffer le User et Mot de Passe, et même les données, d'une connexion SSH1. ettercap est le premier logiciel capable sniffer une connexion SSH en FULL-DUPLEX
+.PP
+.B support du HTTPS :
+vous pouvez sniffer des données http sécurisée par SSL... et même si la connexion est réalisée à travers un PROXY
+.PP
+.B collecteur de mot de passe pour :
+TELNET, FTP, POP, RLOGIN, SSH1, ICQ, SMB, MySQL, HTTP, NNTP, X11, NAPSTER, IRC, RIP, BGP,
+SOCKS 5, IMAP 4, VNC (et d'autres protocoles à venir)
+.PP
+.B filtrage/drop de paquets
+vous pouvez mettre en place une chaîne de filtrage qui recherche une chaîne de caractères particulières (même hexadécimale) dans le champ données TCP ou UDP et la remplacer par la vôtre et dropper le paquet.
+.PP
+.B identification d'OS distante
+vous pouvez scanner passivement le lan (sans y envoyer de paquets) et récupérer des informations détaillées sur les hôtes du LAN : Systèmes d'exploitation, services fonctionnant, ports ouverts, adresses IP et MAC et modèle de carte réseau.
+.PP
+.B identification d'empreinte d'OS
+vous pouvez identifier le système d'exploitation de la victime et même sa carte réseau (en utilisant la base de données de nmap (c) Fyodor)
+.PP
+.B tuer une connexion
+à partir de la liste des connexions vous pouvez tuer toutes les connexions que vous voulez.
+.PP
+.B Usine à paquets
+Vous pouvez créer et envoyer des paquets forgés au vol. L' "usine" vous permet de les construire du niveau Ethernet jusqu'au niveau application.
+
+.PP
+.SH OPTIONS
+Les options qui sont compatibles entre elles peuvent généralement être combinées. ettercap préviendra l'utilisateur en cas de combinaisons d'options incompatibles.
+.TP
+.B METHODES DE SNIFFING
+.TP
+\fB\-a\fR, \fB\-\-arpsniff\fR
+sniffing ARP
+.br
+C'est LA méthode pour les LANs switchés, et si vous voulez utiliser la technique de l'intercepteur vous devrez l'utiliser. En mode silencieux (option -z) vous devez spécifier deux adresses IP et deux adresses MAC pour le mode ARPBASED et une adresse MAC pour PUBLICARP (half-duplex). En mode PUBLICARP les réponses ARP sont envoyées en broadcast, mais si ettercap dispose de la liste complète des hôtes (au démarrage il a scanné l'ensemble du LAN), la méthode SMARTARP est automatiquement sélectionnée, et les réponses ARP sont envoyées à tous les hôtes sauf la victime, et une table de hachage est créée pour re-router les paquets de la victime vers le client, réalisant ainsi une attaque de l'intercepteur full-duplex
+.br
+NOTE : si vous essayez de corrompre le cache d'un client avec la méthode smart arp, souvenez-vous de spécifier l'IP de la passerelle dans le fichier de configuration (option GWIP) and de le charger avec l'option '-e', sinon le client ne pourra se connecter aux hôtes distants.
+.br
+Les filtres avec comme action un remplacement ou un drop peuvent seulement être utilisés avec la méthode ARPBASED car il est nécessaire de ré-ajuster le numéro de séquence en full-duplex pour maintenir la connection.
+.TP
+\fB\-s\fR, \fB\-\-sniff\fR
+sniffing IP
+.br
+C'est la bonne vieille méthode de sniffing. Elle fonctionne sur un lan "hubbé", mais pas sur les lan switchés. Vous pouvez choisir la cible en spécifiant seulement la source, seulement la destination, avec ou sans port, ou rien (pour sniffer toutes les connexions). L'adresse IP spéciale "ANY" signifie "de ou vers tous les hôtes".
+.TP
+\fB\-m\fR, \fB\-\-macsniff\fR
+sniffing mac 
+.br
+Très pratique pour sniffer le trafic TCP vers des hôtes distants. Sur les LANs "hubbés" si vous voulez sniffer une connexion passant par une passerelle il est inutile de préciser les adresses ip de la victime et de la passerelle, car les paquets sont destinés à un hôte exterieur, pas à la passerelle. Vous pouvez alors utiliser cette méthode. Spécifier simplement l'adresse MAC de la victime et celle de la passerelle et vous verrez toutes les connexions en provenance  et à destination d'Internet.
+
+
+
+.TP
+.B Options générales
+.TP
+\fB\-N\fR, \fB\-\-simple\fR
+mode NON interactive (sans ncurses)
+.br
+Cette option est utile si vous voulez lancer ettercap à partir d'un script ou si vous connaissez déjà les informations sur votre cible, ou si vous voulez lancer ettercap en tâche de fond en récupérant les données et les mots de passes pour vous (en combinaison avec l'option --quiet).
+.br
+Certaines fonctionnalités ne sont pas disponibles dans ce mode, c'est-à-dire évidemment celles qui nécessitent une interaction avec l'utilisateur, comme l'injection de caractères. Néanmoins les autres (par exemple le filtrage) sont entièrement supportées, et vous pouvez donc configurer ettercap pour corrompre deux hôtes (une victime et une passerelle) et pour filtrer toutes les connexions sur le port 80, et remplacer certaines chaînes de données par d'autres, et tout le trafic pour internet sera changé comme vous le désirez.
+.TP
+\fB\-z\fR, \fB\-\-silent\fR
+démarre en mode silencieux (pas de tempête arp lors du lancement)
+.br
+si vous voulez lancer ettercap en mode discret (certains IDS pourraient lancer une alerte s'ils détectent trop de requêtes ARP). Vous devez connaître toutes les données nécessaires à propos de la cible pour utiliser cette option. Par exemple si vous voulez corrompre deux hôtes, vous avez besoin des deux adresses IP et des deux adresses MAC des victimes.
+Si vous sélectionnez ipsniff ou macsniff cette méthode est automatiquement sélectionnées car vous n'avez pas besoin de la liste de l'ensemble des hôtes présents sur le lan.
+.br
+Pour connaître la liste des hôtes, utilise "ettercap -Nl", mais souvenez-vous que c'est une méthode "bruyante".
+.TP
+\fB\-O\fR, \fB\-\-passive\fR
+Récupère des informations en mode passif. Cette méthode n'enverra pas un seul paquet sur le câble. Elle placera l'interface en mode 'promiscuous' et écoutera les paquets. 
+Tous les paquets intéressants (SYN ou SYN+ACK) sont analysés et utilisés pour établir une carte compète du LAN.
+.br
+Les informations collectées sont : les adresses IP et MAC des hôtes, le type d'OS (analyse passive d'empreinte d'OS), les modèles de cartes réseaux et les services disponibles (pour une description technique reportez vous au README).
+Dans la liste sont affichées des informations supplémentaires : "GW" si l'hote est une GateWay (passerelle), "NL" si l'IP n'appartient pas au LAN, et "RT" si l'hôte agit comme un routeur.
+.br
+Utile si vous voulez établir une liste au démarrage des hôtes en mode complètement passif, et lorsque vous êtes satisfait des informations, vous pouvez les convertir en liste des hôtes présents sur le réseau en pressant simplement 'C', et ensuite travailler à partir de cette liste comme d'habitude.
+.br
+La description de ses fonctionnalités en mode simple sont expliquées dans la section suivante.
+.TP
+\fB\-b\fR, \fB\-\-broadping\fR
+utilise un ping en broadcast au lieu d'une tempête arp lors du démarrage.
+.br
+Cette méthode est moins bruyante, mais aussi moins précise. Certains hôtes ne répondront pas au ping broadcast (par exemple Windows), et ils restent donc invisibles avec cette méthode. Utile si vous voulez scanner un lan avec les hôtes linux. Comme d'habitude vous pouvez combiner cette option avec --list pour obtenir la liste des hôtes "ettercap -Nlb".
+.TP
+\fB\-D\fR, \fB\-\-delay <n sec>\fR
+le délai en secondes entre les réponses ARP si vous avez sélectionné la méthode de sniffing par corruption ARP. C'est utile si vous désirez être moins agressif dans la corruption. Sur beaucoup de systèmes d'exploitation l'intervalle de validité par défaut du cache arp est plus d'une minute (sur FreeBSD il est de 1200 sec).
+.br
+La valeur par défaut est de 30 sec.
+.TP
+\fB\-H\fR, \fB\-\-hosts <IP1[,IP2][,IP3][,...]>\fR
+lors du démarrage, scanne uniquement ces hôtes.
+.br
+utile si vous désirez utiliser le scan ARP sur le lan mais seulement avec certaines IPs. Ainsi vous pouvez bénéficier d'un scan ARP tout en restant moins bruyant.
+Utile même si vous voulez utiliser la méthode PUBLIC ARP mais que vous voulez seulement corrompre certains hôtes.
+Du fait que le PUBLIC ARP utilisée avec une liste est automatiquement converti en SMARTARP, seuls ces hôtes seront corrompus et vous pouvez laisser intacts les caches arp des autres hôtes.
+.br
+La listes des IPs doit être en notation pointée, et séparées par des virgules, et vous pouvez utiliser des jokers.
+.br
+ex: 192.168.0.2?  --> de 20 à 29
+.br
+    192.168.0.1*  --> hôte 1, de 10 à 19 et de 100 à 199
+.TP
+\fB\-d\fR, \fB\-\-dontresolve\fR
+ne fait pas la résolution des noms lors du démarrage. C'est utile si vous rencontrez un message "Resolving hostnames..." trop long au démarrage. C'est dû à un DNS très lent dans votre environnement.
+.TP
+\fB\-i\fR, \fB\-\-iface <IFACE>\fR
+précise l'interface réseau à utiliser. Vous pouvez spécifier toutes les alias de réseau pour scanner un sous-réseau dont les adresses IP ne correspondent pas à votre IP courante.
+.TP
+\fB\-n\fR, \fB\-\-netmask <NETMASK>\fR
+le masque de sous-réseau utilisé lors du scan du LAN (en notation pointée). La valeur par défaut est celle de la commande ifconfig. Mais lorsque votre réseau est par exemple en 255.255.0.0, je vous encourage à en spécifier un plus restrictif si vous voulez utiliser un scan ARP lors du démarrage.
+.TP
+\fB\-e\fR, \fB\-\-etterconf <FILENAME>\fR
+utilise le fichier de configuration au lieu des options en ligne de commande.
+.br
+un fichier exemple etter.conf est présent dans le tarball, référez-vous y pour apprendre comment écrire un fichier de configuration. Toutes les instructions sont utilisées dans cet exemple. Via le fichier de configuration, vous pouvez desactiver sélectivement un dissecteur de protocole ou l'utiliser sur un autre port TCP/UDP que l'habituel.
+.br
+Les options en ligne de commandes et le fichier de configuration peuvent être utilisés conjointement pour plus de flexibilité, mais souvenez-vous que les options dans le fichier de configuration annulent celles en ligne de commande, donc si dans etter.conf vous avez spécifié IFACE: eth0, et que vous lancer "ettercap -i eth1 -e etter.conf", l'interface sélectionnée sera eth0.
+.br
+NOTE : l'option "-e etter.conf" doit être spécifiée après toutes les autres options.
+.TP
+\fB\-v\fR, \fB\-\-version\fR
+recupère la dernière version d'ettercap
+.br
+Toutes les opérations sont sous votre contrôle. Chaque étape requiert une confirmation de l'utilisateur. Avec cette option ettercap se connectera au site web http://ettercap.sourceforge.net:80 et récupèrera la page /latest.php. Puis le résultat sera analysé et comparé avec votre version courante. S'il existe une version plus récente disponible, ettercap vous demandera si vous voulez la récupérer (par wget, qui doit être dans le PATH).
+.br
+Si vous voulez répondre automatiquement oui à toutes les questions ajouter l'option -y
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+affiche l'écran d'aide contenant un court résumé des commandes disponibles.
+
+.TP
+.B OPTIONS EN MODE SILENCIEUX (seulement combinées avec -N)
+.TP
+\fB\-u\fR, \fB\-\-udp\fR
+sniffe seulement les paquets UDP (par défault TCP).
+Cette option est seulement utilisé en mode "simple", et si vous démarrez ettercap en mode interactif TCP et UDP sont sniffés.
+.TP
+\fB\-R\fR, \fB\-\-reverse\fR
+Sniffe toutes les connexions sauf celle sélectionnées. Cette option est utile su vous utilisez ettercap sur une machine distante et que vous voulez sniffer tout le trafic sauf votre propre connexion, car l'inclure reviendrait à sniffer même la sortie d'ettercap, qui sera alors illisible.
+.TP
+\fB\-O\fR, \fB\-\-passive\fR
+collecte des informations en mode passif comme décrit dans la section précédente. En mode simple nous pouvons utiliser cette option avec de nombreux mode.
+.br
+"ettercao -NO" démarrement ettercap en mode semi-interactif, pressez 'h' pour de l'aide. Vous pouvez voir ou archiver dans un fichier un rapport détaillé de toutes les informations collectées, ou simplement voir chaque alerte du paquet analysé.
+.br
+"ettercap -NOL" est identique mais archive automatiquement les données dans un fichier toutes les 5 minutes.
+.br
+"ettercap -NOLq" démarre ettercap en mode démon et archive les données dans un fichier toutes les 5 minutes. Allez faire un tour fumer une clope... revenez et un rapport complet sur le lan vous attend... ;)
+.TP
+\fB\-p\fR, \fB\-\-plugin <NOM>\fR
+lance le plugin "NOM"
+.br
+la plupart des plugins nécessite un hôte destination. Spécifiez le simplement après le nom du plugin. En fait les hôtes sont parcourus sur la ligne de commande, en spécifiant d'abord la destination, puis la source.
+.br
+Pour obtenir une liste des plugins disponibles utilisez "list" (sans les guillemets) comme nom de plugin.
+.br
+Des informations plus détaillées sur les plugins et comment écrire les votres peuvent être trouvées dans le fichier README.PLUGINS
+.Sp
+Actuellement ces plugins sont distribués avec la version officielle :
+.Sp
+   banshee -- tue sans discrétion...
+.br
+     dummy -- plugin inutile. ne fait rien ! (seulement pour l'exemple)
+.br
+     golem -- joli deni de service. ATTENTION !!
+.br
+     leech -- Isole un hôte sur un LAN
+.br
+    lurker -- essaie de recherche un autre ettercap
+.br
+      ooze -- pingue un hôte
+.br
+    shadow -- un scanner de point SYN/TCP très simple
+.br
+   spectre -- inonde un LAN switché avec des adresses MAC au hasard
+.br
+    triton -- essaie de découvrir la passerelle du LAN
+.TP
+\fB\-l\fR, \fB\-\-list\fR
+liste tous les hôtes sur le LAN, en affichant chaque adresse MAC.
+.br
+Généralement les options associées sont -b (pour un ping broadcast) et -d (ne pas résoudre les noms).
+.TP
+\fB\-C\fR, \fB\-\-collect\fR
+récupère tous les users et mots de passe des hôtes spécifiés en ligne de commande.
+.br
+Les collecteurs de mot de passe sont configurés dans le fichier de configuration (etter.conf), au cas où vous voulez les désactiver de manière sélective ou les déplacer sur un autre port TCP/UDP. C'est utile si vous ne voulez pas sniffer une connexion SSH (l'alerte due au changement de clé éveillera les soupçons) mais que vous voulez sniffer tous les autres protocoles supportés. Ou même si vous savez qu'un hôte a le service telnet ouvert sur le port 4567, déplacer simplement le dissecteur sur 4567/tcp
+.TP
+\fB\-f\fR, \fB\-\-fingerprint <HOTE>\fR
+réalise un identification à distance du système d'exploitation sur HOTE
+.br
+cette option utilise la même base de données et la même méthode que celle utilisée par
+.I nmap (c) Fyodor <fyodor@insecure.org>
+donc je rapporte ici un partie de sa page de man :
+.Sp
+Cette option active l'authentification par l'empreinte TCP/IP. En d'autres mots, il utilise quelques techniques pour repérer des subtilités de la couche réseau de l'ordinateur scanné. Il utilise les informations recueillies "empreinte digitale" pour les comparer à une base de donnée d'empreintes connues (le fichier nmap-os-fingerprints) et peut ainsi voir quel type de système nous sommes en train de scanner.
+.Sp
+l'option -f vous fournit même le vendeur de la carte réseau de l'hôte scanné.
+les informations sont contenues dans la base de données mac-fingerprints
+.TP
+\fB\-x\fR, \fB\-\-hexview\fR
+pour afficher les données en mode hexadécimal
+.br
+ASTUCE : lorsque vous sniffez vous pouvez changer le mode de visualisation en appuyant sur 'a' pour Ascii et 'x' pour heXadécimal.
+L'aide en ligne est disponible par 'h'.
+.TP
+\fB\-L\fR, \fB\-\-logtofile\fR
+utilisée seule cette option archive toutes les données dans un (des) fichier(s) spécifique(s). Elle créé un fichier séparé pour chaque connexion de la forme "AAAAMMJJ-P-IP:PORT-IP:PORT.log"
+.br
+utilisé avec -C (collecteur) elle crée un fichier de la forme "AAAAMMJJ-collected-pass.log" avec tous les mots de passes sniffés lors de la session.
+.TP
+\fB\-q\fR, \fB\-\-quiet\fR
+passe ettercap en mode démon
+.br
+cette option est utile si vous voulez enregistrer toutes les données en tâche de fond. Cette option détachera ettercap du tty courant et en fera un "démon" plaçant ses données dans des fichiers. Elle doit être utilisée avec -NL (ou -NLC) sinon elle n'a aucun effet. Bien évidemment la méthode de sniffing est nécessaire, et vous devez donc la préciser avec cette option.
+.TP
+\fB\-k\fR, \fB\-\-newcert\fR
+crée un nouveau fichier certificat pour les attaques de l'intercepteur HTTPS.
+.br
+Utile si vous voulez créér un fichier de certificat avec des informations d'ingénierie sociale...
+.br
+le nouveau fichier est créé dans le répertoire courant. Pour remplacer de manière permanente le fichier par défaut (etter.sll.crt) vous devez remplacer @prefix@/share/@PROG/etter.ssl.crt
+.TP
+\fB\-F\fR, \fB\-\-filter <FICHIER>\fR
+charge les chaînes de filtrage depuis FICHIER
+.br
+Le fichier de chaînes de filtrage est écrit en format pseudo-XML. Vous pouvez écrire ce fichier à la main où (mieux) utiliser l'interface ncurses pour laisser ettercap le créér (appuyer sur 'F' dans l'interface des listes de connexion). Si vous êtes compétent en analyse de XML, vous pouvez écrire votre propre programme pour créer un fichier de chaîne de filtrage.
+.Sp
+les règles sont simples :
+.Sp
+Si le protocole <proto> ET le port source <source> ET le port destination <dest> ET le champ données <search> correspondent à la règle, il saute à la chaîne spécifiée par le champ <goto>, juste après avoir effectué l'action <action>. Sinon, il saute à <elsegoto>.
+Si ces champs sont laissés vides la chaîne est interrompue. Des ports sources et destinations égaux à 0 signifient TOUS les ports. Vous pouvez utiliser des jokers dans la chaîne de caractères de recherche (voyez README vous plus de détails).
+.Sp
+NOTE : avec ces options le filtre est activé par défaut, si vous voulez le désactiver, presser 'S' (pour Source) ou 'D' (pour Destination) lors du sniff.
+.Sp
+NOTE : en ligne de commandes les hôtes sont analysés comme "ettercap -F etter.filter DEST SOURCE", donc le premier hôte est destinés à la chaîne destination et le second à la chaîne source.
+.Sp
+TRES IMPORTANT : la chaîne source est appliquée aux données VENANT DE la source et non ALLANT VERS la source. Gardez bien cela en tête !! De même pour dest ...
+.Tp
+\fB\-c\fR, \fB\-\-check\fR
+vérifie si vous avez été corrompu par d'autres corrupteurs sur le LAN
+.TP
+\fB\-t\fR, \fB\-\-linktype\fR
+vérifier si êtes sur un lan switchés ou non... Parfois cette méthode de découverte peut échouer. Ne la croyez pas à 100%
+
+
+.SH PRECISION DE LA CIBLE
+Les cibles sont analysées sur la ligne de commande en ordre inverse. Le premier hôte est la DESTINATION et le second est la SOURCE. Cela n'importe pas si vous sniffez en mode IP, parce que la source et la destination sont ignorées, mais si vous filtrez la connexion c'est crucial pour la correspondance avec la chaîne de filtrage.
+.br
+L'ordre inverse est nécessitée par une interface plus intuitive avec les plugins. Certains plugins nécessitent seulement qu'on spécifie l'hôte destination, et il est plus simple d'écrire :
+"ettercap -Np ooze victim" que "ettercap -Np ooze PERSONNE victim".
+.br
+Les cibles peuvent être précisées en notation pointée (192.168.0.1) ou par leur nom symbolique. Vous pouvez utiliser des jokers seulement avec l'option -H (--hosts)
+
+
+.SH EXEMPLES
+Voici quelque exemples d'utilisation d'ettercap.
+.TP
+.B ettercap -b
+.Sp
+Lors du démarrage utilise un ping broadcast pour scanner le LAN plutôt qu'une requête ARP envoyée à tout le sous-réseau IP.
+.TP
+.B ettercap -H "192.168.0.?,192.168.0.3?,192.168.0.2*"
+.Sp
+Au démarrage scanne seulement les hôtes 192.168.0.1-9, 192.168.0.30-39, 192.168.0.2, et 192.168.0.200-255.
+Si la méthode PUBLICARP est selectionnée ces hôtes seront corrompus.
+.TP
+.B ettercap -Ozs
+.Sp
+Entre en mode interactif pour commencer à récupérer des données en mode passif.
+.br
+En mode simple il est très utile de lancer "ettercap -NOLq" et de revenir après une heure... ;)
+.TP
+.B ettercap -s 192.168.0.1 192.168.0.2
+.Sp
+Entre en mode interactif et sniffe seulement les connexions entre 192.168.0.1 et 192.168.0.2. Seule l'action Log sera supportée car c'est une méthode -s (ipsniffing). 192.168.0.1 correspondra au champ destination et 192.168.0.2 au champ  source. Pour activer même les actions  remplacement et de drop vous devez lancer "ettercap -Nza -F etter.filter IP IP MAC MAC"
+.TP
+.B ettercap -zs -e etter.conf
+.Sp
+Utilise le sniffing en mode ip et charge les autres options à partir du fichier de configuration (etter.conf).
+Notez que les options du fichier annulent celles en ligne de commande.
+.TP
+.B ettercap -Nzs victim.my.net ANY:80
+.Sp
+sniffe en mode console (non interactif) seulement la connexion depuis et vers "victim.my.net" et depuis et vers tous les autres hotes mais sur le port 80 (www). Les données sont affichées en mode ASCII. Pour le mode hexa, ajoutez l'option -x.
+.TP
+.B ettercap -Nclt
+.Sp
+Ceci vous fournira la liste entière des hôtes sur le LAN, et vérifiera si quelqu'un vous corrompt et rapportera son IP. Dira aussi si vous êtes sur un LAN switché ou non.
+.TP
+.B ettercap -NCLzs --quiet
+.Sp
+va détacher ettercap de la console et logguer dans un fichier tous les mots de passe. Fonctionne seulement si le LAN est "hubbé", ou si les mots de passes collectés sont dirigés vers votre machine.
+.TP
+.B ettercap -NCza -D 100 192.168.0.1 192.168.0.2 55:23:A5:B4:C7:89 00:A3:56:FE:4F:6D
+.Sp
+Affiche les mots de passes sur stdout, sur un LAN switché. Va corrompre chacuns des deux hôtes 192.168.0.1 et 192.168.0.2. Le délai entre les réponses ARP est mis à 100 sec.
+.TP
+.B ettercap -Np triton
+.Sp
+démarre le plugin "triton", qui va essayer de rechercher de manière passive la passerelle du réseau local.
+.TP
+.B ettercap -Np ooze victim.mynet.org
+.Sp
+Lance le plugin "ooze" qui va effectuer un scan de port sur "victim.mynet.org", qui sera associé à la bonne IP
+
+.SH PLATEFORMES
+Linux 2.0.x  2.2.x  2.4.x
+.br
+FreeBSD 4.x
+.br
+OpenBSD 2.[789]
+.br
+NetBSD 1.5
+
+.SH FICHIERS
+.I @prefix@/share/@PROG@/etter.conf 
+ - le fichier de configuration
+.br
+.I @prefix@/share/@PROG@/etter.dns
+ - le fichier host pour le plugin phantom
+.br
+.I @prefix@/share/@PROG@/etter.filter 
+ - les chaînes de filtrage
+.br
+.I @prefix@/share/@PROG@/etter.passive.os.fp
+ - la base de données des empreintes passives d'OS
+.br
+.I @prefix@/share/@PROG@/etter.ssl.crt 
+ - le certificat SSL pour l'attaque de l'intercepteur HTTPS
+.br
+.I @prefix@/share/@PROG@/mac-fingerprints 
+ - la base de données de vendeur des cartes réseau
+.br
+.I @prefix@/share/@PROG@/nmap-os-fingerprints 
+ - les empreintes d'OS de nmap (c) Fyodor
+.br
+.I @prefix@/doc/@PROG@-@VERSION@/* 
+ - la DOCUMENTATION
+
+
+.SH AUTEURS
+Alberto Ornaghi (ALoR) <alor@users.sourceforge.net>
+.br
+Marco Valleri (NaGA) <crwm@freemail.it>
+
+.SH TELECHARGEMENT
+http://ettercap.sourceforge.net/download/
+.Sp
+ou si vous voulez effectuer une vérification automatique d'une version plus récente essayez "ettercap -vy".
+
+.SH CVS
+cvs -d:pserver:anonymous@cvs.ettercap.sf.net:/cvsroot/ettercap login
+.br
+cvs -d:pserver:anonymous@cvs.ettercap.sf.net:/cvsroot/ettercap co ettercap
+
+.SH BUGS
+Notre logiciel n'a jamais de bugs.
+.br
+Il utilise seulement des fonctionnnalités hasardeuses.   ;)
+.PP
+.B BUGS CONNUS
+.PP
+- Il est préférable que vous ne lanciez pas ettercap sur un hôte qui est une passerelle parce qu'il a besoin de desactiver le forwarding ip, ce qui peut causer des problèmes avec le routage. Mais si vous voulez scanner de manière passive de LAN la passerelle est le bon endroit pour utiliser ettercap... Faites donc attention à ce que vous faîtes.
+.PP
+- Vous ne pouvez pas utiliser les plugins seuls. Les paquets de la couche liaisons de données ne sont pas capturés par la même socket, donc ils vont être ignorés.
+.PP
+- Lors de la corruption d'un LAN switchés, ettercap ne sniffera pas le trafic entre votre hôte et les autres. La raison technique en est que : sinon ettercap envoyera vos paquets deux fois (et c'est mal...). La raison artistique est : pourquoi vous sniffer vous-même en utilisant une technique de l'intercepteur ? Utiliseé une méthode de sniff simple à la place ! ;)
+.PP
+- En sniffant en mode Public ARP, ettercap peut seulement voir un sens de la connexion, donc certains dissecteurs de protocoles peuvent échouer.
+.PP
+- sous X11 redimensionener la fenêtre xterm peut provoquer une visualisation incorrecte de l'interface. SIGWINCH est *partiellement* supporté.
+.PP
+- ettercap ne gère par la fragmentation de paquets... seul le premier segment sera affiché par le sniffer. Cependant tous les fragments sont renvoyés correctement.
+.PP
++ envoyez s'il-vous-plaît des rapports de bug, des patches ou des suggestions à <alor@users.sourceforge.net> ou visitez http://ettercap.sourceforge.net/forum/ et postez les dans la section BUGS.
+.PP
++ pour rapporter un bug, recompiler ettercap avec 'configure --enable-debug' et attacher le fichier ettercap_debug.log au mail dans lequel vous expliquez le problème.
+
+.SH HISTOIRE PHILOLOGIQUE
+"Meme s'ils sont dotés d'une faible intelligence ils sont cruels et rusés..."
+C'est la description de l'ettercap, un monstre du jeu de rôle Advanced Dungeons & Dragon.
+Tous les processus forkés par ettercap ont le nom d'un monstre : illithid, doppelganger, grell, drayd. Même les plugins (codés par nous) sont des monstres.
+.PP
+Le nom "ettercap" a été choisi à cause de l'assonance avec "ethercap", qui signigie "ethernet capture" (ce que ettercap fait, en fait) et aussi car ces monstres ont un puissant poison... et vous savez, arp poisoning... ;)
+.PP
+Quelque nous a envoyé un mail : 
+.br
+"Saviez vous qu'en hollandais "etter" signifie "emmerdeur" ou "travail dangereux". Malheureusment, je pense que ceci s'applique à vous, car cet outil sera utiliser par de nombreux script kiddies pour hacker tous les types de services sur les réseaux locaux."
+.PP
+Je pense que c'est extrêmement vrai... ettercap est un "emmerdeur" pour les admin-débutant. Il y a beaucoup de manière de détecter et de se protéger contre ettercap... La première est celle-ci : NE DONNER PAS D'ACCES ROOT AUX SCRIPT-KIDDIES SUR VOTRE LAN !
+Certaines fonctionnalités ont été limitées intentionnellement pour fonctionner uniquement sur le réseau local, car il est plus facile de se protéger contre elle de manière locale.
+.br
+Internet n'est pas un jeu, nous avons besoin d'admin et de programmeur qualifiés pour sécuriser les protocoles et les programmes. Ce n'est pas notre faute sur le net est si insécurisé... mais nous pouvons faire quelque chose pour l'améliorer.
+Ettercap a été développé avec cette idée en tête : si même des scripts kiddies peuvent détourner les connexions locales, problablement que quelqu'un trouvera une solution contre ça !
+
+.SH TRADUCTION
+Julien Bordet (zejames) <Bordet_J@yahoo.com>
