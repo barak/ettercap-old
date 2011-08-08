@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-# $Id: Makefile.am,v 1.7 2004/01/04 17:02:43 alor Exp $
+# $Id: Makefile.am,v 1.8 2004/09/22 15:53:10 alor Exp $
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
@@ -139,6 +139,8 @@ MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
 MINGW_FALSE = @MINGW_FALSE@
 MINGW_TRUE = @MINGW_TRUE@
+MISSING_BASENAME_FALSE = @MISSING_BASENAME_FALSE@
+MISSING_BASENAME_TRUE = @MISSING_BASENAME_TRUE@
 MISSING_GETOPT_LONG_FALSE = @MISSING_GETOPT_LONG_FALSE@
 MISSING_GETOPT_LONG_TRUE = @MISSING_GETOPT_LONG_TRUE@
 MISSING_INET_ATON_FALSE = @MISSING_INET_ATON_FALSE@
@@ -203,6 +205,7 @@ ac_ct_F77 = @ac_ct_F77@
 ac_ct_OBJDUMP = @ac_ct_OBJDUMP@
 ac_ct_RANLIB = @ac_ct_RANLIB@
 ac_ct_STRIP = @ac_ct_STRIP@
+ac_pt_PKG_CONFIG = @ac_pt_PKG_CONFIG@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -242,7 +245,7 @@ AUTOMAKE_OPTIONS = foreign #no-dependencies
 DISTCLEANFILES = *~
 man_MANS = ettercap.8 ettercap_curses.8 etterlog.8 etterfilter.8 etter.conf.5 $(am__append_1)
 EXTRA_DIST = $(man_MANS)
-CLEANFILES = *.8 *.5
+CLEANFILES = *.8 *.5 *.ps *.pdf
 all: all-am
 
 .SUFFIXES:
@@ -491,8 +494,6 @@ mostlyclean: mostlyclean-am
 
 mostlyclean-am: mostlyclean-generic mostlyclean-libtool
 
-pdf: pdf-am
-
 pdf-am:
 
 ps: ps-am
@@ -514,6 +515,18 @@ uninstall-man: uninstall-man5 uninstall-man8
 	ps ps-am uninstall uninstall-am uninstall-info-am \
 	uninstall-man uninstall-man5 uninstall-man8
 
+
+pdf: $(man_MANS:.8=.ps) $(man_MANS:.5=.ps)
+
+%.ps: %.8
+	groff -mandoc -Tps $< > $@;
+	ps2pdf13 $@ $(*F).pdf;
+	rm -f *.ps
+
+%.ps: %.5
+	groff -mandoc -Tps $< > $@;
+	ps2pdf13 $@ $(*F).pdf;
+	rm -f *.ps
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.15 2004/09/13 16:02:31 alor Exp $
+# $Id: Makefile.am,v 1.19 2004/11/05 10:01:15 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -8,16 +8,18 @@ LIBS =
 
 bin_PROGRAMS = etterlog
 
-etterlog_SOURCES = el_main.c \
-                   el_parser.c \
-                   el_analyze.c \
+etterlog_SOURCES = el_analyze.c \
                    el_conn.c \
-                   el_target.c \
+                   el_decode.c \
+                   el_decode_http.c \
                    el_display.c \
+                   el_ec_compat.c \
                    el_log.c \
+                   el_main.c \
+                   el_parser.c \
                    el_profiles.c \
                    el_stream.c \
-                   el_ec_compat.c \
+                   el_target.c \
                    $(top_srcdir)/src/ec_error.c \
                    $(top_srcdir)/src/ec_fingerprint.c \
                    $(top_srcdir)/src/ec_manuf.c \
@@ -32,8 +34,17 @@ etterlog_SOURCES = el_main.c \
 if MISSING_STRSEP
    etterlog_SOURCES += $(top_srcdir)/src/missing/strsep.c
 endif
+if MISSING_STRLCAT
+   etterlog_SOURCES += $(top_srcdir)/src/missing/strlcat.c
+endif
 if MISSING_STRCASESTR
    etterlog_SOURCES += $(top_srcdir)/src/missing/strcasestr.c
+endif
+if MISSING_MEMMEM
+   etterlog_SOURCES += $(top_srcdir)/src/missing/memmem.c
+endif
+if MISSING_BASENAME
+   etterlog_SOURCES += $(top_srcdir)/src/missing/basename.c
 endif
 if MISSING_INET_ATON
    etterlog_SOURCES += $(top_srcdir)/src/missing/inet_aton.c

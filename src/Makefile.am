@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.82 2004/09/14 07:58:17 alor Exp $
+# $Id: Makefile.am,v 1.84 2004/11/05 10:01:14 alor Exp $
 
 include $(top_srcdir)/Makefile.am.common
 
@@ -148,30 +148,33 @@ CLEANFILES = *.log *.out core* missing/*.o *~
 ## MISSING FUNCTIONS
 
 missing/strlcat.o:
-	$(COMPILE) -c missing/strlcat.c -o missing/strlcat.o
+	$(COMPILE) @EC_LIBS@ -c missing/strlcat.c -o missing/strlcat.o
 
 missing/strlcpy.o:
-	$(COMPILE) -c missing/strlcpy.c -o missing/strlcpy.o
+	$(COMPILE) @EC_LIBS@ -c missing/strlcpy.c -o missing/strlcpy.o
          
 missing/strsep.o:
-	$(COMPILE) -c missing/strsep.c -o missing/strsep.o
+	$(COMPILE) @EC_LIBS@ -c missing/strsep.c -o missing/strsep.o
                
 missing/strcasestr.o:
-	$(COMPILE) -c missing/strcasestr.c -o missing/strcasestr.o
+	$(COMPILE) @EC_LIBS@ -c missing/strcasestr.c -o missing/strcasestr.o
                      
 missing/scandir.o:
-	$(COMPILE) -c missing/scandir.c -o missing/scandir.o
+	$(COMPILE) @EC_LIBS@ -c missing/scandir.c -o missing/scandir.o
                            
 missing/memmem.o:
-	$(COMPILE) -c missing/memmem.c -o missing/memmem.o
+	$(COMPILE) @EC_LIBS@ -c missing/memmem.c -o missing/memmem.o
                                  
 missing/memcmp.o:
-	$(COMPILE) -c missing/memcmp.c -o missing/memcmp.o
+	$(COMPILE) @EC_LIBS@ -c missing/memcmp.c -o missing/memcmp.o
+
+missing/basename.o:
+	$(COMPILE) @EC_LIBS@ -c missing/basename.c -o missing/basename.o
                                        
 missing/getopt.o:
-	$(COMPILE) -c missing/getopt.c -o missing/getopt.o
+	$(COMPILE) @EC_LIBS@ -c missing/getopt.c -o missing/getopt.o
                                              
 missing/getopt_long.o:
-	$(COMPILE) -c missing/getopt_long.c -o missing/getopt_long.o
+	$(COMPILE) @EC_LIBS@ -c missing/getopt_long.c -o missing/getopt_long.o
 
 # vim:ts=4:noexpandtab

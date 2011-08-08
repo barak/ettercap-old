@@ -1,5 +1,5 @@
 
-/* $Id: el_functions.h,v 1.17 2004/09/13 16:02:30 alor Exp $ */
+/* $Id: el_functions.h,v 1.23 2004/11/04 09:23:03 alor Exp $ */
 
 #ifndef EL_FUNCTIONS_H
 #define EL_FUNCTIONS_H
@@ -32,7 +32,9 @@ EL_API_EXTERN void display(void);
 EL_API_EXTERN void set_display_regex(char *regex);
 
 /* el_conn */
-EL_API_EXTERN void conn_table(void);
+EL_API_EXTERN void conn_table_create(void);
+EL_API_EXTERN void conn_table_display(void);
+EL_API_EXTERN void conn_decode(void);
 EL_API_EXTERN void filcon_compile(char *conn);
 EL_API_EXTERN int is_conn(struct log_header_packet *pck, int *versus);
 #define VERSUS_SOURCE   0
@@ -49,18 +51,53 @@ EL_API_EXTERN int profile_add_info(struct log_header_info *inf, struct dissector
 EL_API_EXTERN void *get_host_list_ptr(void);
 
 /* el_stream */
-
-struct po_list {
+struct so_list {
+   int side;
    struct packet_object po;
-   int type;
-   LIST_ENTRY(po_list) next;
+   TAILQ_ENTRY(so_list) next;
+};
+
+struct so_offset {
+   struct so_list *so_curr;
+   size_t po_off;
 };
 
 struct stream_object {
-   LIST_HEAD (,po_list) po_head;
-   struct packet_object po_curr;
-   size_t po_off;
+   TAILQ_HEAD (so_list_head, so_list) so_head;
+   struct so_offset side1;
+   struct so_offset side2;
 };
+
+EL_API_EXTERN void stream_init(struct stream_object *so);
+EL_API_EXTERN int stream_add(struct stream_object *so, struct log_header_packet *pck, char *buf);
+EL_API_EXTERN struct so_list * stream_search(struct stream_object *so, u_char *buf, size_t buflen, int mode);
+EL_API_EXTERN int stream_read(struct stream_object *so, u_char *buf, size_t size, int mode);
+   #define STREAM_SIDE1 0
+   #define STREAM_SIDE2 ~0
+EL_API_EXTERN int stream_move(struct stream_object *so, size_t offset, int whence, int mode);
+
+/* el_decode */
+
+enum {
+   APP_LAYER_TCP = 51,
+   APP_LAYER_UDP = 52,
+};
+
+#define FUNC_EXTRACTOR(func) int func(struct stream_object *so)
+#define FUNC_EXTRACTOR_PTR(func) int (*func)(struct stream_object *so)
+#define EXECUTE_EXTRACTOR(x, so, ret) do{ \
+   if (x) \
+      ret += x(so); \
+}while(0)
+
+#define STREAM so
+
+EL_API_EXTERN int decode_stream(struct stream_object *so);
+   #define STREAM_SKIPPED  0
+   #define STREAM_DECODED  1
+EL_API_EXTERN void add_extractor(u_int8 level, u_int32 type, FUNC_EXTRACTOR_PTR(extractor));
+EL_API_EXTERN void * get_extractor(u_int8 level, u_int32 type);
+EL_API_EXTERN int decode_to_file(char *host, char *proto, char *file);
 
 #endif
 

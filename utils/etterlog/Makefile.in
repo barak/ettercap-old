@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-# $Id: Makefile.am,v 1.15 2004/09/13 16:02:31 alor Exp $
+# $Id: Makefile.am,v 1.19 2004/11/05 10:01:15 alor Exp $
 
 SOURCES = $(etterlog_SOURCES)
 
@@ -43,10 +43,13 @@ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/Makefile.am.common
 bin_PROGRAMS = etterlog$(EXEEXT)
 @MISSING_STRSEP_TRUE@am__append_1 = $(top_srcdir)/src/missing/strsep.c
-@MISSING_STRCASESTR_TRUE@am__append_2 = $(top_srcdir)/src/missing/strcasestr.c
-@MISSING_INET_ATON_TRUE@am__append_3 = $(top_srcdir)/src/missing/inet_aton.c
-@MISSING_GETOPT_LONG_TRUE@am__append_4 = $(top_srcdir)/src/missing/getopt.c
-@INET_ATON_WANTS_RESOLV_TRUE@am__append_5 = -lresolv
+@MISSING_STRLCAT_TRUE@am__append_2 = $(top_srcdir)/src/missing/strlcat.c
+@MISSING_STRCASESTR_TRUE@am__append_3 = $(top_srcdir)/src/missing/strcasestr.c
+@MISSING_MEMMEM_TRUE@am__append_4 = $(top_srcdir)/src/missing/memmem.c
+@MISSING_BASENAME_TRUE@am__append_5 = $(top_srcdir)/src/missing/basename.c
+@MISSING_INET_ATON_TRUE@am__append_6 = $(top_srcdir)/src/missing/inet_aton.c
+@MISSING_GETOPT_LONG_TRUE@am__append_7 = $(top_srcdir)/src/missing/getopt.c
+@INET_ATON_WANTS_RESOLV_TRUE@am__append_8 = -lresolv
 subdir = utils/etterlog
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
@@ -59,42 +62,53 @@ CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-am__etterlog_SOURCES_DIST = el_main.c el_parser.c el_analyze.c \
-	el_conn.c el_target.c el_display.c el_log.c el_profiles.c \
-	el_stream.c el_ec_compat.c $(top_srcdir)/src/ec_error.c \
+am__etterlog_SOURCES_DIST = el_analyze.c el_conn.c el_decode.c \
+	el_decode_http.c el_display.c el_ec_compat.c el_log.c \
+	el_main.c el_parser.c el_profiles.c el_stream.c el_target.c \
+	$(top_srcdir)/src/ec_error.c \
 	$(top_srcdir)/src/ec_fingerprint.c \
 	$(top_srcdir)/src/ec_manuf.c $(top_srcdir)/src/ec_services.c \
 	$(top_srcdir)/src/ec_hash.c $(top_srcdir)/src/ec_file.c \
 	$(top_srcdir)/src/ec_inet.c $(top_srcdir)/src/ec_passive.c \
 	$(top_srcdir)/src/ec_strings.c $(top_srcdir)/src/ec_format.c \
 	$(top_srcdir)/src/missing/strsep.c \
+	$(top_srcdir)/src/missing/strlcat.c \
 	$(top_srcdir)/src/missing/strcasestr.c \
+	$(top_srcdir)/src/missing/memmem.c \
+	$(top_srcdir)/src/missing/basename.c \
 	$(top_srcdir)/src/missing/inet_aton.c \
 	$(top_srcdir)/src/missing/getopt.c
 @MISSING_STRSEP_TRUE@am__objects_1 = etterlog-strsep.$(OBJEXT)
-@MISSING_STRCASESTR_TRUE@am__objects_2 =  \
+@MISSING_STRLCAT_TRUE@am__objects_2 = etterlog-strlcat.$(OBJEXT)
+@MISSING_STRCASESTR_TRUE@am__objects_3 =  \
 @MISSING_STRCASESTR_TRUE@	etterlog-strcasestr.$(OBJEXT)
-@MISSING_INET_ATON_TRUE@am__objects_3 = etterlog-inet_aton.$(OBJEXT)
-@MISSING_GETOPT_LONG_TRUE@am__objects_4 = etterlog-getopt.$(OBJEXT)
-am_etterlog_OBJECTS = etterlog-el_main.$(OBJEXT) \
-	etterlog-el_parser.$(OBJEXT) etterlog-el_analyze.$(OBJEXT) \
-	etterlog-el_conn.$(OBJEXT) etterlog-el_target.$(OBJEXT) \
-	etterlog-el_display.$(OBJEXT) etterlog-el_log.$(OBJEXT) \
-	etterlog-el_profiles.$(OBJEXT) etterlog-el_stream.$(OBJEXT) \
-	etterlog-el_ec_compat.$(OBJEXT) etterlog-ec_error.$(OBJEXT) \
-	etterlog-ec_fingerprint.$(OBJEXT) etterlog-ec_manuf.$(OBJEXT) \
-	etterlog-ec_services.$(OBJEXT) etterlog-ec_hash.$(OBJEXT) \
-	etterlog-ec_file.$(OBJEXT) etterlog-ec_inet.$(OBJEXT) \
-	etterlog-ec_passive.$(OBJEXT) etterlog-ec_strings.$(OBJEXT) \
-	etterlog-ec_format.$(OBJEXT) $(am__objects_1) $(am__objects_2) \
-	$(am__objects_3) $(am__objects_4)
+@MISSING_MEMMEM_TRUE@am__objects_4 = etterlog-memmem.$(OBJEXT)
+@MISSING_BASENAME_TRUE@am__objects_5 = etterlog-basename.$(OBJEXT)
+@MISSING_INET_ATON_TRUE@am__objects_6 = etterlog-inet_aton.$(OBJEXT)
+@MISSING_GETOPT_LONG_TRUE@am__objects_7 = etterlog-getopt.$(OBJEXT)
+am_etterlog_OBJECTS = etterlog-el_analyze.$(OBJEXT) \
+	etterlog-el_conn.$(OBJEXT) etterlog-el_decode.$(OBJEXT) \
+	etterlog-el_decode_http.$(OBJEXT) \
+	etterlog-el_display.$(OBJEXT) etterlog-el_ec_compat.$(OBJEXT) \
+	etterlog-el_log.$(OBJEXT) etterlog-el_main.$(OBJEXT) \
+	etterlog-el_parser.$(OBJEXT) etterlog-el_profiles.$(OBJEXT) \
+	etterlog-el_stream.$(OBJEXT) etterlog-el_target.$(OBJEXT) \
+	etterlog-ec_error.$(OBJEXT) etterlog-ec_fingerprint.$(OBJEXT) \
+	etterlog-ec_manuf.$(OBJEXT) etterlog-ec_services.$(OBJEXT) \
+	etterlog-ec_hash.$(OBJEXT) etterlog-ec_file.$(OBJEXT) \
+	etterlog-ec_inet.$(OBJEXT) etterlog-ec_passive.$(OBJEXT) \
+	etterlog-ec_strings.$(OBJEXT) etterlog-ec_format.$(OBJEXT) \
+	$(am__objects_1) $(am__objects_2) $(am__objects_3) \
+	$(am__objects_4) $(am__objects_5) $(am__objects_6) \
+	$(am__objects_7)
 etterlog_OBJECTS = $(am_etterlog_OBJECTS)
 am__DEPENDENCIES_1 =
 etterlog_DEPENDENCIES = $(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
-@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/etterlog-ec_error.Po \
+@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/etterlog-basename.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/etterlog-ec_error.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/etterlog-ec_file.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/etterlog-ec_fingerprint.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/etterlog-ec_format.Po \
@@ -106,6 +120,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/etterlog-ec_strings.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/etterlog-el_analyze.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/etterlog-el_conn.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/etterlog-el_decode.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/etterlog-el_decode_http.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/etterlog-el_display.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/etterlog-el_ec_compat.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/etterlog-el_log.Po \
@@ -116,7 +132,9 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/etterlog-el_target.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/etterlog-getopt.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/etterlog-inet_aton.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/etterlog-memmem.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/etterlog-strcasestr.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/etterlog-strlcat.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/etterlog-strsep.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -212,6 +230,8 @@ MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
 MINGW_FALSE = @MINGW_FALSE@
 MINGW_TRUE = @MINGW_TRUE@
+MISSING_BASENAME_FALSE = @MISSING_BASENAME_FALSE@
+MISSING_BASENAME_TRUE = @MISSING_BASENAME_TRUE@
 MISSING_GETOPT_LONG_FALSE = @MISSING_GETOPT_LONG_FALSE@
 MISSING_GETOPT_LONG_TRUE = @MISSING_GETOPT_LONG_TRUE@
 MISSING_INET_ATON_FALSE = @MISSING_INET_ATON_FALSE@
@@ -276,6 +296,7 @@ ac_ct_F77 = @ac_ct_F77@
 ac_ct_OBJDUMP = @ac_ct_OBJDUMP@
 ac_ct_RANLIB = @ac_ct_RANLIB@
 ac_ct_STRIP = @ac_ct_STRIP@
+ac_pt_PKG_CONFIG = @ac_pt_PKG_CONFIG@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -313,16 +334,18 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 AUTOMAKE_OPTIONS = foreign #no-dependencies
 DISTCLEANFILES = *~
-etterlog_SOURCES = el_main.c \
-                   el_parser.c \
-                   el_analyze.c \
+etterlog_SOURCES = el_analyze.c \
                    el_conn.c \
-                   el_target.c \
+                   el_decode.c \
+                   el_decode_http.c \
                    el_display.c \
+                   el_ec_compat.c \
                    el_log.c \
+                   el_main.c \
+                   el_parser.c \
                    el_profiles.c \
                    el_stream.c \
-                   el_ec_compat.c \
+                   el_target.c \
                    $(top_srcdir)/src/ec_error.c \
                    $(top_srcdir)/src/ec_fingerprint.c \
                    $(top_srcdir)/src/ec_manuf.c \
@@ -333,9 +356,9 @@ etterlog_SOURCES = el_main.c \
                    $(top_srcdir)/src/ec_passive.c \
                    $(top_srcdir)/src/ec_strings.c \
                    $(top_srcdir)/src/ec_format.c\
-$(am__append_1) $(am__append_2) $(am__append_3) $(am__append_4)
+$(am__append_1) $(am__append_2) $(am__append_3) $(am__append_4) $(am__append_5) $(am__append_6) $(am__append_7)
 etterlog_CFLAGS = @EC_CFLAGS@
-etterlog_LDADD = -lz @ICONVLIB@ $(am__append_5)
+etterlog_LDADD = -lz @ICONVLIB@ $(am__append_8)
 CLEANFILES = *.log *.out core* *~
 all: all-am
 
@@ -408,6 +431,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-basename.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-ec_error.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-ec_file.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-ec_fingerprint.Po@am__quote@
@@ -420,6 +444,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-ec_strings.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-el_analyze.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-el_conn.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-el_decode.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-el_decode_http.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-el_display.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-el_ec_compat.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-el_log.Po@am__quote@
@@ -430,7 +456,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-el_target.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-getopt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-inet_aton.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-memmem.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-strcasestr.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-strlcat.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/etterlog-strsep.Po@am__quote@
 
 .c.o:
@@ -456,54 +484,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/$*.Plo' tmpdepfile='$(DEPDIR)/$*.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
-
-etterlog-el_main.o: el_main.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_main.o -MD -MP -MF "$(DEPDIR)/etterlog-el_main.Tpo" -c -o etterlog-el_main.o `test -f 'el_main.c' || echo '$(srcdir)/'`el_main.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_main.Tpo" "$(DEPDIR)/etterlog-el_main.Po"; else rm -f "$(DEPDIR)/etterlog-el_main.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_main.c' object='etterlog-el_main.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_main.Po' tmpdepfile='$(DEPDIR)/etterlog-el_main.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_main.o `test -f 'el_main.c' || echo '$(srcdir)/'`el_main.c
-
-etterlog-el_main.obj: el_main.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_main.obj -MD -MP -MF "$(DEPDIR)/etterlog-el_main.Tpo" -c -o etterlog-el_main.obj `if test -f 'el_main.c'; then $(CYGPATH_W) 'el_main.c'; else $(CYGPATH_W) '$(srcdir)/el_main.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_main.Tpo" "$(DEPDIR)/etterlog-el_main.Po"; else rm -f "$(DEPDIR)/etterlog-el_main.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_main.c' object='etterlog-el_main.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_main.Po' tmpdepfile='$(DEPDIR)/etterlog-el_main.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_main.obj `if test -f 'el_main.c'; then $(CYGPATH_W) 'el_main.c'; else $(CYGPATH_W) '$(srcdir)/el_main.c'; fi`
-
-etterlog-el_main.lo: el_main.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_main.lo -MD -MP -MF "$(DEPDIR)/etterlog-el_main.Tpo" -c -o etterlog-el_main.lo `test -f 'el_main.c' || echo '$(srcdir)/'`el_main.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_main.Tpo" "$(DEPDIR)/etterlog-el_main.Plo"; else rm -f "$(DEPDIR)/etterlog-el_main.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_main.c' object='etterlog-el_main.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_main.Plo' tmpdepfile='$(DEPDIR)/etterlog-el_main.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_main.lo `test -f 'el_main.c' || echo '$(srcdir)/'`el_main.c
-
-etterlog-el_parser.o: el_parser.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_parser.o -MD -MP -MF "$(DEPDIR)/etterlog-el_parser.Tpo" -c -o etterlog-el_parser.o `test -f 'el_parser.c' || echo '$(srcdir)/'`el_parser.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_parser.Tpo" "$(DEPDIR)/etterlog-el_parser.Po"; else rm -f "$(DEPDIR)/etterlog-el_parser.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_parser.c' object='etterlog-el_parser.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_parser.Po' tmpdepfile='$(DEPDIR)/etterlog-el_parser.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_parser.o `test -f 'el_parser.c' || echo '$(srcdir)/'`el_parser.c
-
-etterlog-el_parser.obj: el_parser.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_parser.obj -MD -MP -MF "$(DEPDIR)/etterlog-el_parser.Tpo" -c -o etterlog-el_parser.obj `if test -f 'el_parser.c'; then $(CYGPATH_W) 'el_parser.c'; else $(CYGPATH_W) '$(srcdir)/el_parser.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_parser.Tpo" "$(DEPDIR)/etterlog-el_parser.Po"; else rm -f "$(DEPDIR)/etterlog-el_parser.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_parser.c' object='etterlog-el_parser.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_parser.Po' tmpdepfile='$(DEPDIR)/etterlog-el_parser.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_parser.obj `if test -f 'el_parser.c'; then $(CYGPATH_W) 'el_parser.c'; else $(CYGPATH_W) '$(srcdir)/el_parser.c'; fi`
-
-etterlog-el_parser.lo: el_parser.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_parser.lo -MD -MP -MF "$(DEPDIR)/etterlog-el_parser.Tpo" -c -o etterlog-el_parser.lo `test -f 'el_parser.c' || echo '$(srcdir)/'`el_parser.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_parser.Tpo" "$(DEPDIR)/etterlog-el_parser.Plo"; else rm -f "$(DEPDIR)/etterlog-el_parser.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_parser.c' object='etterlog-el_parser.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_parser.Plo' tmpdepfile='$(DEPDIR)/etterlog-el_parser.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_parser.lo `test -f 'el_parser.c' || echo '$(srcdir)/'`el_parser.c
 
 etterlog-el_analyze.o: el_analyze.c
 @am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_analyze.o -MD -MP -MF "$(DEPDIR)/etterlog-el_analyze.Tpo" -c -o etterlog-el_analyze.o `test -f 'el_analyze.c' || echo '$(srcdir)/'`el_analyze.c; \
@@ -553,29 +533,53 @@ etterlog-el_conn.lo: el_conn.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_conn.lo `test -f 'el_conn.c' || echo '$(srcdir)/'`el_conn.c
 
-etterlog-el_target.o: el_target.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_target.o -MD -MP -MF "$(DEPDIR)/etterlog-el_target.Tpo" -c -o etterlog-el_target.o `test -f 'el_target.c' || echo '$(srcdir)/'`el_target.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_target.Tpo" "$(DEPDIR)/etterlog-el_target.Po"; else rm -f "$(DEPDIR)/etterlog-el_target.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_target.c' object='etterlog-el_target.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_target.Po' tmpdepfile='$(DEPDIR)/etterlog-el_target.TPo' @AMDEPBACKSLASH@
+etterlog-el_decode.o: el_decode.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_decode.o -MD -MP -MF "$(DEPDIR)/etterlog-el_decode.Tpo" -c -o etterlog-el_decode.o `test -f 'el_decode.c' || echo '$(srcdir)/'`el_decode.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_decode.Tpo" "$(DEPDIR)/etterlog-el_decode.Po"; else rm -f "$(DEPDIR)/etterlog-el_decode.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_decode.c' object='etterlog-el_decode.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_decode.Po' tmpdepfile='$(DEPDIR)/etterlog-el_decode.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_target.o `test -f 'el_target.c' || echo '$(srcdir)/'`el_target.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_decode.o `test -f 'el_decode.c' || echo '$(srcdir)/'`el_decode.c
 
-etterlog-el_target.obj: el_target.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_target.obj -MD -MP -MF "$(DEPDIR)/etterlog-el_target.Tpo" -c -o etterlog-el_target.obj `if test -f 'el_target.c'; then $(CYGPATH_W) 'el_target.c'; else $(CYGPATH_W) '$(srcdir)/el_target.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_target.Tpo" "$(DEPDIR)/etterlog-el_target.Po"; else rm -f "$(DEPDIR)/etterlog-el_target.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_target.c' object='etterlog-el_target.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_target.Po' tmpdepfile='$(DEPDIR)/etterlog-el_target.TPo' @AMDEPBACKSLASH@
+etterlog-el_decode.obj: el_decode.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_decode.obj -MD -MP -MF "$(DEPDIR)/etterlog-el_decode.Tpo" -c -o etterlog-el_decode.obj `if test -f 'el_decode.c'; then $(CYGPATH_W) 'el_decode.c'; else $(CYGPATH_W) '$(srcdir)/el_decode.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_decode.Tpo" "$(DEPDIR)/etterlog-el_decode.Po"; else rm -f "$(DEPDIR)/etterlog-el_decode.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_decode.c' object='etterlog-el_decode.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_decode.Po' tmpdepfile='$(DEPDIR)/etterlog-el_decode.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_target.obj `if test -f 'el_target.c'; then $(CYGPATH_W) 'el_target.c'; else $(CYGPATH_W) '$(srcdir)/el_target.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_decode.obj `if test -f 'el_decode.c'; then $(CYGPATH_W) 'el_decode.c'; else $(CYGPATH_W) '$(srcdir)/el_decode.c'; fi`
 
-etterlog-el_target.lo: el_target.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_target.lo -MD -MP -MF "$(DEPDIR)/etterlog-el_target.Tpo" -c -o etterlog-el_target.lo `test -f 'el_target.c' || echo '$(srcdir)/'`el_target.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_target.Tpo" "$(DEPDIR)/etterlog-el_target.Plo"; else rm -f "$(DEPDIR)/etterlog-el_target.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_target.c' object='etterlog-el_target.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_target.Plo' tmpdepfile='$(DEPDIR)/etterlog-el_target.TPlo' @AMDEPBACKSLASH@
+etterlog-el_decode.lo: el_decode.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_decode.lo -MD -MP -MF "$(DEPDIR)/etterlog-el_decode.Tpo" -c -o etterlog-el_decode.lo `test -f 'el_decode.c' || echo '$(srcdir)/'`el_decode.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_decode.Tpo" "$(DEPDIR)/etterlog-el_decode.Plo"; else rm -f "$(DEPDIR)/etterlog-el_decode.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_decode.c' object='etterlog-el_decode.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_decode.Plo' tmpdepfile='$(DEPDIR)/etterlog-el_decode.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_target.lo `test -f 'el_target.c' || echo '$(srcdir)/'`el_target.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_decode.lo `test -f 'el_decode.c' || echo '$(srcdir)/'`el_decode.c
+
+etterlog-el_decode_http.o: el_decode_http.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_decode_http.o -MD -MP -MF "$(DEPDIR)/etterlog-el_decode_http.Tpo" -c -o etterlog-el_decode_http.o `test -f 'el_decode_http.c' || echo '$(srcdir)/'`el_decode_http.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_decode_http.Tpo" "$(DEPDIR)/etterlog-el_decode_http.Po"; else rm -f "$(DEPDIR)/etterlog-el_decode_http.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_decode_http.c' object='etterlog-el_decode_http.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_decode_http.Po' tmpdepfile='$(DEPDIR)/etterlog-el_decode_http.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_decode_http.o `test -f 'el_decode_http.c' || echo '$(srcdir)/'`el_decode_http.c
+
+etterlog-el_decode_http.obj: el_decode_http.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_decode_http.obj -MD -MP -MF "$(DEPDIR)/etterlog-el_decode_http.Tpo" -c -o etterlog-el_decode_http.obj `if test -f 'el_decode_http.c'; then $(CYGPATH_W) 'el_decode_http.c'; else $(CYGPATH_W) '$(srcdir)/el_decode_http.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_decode_http.Tpo" "$(DEPDIR)/etterlog-el_decode_http.Po"; else rm -f "$(DEPDIR)/etterlog-el_decode_http.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_decode_http.c' object='etterlog-el_decode_http.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_decode_http.Po' tmpdepfile='$(DEPDIR)/etterlog-el_decode_http.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_decode_http.obj `if test -f 'el_decode_http.c'; then $(CYGPATH_W) 'el_decode_http.c'; else $(CYGPATH_W) '$(srcdir)/el_decode_http.c'; fi`
+
+etterlog-el_decode_http.lo: el_decode_http.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_decode_http.lo -MD -MP -MF "$(DEPDIR)/etterlog-el_decode_http.Tpo" -c -o etterlog-el_decode_http.lo `test -f 'el_decode_http.c' || echo '$(srcdir)/'`el_decode_http.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_decode_http.Tpo" "$(DEPDIR)/etterlog-el_decode_http.Plo"; else rm -f "$(DEPDIR)/etterlog-el_decode_http.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_decode_http.c' object='etterlog-el_decode_http.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_decode_http.Plo' tmpdepfile='$(DEPDIR)/etterlog-el_decode_http.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_decode_http.lo `test -f 'el_decode_http.c' || echo '$(srcdir)/'`el_decode_http.c
 
 etterlog-el_display.o: el_display.c
 @am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_display.o -MD -MP -MF "$(DEPDIR)/etterlog-el_display.Tpo" -c -o etterlog-el_display.o `test -f 'el_display.c' || echo '$(srcdir)/'`el_display.c; \
@@ -601,6 +605,30 @@ etterlog-el_display.lo: el_display.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_display.lo `test -f 'el_display.c' || echo '$(srcdir)/'`el_display.c
 
+etterlog-el_ec_compat.o: el_ec_compat.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_ec_compat.o -MD -MP -MF "$(DEPDIR)/etterlog-el_ec_compat.Tpo" -c -o etterlog-el_ec_compat.o `test -f 'el_ec_compat.c' || echo '$(srcdir)/'`el_ec_compat.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_ec_compat.Tpo" "$(DEPDIR)/etterlog-el_ec_compat.Po"; else rm -f "$(DEPDIR)/etterlog-el_ec_compat.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_ec_compat.c' object='etterlog-el_ec_compat.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_ec_compat.Po' tmpdepfile='$(DEPDIR)/etterlog-el_ec_compat.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_ec_compat.o `test -f 'el_ec_compat.c' || echo '$(srcdir)/'`el_ec_compat.c
+
+etterlog-el_ec_compat.obj: el_ec_compat.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_ec_compat.obj -MD -MP -MF "$(DEPDIR)/etterlog-el_ec_compat.Tpo" -c -o etterlog-el_ec_compat.obj `if test -f 'el_ec_compat.c'; then $(CYGPATH_W) 'el_ec_compat.c'; else $(CYGPATH_W) '$(srcdir)/el_ec_compat.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_ec_compat.Tpo" "$(DEPDIR)/etterlog-el_ec_compat.Po"; else rm -f "$(DEPDIR)/etterlog-el_ec_compat.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_ec_compat.c' object='etterlog-el_ec_compat.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_ec_compat.Po' tmpdepfile='$(DEPDIR)/etterlog-el_ec_compat.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_ec_compat.obj `if test -f 'el_ec_compat.c'; then $(CYGPATH_W) 'el_ec_compat.c'; else $(CYGPATH_W) '$(srcdir)/el_ec_compat.c'; fi`
+
+etterlog-el_ec_compat.lo: el_ec_compat.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_ec_compat.lo -MD -MP -MF "$(DEPDIR)/etterlog-el_ec_compat.Tpo" -c -o etterlog-el_ec_compat.lo `test -f 'el_ec_compat.c' || echo '$(srcdir)/'`el_ec_compat.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_ec_compat.Tpo" "$(DEPDIR)/etterlog-el_ec_compat.Plo"; else rm -f "$(DEPDIR)/etterlog-el_ec_compat.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_ec_compat.c' object='etterlog-el_ec_compat.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_ec_compat.Plo' tmpdepfile='$(DEPDIR)/etterlog-el_ec_compat.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_ec_compat.lo `test -f 'el_ec_compat.c' || echo '$(srcdir)/'`el_ec_compat.c
+
 etterlog-el_log.o: el_log.c
 @am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_log.o -MD -MP -MF "$(DEPDIR)/etterlog-el_log.Tpo" -c -o etterlog-el_log.o `test -f 'el_log.c' || echo '$(srcdir)/'`el_log.c; \
 @am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_log.Tpo" "$(DEPDIR)/etterlog-el_log.Po"; else rm -f "$(DEPDIR)/etterlog-el_log.Tpo"; exit 1; fi
@@ -624,6 +652,54 @@ etterlog-el_log.lo: el_log.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_log.Plo' tmpdepfile='$(DEPDIR)/etterlog-el_log.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_log.lo `test -f 'el_log.c' || echo '$(srcdir)/'`el_log.c
+
+etterlog-el_main.o: el_main.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_main.o -MD -MP -MF "$(DEPDIR)/etterlog-el_main.Tpo" -c -o etterlog-el_main.o `test -f 'el_main.c' || echo '$(srcdir)/'`el_main.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_main.Tpo" "$(DEPDIR)/etterlog-el_main.Po"; else rm -f "$(DEPDIR)/etterlog-el_main.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_main.c' object='etterlog-el_main.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_main.Po' tmpdepfile='$(DEPDIR)/etterlog-el_main.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_main.o `test -f 'el_main.c' || echo '$(srcdir)/'`el_main.c
+
+etterlog-el_main.obj: el_main.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_main.obj -MD -MP -MF "$(DEPDIR)/etterlog-el_main.Tpo" -c -o etterlog-el_main.obj `if test -f 'el_main.c'; then $(CYGPATH_W) 'el_main.c'; else $(CYGPATH_W) '$(srcdir)/el_main.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_main.Tpo" "$(DEPDIR)/etterlog-el_main.Po"; else rm -f "$(DEPDIR)/etterlog-el_main.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_main.c' object='etterlog-el_main.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_main.Po' tmpdepfile='$(DEPDIR)/etterlog-el_main.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_main.obj `if test -f 'el_main.c'; then $(CYGPATH_W) 'el_main.c'; else $(CYGPATH_W) '$(srcdir)/el_main.c'; fi`
+
+etterlog-el_main.lo: el_main.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_main.lo -MD -MP -MF "$(DEPDIR)/etterlog-el_main.Tpo" -c -o etterlog-el_main.lo `test -f 'el_main.c' || echo '$(srcdir)/'`el_main.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_main.Tpo" "$(DEPDIR)/etterlog-el_main.Plo"; else rm -f "$(DEPDIR)/etterlog-el_main.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_main.c' object='etterlog-el_main.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_main.Plo' tmpdepfile='$(DEPDIR)/etterlog-el_main.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_main.lo `test -f 'el_main.c' || echo '$(srcdir)/'`el_main.c
+
+etterlog-el_parser.o: el_parser.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_parser.o -MD -MP -MF "$(DEPDIR)/etterlog-el_parser.Tpo" -c -o etterlog-el_parser.o `test -f 'el_parser.c' || echo '$(srcdir)/'`el_parser.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_parser.Tpo" "$(DEPDIR)/etterlog-el_parser.Po"; else rm -f "$(DEPDIR)/etterlog-el_parser.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_parser.c' object='etterlog-el_parser.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_parser.Po' tmpdepfile='$(DEPDIR)/etterlog-el_parser.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_parser.o `test -f 'el_parser.c' || echo '$(srcdir)/'`el_parser.c
+
+etterlog-el_parser.obj: el_parser.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_parser.obj -MD -MP -MF "$(DEPDIR)/etterlog-el_parser.Tpo" -c -o etterlog-el_parser.obj `if test -f 'el_parser.c'; then $(CYGPATH_W) 'el_parser.c'; else $(CYGPATH_W) '$(srcdir)/el_parser.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_parser.Tpo" "$(DEPDIR)/etterlog-el_parser.Po"; else rm -f "$(DEPDIR)/etterlog-el_parser.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_parser.c' object='etterlog-el_parser.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_parser.Po' tmpdepfile='$(DEPDIR)/etterlog-el_parser.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_parser.obj `if test -f 'el_parser.c'; then $(CYGPATH_W) 'el_parser.c'; else $(CYGPATH_W) '$(srcdir)/el_parser.c'; fi`
+
+etterlog-el_parser.lo: el_parser.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_parser.lo -MD -MP -MF "$(DEPDIR)/etterlog-el_parser.Tpo" -c -o etterlog-el_parser.lo `test -f 'el_parser.c' || echo '$(srcdir)/'`el_parser.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_parser.Tpo" "$(DEPDIR)/etterlog-el_parser.Plo"; else rm -f "$(DEPDIR)/etterlog-el_parser.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_parser.c' object='etterlog-el_parser.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_parser.Plo' tmpdepfile='$(DEPDIR)/etterlog-el_parser.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_parser.lo `test -f 'el_parser.c' || echo '$(srcdir)/'`el_parser.c
 
 etterlog-el_profiles.o: el_profiles.c
 @am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_profiles.o -MD -MP -MF "$(DEPDIR)/etterlog-el_profiles.Tpo" -c -o etterlog-el_profiles.o `test -f 'el_profiles.c' || echo '$(srcdir)/'`el_profiles.c; \
@@ -673,29 +749,29 @@ etterlog-el_stream.lo: el_stream.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_stream.lo `test -f 'el_stream.c' || echo '$(srcdir)/'`el_stream.c
 
-etterlog-el_ec_compat.o: el_ec_compat.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_ec_compat.o -MD -MP -MF "$(DEPDIR)/etterlog-el_ec_compat.Tpo" -c -o etterlog-el_ec_compat.o `test -f 'el_ec_compat.c' || echo '$(srcdir)/'`el_ec_compat.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_ec_compat.Tpo" "$(DEPDIR)/etterlog-el_ec_compat.Po"; else rm -f "$(DEPDIR)/etterlog-el_ec_compat.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_ec_compat.c' object='etterlog-el_ec_compat.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_ec_compat.Po' tmpdepfile='$(DEPDIR)/etterlog-el_ec_compat.TPo' @AMDEPBACKSLASH@
+etterlog-el_target.o: el_target.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_target.o -MD -MP -MF "$(DEPDIR)/etterlog-el_target.Tpo" -c -o etterlog-el_target.o `test -f 'el_target.c' || echo '$(srcdir)/'`el_target.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_target.Tpo" "$(DEPDIR)/etterlog-el_target.Po"; else rm -f "$(DEPDIR)/etterlog-el_target.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_target.c' object='etterlog-el_target.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_target.Po' tmpdepfile='$(DEPDIR)/etterlog-el_target.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_ec_compat.o `test -f 'el_ec_compat.c' || echo '$(srcdir)/'`el_ec_compat.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_target.o `test -f 'el_target.c' || echo '$(srcdir)/'`el_target.c
 
-etterlog-el_ec_compat.obj: el_ec_compat.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_ec_compat.obj -MD -MP -MF "$(DEPDIR)/etterlog-el_ec_compat.Tpo" -c -o etterlog-el_ec_compat.obj `if test -f 'el_ec_compat.c'; then $(CYGPATH_W) 'el_ec_compat.c'; else $(CYGPATH_W) '$(srcdir)/el_ec_compat.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_ec_compat.Tpo" "$(DEPDIR)/etterlog-el_ec_compat.Po"; else rm -f "$(DEPDIR)/etterlog-el_ec_compat.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_ec_compat.c' object='etterlog-el_ec_compat.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_ec_compat.Po' tmpdepfile='$(DEPDIR)/etterlog-el_ec_compat.TPo' @AMDEPBACKSLASH@
+etterlog-el_target.obj: el_target.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_target.obj -MD -MP -MF "$(DEPDIR)/etterlog-el_target.Tpo" -c -o etterlog-el_target.obj `if test -f 'el_target.c'; then $(CYGPATH_W) 'el_target.c'; else $(CYGPATH_W) '$(srcdir)/el_target.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_target.Tpo" "$(DEPDIR)/etterlog-el_target.Po"; else rm -f "$(DEPDIR)/etterlog-el_target.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_target.c' object='etterlog-el_target.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_target.Po' tmpdepfile='$(DEPDIR)/etterlog-el_target.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_ec_compat.obj `if test -f 'el_ec_compat.c'; then $(CYGPATH_W) 'el_ec_compat.c'; else $(CYGPATH_W) '$(srcdir)/el_ec_compat.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_target.obj `if test -f 'el_target.c'; then $(CYGPATH_W) 'el_target.c'; else $(CYGPATH_W) '$(srcdir)/el_target.c'; fi`
 
-etterlog-el_ec_compat.lo: el_ec_compat.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_ec_compat.lo -MD -MP -MF "$(DEPDIR)/etterlog-el_ec_compat.Tpo" -c -o etterlog-el_ec_compat.lo `test -f 'el_ec_compat.c' || echo '$(srcdir)/'`el_ec_compat.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_ec_compat.Tpo" "$(DEPDIR)/etterlog-el_ec_compat.Plo"; else rm -f "$(DEPDIR)/etterlog-el_ec_compat.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_ec_compat.c' object='etterlog-el_ec_compat.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_ec_compat.Plo' tmpdepfile='$(DEPDIR)/etterlog-el_ec_compat.TPlo' @AMDEPBACKSLASH@
+etterlog-el_target.lo: el_target.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-el_target.lo -MD -MP -MF "$(DEPDIR)/etterlog-el_target.Tpo" -c -o etterlog-el_target.lo `test -f 'el_target.c' || echo '$(srcdir)/'`el_target.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-el_target.Tpo" "$(DEPDIR)/etterlog-el_target.Plo"; else rm -f "$(DEPDIR)/etterlog-el_target.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='el_target.c' object='etterlog-el_target.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-el_target.Plo' tmpdepfile='$(DEPDIR)/etterlog-el_target.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_ec_compat.lo `test -f 'el_ec_compat.c' || echo '$(srcdir)/'`el_ec_compat.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-el_target.lo `test -f 'el_target.c' || echo '$(srcdir)/'`el_target.c
 
 etterlog-ec_error.o: $(top_srcdir)/src/ec_error.c
 @am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-ec_error.o -MD -MP -MF "$(DEPDIR)/etterlog-ec_error.Tpo" -c -o etterlog-ec_error.o `test -f '$(top_srcdir)/src/ec_error.c' || echo '$(srcdir)/'`$(top_srcdir)/src/ec_error.c; \
@@ -961,6 +1037,30 @@ etterlog-strsep.lo: $(top_srcdir)/src/missing/strsep.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-strsep.lo `test -f '$(top_srcdir)/src/missing/strsep.c' || echo '$(srcdir)/'`$(top_srcdir)/src/missing/strsep.c
 
+etterlog-strlcat.o: $(top_srcdir)/src/missing/strlcat.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-strlcat.o -MD -MP -MF "$(DEPDIR)/etterlog-strlcat.Tpo" -c -o etterlog-strlcat.o `test -f '$(top_srcdir)/src/missing/strlcat.c' || echo '$(srcdir)/'`$(top_srcdir)/src/missing/strlcat.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-strlcat.Tpo" "$(DEPDIR)/etterlog-strlcat.Po"; else rm -f "$(DEPDIR)/etterlog-strlcat.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(top_srcdir)/src/missing/strlcat.c' object='etterlog-strlcat.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-strlcat.Po' tmpdepfile='$(DEPDIR)/etterlog-strlcat.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-strlcat.o `test -f '$(top_srcdir)/src/missing/strlcat.c' || echo '$(srcdir)/'`$(top_srcdir)/src/missing/strlcat.c
+
+etterlog-strlcat.obj: $(top_srcdir)/src/missing/strlcat.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-strlcat.obj -MD -MP -MF "$(DEPDIR)/etterlog-strlcat.Tpo" -c -o etterlog-strlcat.obj `if test -f '$(top_srcdir)/src/missing/strlcat.c'; then $(CYGPATH_W) '$(top_srcdir)/src/missing/strlcat.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/missing/strlcat.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-strlcat.Tpo" "$(DEPDIR)/etterlog-strlcat.Po"; else rm -f "$(DEPDIR)/etterlog-strlcat.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(top_srcdir)/src/missing/strlcat.c' object='etterlog-strlcat.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-strlcat.Po' tmpdepfile='$(DEPDIR)/etterlog-strlcat.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-strlcat.obj `if test -f '$(top_srcdir)/src/missing/strlcat.c'; then $(CYGPATH_W) '$(top_srcdir)/src/missing/strlcat.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/missing/strlcat.c'; fi`
+
+etterlog-strlcat.lo: $(top_srcdir)/src/missing/strlcat.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-strlcat.lo -MD -MP -MF "$(DEPDIR)/etterlog-strlcat.Tpo" -c -o etterlog-strlcat.lo `test -f '$(top_srcdir)/src/missing/strlcat.c' || echo '$(srcdir)/'`$(top_srcdir)/src/missing/strlcat.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-strlcat.Tpo" "$(DEPDIR)/etterlog-strlcat.Plo"; else rm -f "$(DEPDIR)/etterlog-strlcat.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(top_srcdir)/src/missing/strlcat.c' object='etterlog-strlcat.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-strlcat.Plo' tmpdepfile='$(DEPDIR)/etterlog-strlcat.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-strlcat.lo `test -f '$(top_srcdir)/src/missing/strlcat.c' || echo '$(srcdir)/'`$(top_srcdir)/src/missing/strlcat.c
+
 etterlog-strcasestr.o: $(top_srcdir)/src/missing/strcasestr.c
 @am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-strcasestr.o -MD -MP -MF "$(DEPDIR)/etterlog-strcasestr.Tpo" -c -o etterlog-strcasestr.o `test -f '$(top_srcdir)/src/missing/strcasestr.c' || echo '$(srcdir)/'`$(top_srcdir)/src/missing/strcasestr.c; \
 @am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-strcasestr.Tpo" "$(DEPDIR)/etterlog-strcasestr.Po"; else rm -f "$(DEPDIR)/etterlog-strcasestr.Tpo"; exit 1; fi
@@ -984,6 +1084,54 @@ etterlog-strcasestr.lo: $(top_srcdir)/src/missing/strcasestr.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-strcasestr.Plo' tmpdepfile='$(DEPDIR)/etterlog-strcasestr.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-strcasestr.lo `test -f '$(top_srcdir)/src/missing/strcasestr.c' || echo '$(srcdir)/'`$(top_srcdir)/src/missing/strcasestr.c
+
+etterlog-memmem.o: $(top_srcdir)/src/missing/memmem.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-memmem.o -MD -MP -MF "$(DEPDIR)/etterlog-memmem.Tpo" -c -o etterlog-memmem.o `test -f '$(top_srcdir)/src/missing/memmem.c' || echo '$(srcdir)/'`$(top_srcdir)/src/missing/memmem.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-memmem.Tpo" "$(DEPDIR)/etterlog-memmem.Po"; else rm -f "$(DEPDIR)/etterlog-memmem.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(top_srcdir)/src/missing/memmem.c' object='etterlog-memmem.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-memmem.Po' tmpdepfile='$(DEPDIR)/etterlog-memmem.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-memmem.o `test -f '$(top_srcdir)/src/missing/memmem.c' || echo '$(srcdir)/'`$(top_srcdir)/src/missing/memmem.c
+
+etterlog-memmem.obj: $(top_srcdir)/src/missing/memmem.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-memmem.obj -MD -MP -MF "$(DEPDIR)/etterlog-memmem.Tpo" -c -o etterlog-memmem.obj `if test -f '$(top_srcdir)/src/missing/memmem.c'; then $(CYGPATH_W) '$(top_srcdir)/src/missing/memmem.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/missing/memmem.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-memmem.Tpo" "$(DEPDIR)/etterlog-memmem.Po"; else rm -f "$(DEPDIR)/etterlog-memmem.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(top_srcdir)/src/missing/memmem.c' object='etterlog-memmem.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-memmem.Po' tmpdepfile='$(DEPDIR)/etterlog-memmem.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-memmem.obj `if test -f '$(top_srcdir)/src/missing/memmem.c'; then $(CYGPATH_W) '$(top_srcdir)/src/missing/memmem.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/missing/memmem.c'; fi`
+
+etterlog-memmem.lo: $(top_srcdir)/src/missing/memmem.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-memmem.lo -MD -MP -MF "$(DEPDIR)/etterlog-memmem.Tpo" -c -o etterlog-memmem.lo `test -f '$(top_srcdir)/src/missing/memmem.c' || echo '$(srcdir)/'`$(top_srcdir)/src/missing/memmem.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-memmem.Tpo" "$(DEPDIR)/etterlog-memmem.Plo"; else rm -f "$(DEPDIR)/etterlog-memmem.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(top_srcdir)/src/missing/memmem.c' object='etterlog-memmem.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-memmem.Plo' tmpdepfile='$(DEPDIR)/etterlog-memmem.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-memmem.lo `test -f '$(top_srcdir)/src/missing/memmem.c' || echo '$(srcdir)/'`$(top_srcdir)/src/missing/memmem.c
+
+etterlog-basename.o: $(top_srcdir)/src/missing/basename.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-basename.o -MD -MP -MF "$(DEPDIR)/etterlog-basename.Tpo" -c -o etterlog-basename.o `test -f '$(top_srcdir)/src/missing/basename.c' || echo '$(srcdir)/'`$(top_srcdir)/src/missing/basename.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-basename.Tpo" "$(DEPDIR)/etterlog-basename.Po"; else rm -f "$(DEPDIR)/etterlog-basename.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(top_srcdir)/src/missing/basename.c' object='etterlog-basename.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-basename.Po' tmpdepfile='$(DEPDIR)/etterlog-basename.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-basename.o `test -f '$(top_srcdir)/src/missing/basename.c' || echo '$(srcdir)/'`$(top_srcdir)/src/missing/basename.c
+
+etterlog-basename.obj: $(top_srcdir)/src/missing/basename.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-basename.obj -MD -MP -MF "$(DEPDIR)/etterlog-basename.Tpo" -c -o etterlog-basename.obj `if test -f '$(top_srcdir)/src/missing/basename.c'; then $(CYGPATH_W) '$(top_srcdir)/src/missing/basename.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/missing/basename.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-basename.Tpo" "$(DEPDIR)/etterlog-basename.Po"; else rm -f "$(DEPDIR)/etterlog-basename.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(top_srcdir)/src/missing/basename.c' object='etterlog-basename.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-basename.Po' tmpdepfile='$(DEPDIR)/etterlog-basename.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-basename.obj `if test -f '$(top_srcdir)/src/missing/basename.c'; then $(CYGPATH_W) '$(top_srcdir)/src/missing/basename.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/missing/basename.c'; fi`
+
+etterlog-basename.lo: $(top_srcdir)/src/missing/basename.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-basename.lo -MD -MP -MF "$(DEPDIR)/etterlog-basename.Tpo" -c -o etterlog-basename.lo `test -f '$(top_srcdir)/src/missing/basename.c' || echo '$(srcdir)/'`$(top_srcdir)/src/missing/basename.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/etterlog-basename.Tpo" "$(DEPDIR)/etterlog-basename.Plo"; else rm -f "$(DEPDIR)/etterlog-basename.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(top_srcdir)/src/missing/basename.c' object='etterlog-basename.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	depfile='$(DEPDIR)/etterlog-basename.Plo' tmpdepfile='$(DEPDIR)/etterlog-basename.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -c -o etterlog-basename.lo `test -f '$(top_srcdir)/src/missing/basename.c' || echo '$(srcdir)/'`$(top_srcdir)/src/missing/basename.c
 
 etterlog-inet_aton.o: $(top_srcdir)/src/missing/inet_aton.c
 @am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(etterlog_CFLAGS) $(CFLAGS) -MT etterlog-inet_aton.o -MD -MP -MF "$(DEPDIR)/etterlog-inet_aton.Tpo" -c -o etterlog-inet_aton.o `test -f '$(top_srcdir)/src/missing/inet_aton.c' || echo '$(srcdir)/'`$(top_srcdir)/src/missing/inet_aton.c; \

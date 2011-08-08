@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_gtk_view_connections.c,v 1.39 2004/07/12 19:57:43 alor Exp $
+    $Id: ec_gtk_view_connections.c,v 1.42 2004/10/10 13:49:51 daten Exp $
 */
 
 #include <ec.h>
@@ -28,9 +28,6 @@
 #include <ec_format.h>
 #include <ec_inject.h>
 
-#ifndef OS_WINDOWS
-   #include <sys/mman.h>
-#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -818,7 +815,6 @@ static void gtkui_data_print(int buffer, char *data, int color)
    GtkTextBuffer *textbuf = NULL;
    GtkWidget *textview = NULL;
    GtkTextMark *endmark = NULL;
-   const gchar *end;
    char *unicode = NULL;
 
    switch(buffer) {
@@ -843,16 +839,7 @@ static void gtkui_data_print(int buffer, char *data, int color)
 
    
    /* make sure data is valid UTF8 */
-   unicode = data;
-   if(!g_utf8_validate (data, -1, &end)) {
-      /* if "end" pointer is at begining of string, we have no valid text to print */
-      if(end == unicode) return;
-      /* cut off the invalid part so we don't lose the whole string */
-      /* this shouldn't happen often */
-      unicode = (char *)end;
-      *unicode = 0;
-      unicode = data;
-   }
+   unicode = gtkui_utf8_validate(data);
 
    /* if interface has been destroyed or unicode conversion failed */
    if(!data_window || !textbuf || !textview || !endmark || !unicode)
@@ -1341,12 +1328,12 @@ static void gtkui_inject_file(char *filename, int side)
 {
    int fd;
    void *buf;
-   size_t size;
+   size_t size, ret;
    
    DEBUG_MSG("inject_file %s", filename);
    
    /* open the file */
-   if ((fd = open(filename, O_RDONLY)) == -1) {
+   if ((fd = open(filename, O_RDONLY | O_BINARY)) == -1) {
       ui_error("Can't load the file");
       return;
    }
@@ -1354,20 +1341,27 @@ static void gtkui_inject_file(char *filename, int side)
    /* calculate the size of the file */
    size = lseek(fd, 0, SEEK_END);
    
-   /* map it to the memory */
-   buf = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
-   if (buf == MAP_FAILED) {
-      ui_error("Can't mmap the file");
+   /* load the file in memory */
+   SAFE_CALLOC(buf, size, sizeof(char));
+            
+   /* rewind the pointer */
+   lseek(fd, 0, SEEK_SET);
+               
+   ret = read(fd, buf, size);
+
+   close(fd);
+
+   if (ret != size) {
+      ui_error("Cannot read the file into memory");
       return;
    }
-
+      
    /* check where to inject */
    if (side == 1 || side == 2) {
       user_inject(buf, size, curr_conn, side);
    }
 
-   close(fd);
-   munmap(buf, size);
+   SAFE_FREE(buf);
 }
 
 /* EOF */

@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-# $Id: Makefile.am,v 1.82 2004/09/14 07:58:17 alor Exp $
+# $Id: Makefile.am,v 1.84 2004/11/05 10:01:14 alor Exp $
 
 SOURCES = $(ettercap_SOURCES)
 
@@ -40,10 +40,10 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 host_triplet = @host@
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(top_srcdir)/Makefile.am.common missing/getopt.c \
-	missing/inet_aton.c missing/memcmp.c missing/memmem.c \
-	missing/scandir.c missing/strcasestr.c missing/strlcat.c \
-	missing/strlcpy.c missing/strsep.c
+	$(top_srcdir)/Makefile.am.common missing/basename.c \
+	missing/getopt.c missing/inet_aton.c missing/memcmp.c \
+	missing/memmem.c missing/scandir.c missing/strcasestr.c \
+	missing/strlcat.c missing/strlcpy.c missing/strsep.c
 bin_PROGRAMS = ettercap$(EXEEXT)
 @HAVE_DN_EXPAND_TRUE@am__append_1 = dissectors/ec_dns.c
 @OPENSSL_TRUE@am__append_2 = dissectors/ec_ssh.c
@@ -154,7 +154,8 @@ ettercap_DEPENDENCIES = @LIBOBJS@ os/libec_os.a \
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/missing/getopt.Po \
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/missing/basename.Po \
+@AMDEP_TRUE@	$(DEPDIR)/missing/getopt.Po \
 @AMDEP_TRUE@	$(DEPDIR)/missing/inet_aton.Po \
 @AMDEP_TRUE@	$(DEPDIR)/missing/memcmp.Po \
 @AMDEP_TRUE@	$(DEPDIR)/missing/memmem.Po \
@@ -360,6 +361,8 @@ MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
 MINGW_FALSE = @MINGW_FALSE@
 MINGW_TRUE = @MINGW_TRUE@
+MISSING_BASENAME_FALSE = @MISSING_BASENAME_FALSE@
+MISSING_BASENAME_TRUE = @MISSING_BASENAME_TRUE@
 MISSING_GETOPT_LONG_FALSE = @MISSING_GETOPT_LONG_FALSE@
 MISSING_GETOPT_LONG_TRUE = @MISSING_GETOPT_LONG_TRUE@
 MISSING_INET_ATON_FALSE = @MISSING_INET_ATON_FALSE@
@@ -424,6 +427,7 @@ ac_ct_F77 = @ac_ct_F77@
 ac_ct_OBJDUMP = @ac_ct_OBJDUMP@
 ac_ct_RANLIB = @ac_ct_RANLIB@
 ac_ct_STRIP = @ac_ct_STRIP@
+ac_pt_PKG_CONFIG = @ac_pt_PKG_CONFIG@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -644,6 +648,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/missing/basename.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/missing/getopt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/missing/inet_aton.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/missing/memcmp.Po@am__quote@
@@ -3402,31 +3407,34 @@ uninstall-info: uninstall-info-recursive
 
 
 missing/strlcat.o:
-	$(COMPILE) -c missing/strlcat.c -o missing/strlcat.o
+	$(COMPILE) @EC_LIBS@ -c missing/strlcat.c -o missing/strlcat.o
 
 missing/strlcpy.o:
-	$(COMPILE) -c missing/strlcpy.c -o missing/strlcpy.o
+	$(COMPILE) @EC_LIBS@ -c missing/strlcpy.c -o missing/strlcpy.o
 
 missing/strsep.o:
-	$(COMPILE) -c missing/strsep.c -o missing/strsep.o
+	$(COMPILE) @EC_LIBS@ -c missing/strsep.c -o missing/strsep.o
 
 missing/strcasestr.o:
-	$(COMPILE) -c missing/strcasestr.c -o missing/strcasestr.o
+	$(COMPILE) @EC_LIBS@ -c missing/strcasestr.c -o missing/strcasestr.o
 
 missing/scandir.o:
-	$(COMPILE) -c missing/scandir.c -o missing/scandir.o
+	$(COMPILE) @EC_LIBS@ -c missing/scandir.c -o missing/scandir.o
 
 missing/memmem.o:
-	$(COMPILE) -c missing/memmem.c -o missing/memmem.o
+	$(COMPILE) @EC_LIBS@ -c missing/memmem.c -o missing/memmem.o
 
 missing/memcmp.o:
-	$(COMPILE) -c missing/memcmp.c -o missing/memcmp.o
+	$(COMPILE) @EC_LIBS@ -c missing/memcmp.c -o missing/memcmp.o
+
+missing/basename.o:
+	$(COMPILE) @EC_LIBS@ -c missing/basename.c -o missing/basename.o
 
 missing/getopt.o:
-	$(COMPILE) -c missing/getopt.c -o missing/getopt.o
+	$(COMPILE) @EC_LIBS@ -c missing/getopt.c -o missing/getopt.o
 
 missing/getopt_long.o:
-	$(COMPILE) -c missing/getopt_long.c -o missing/getopt_long.o
+	$(COMPILE) @EC_LIBS@ -c missing/getopt_long.c -o missing/getopt_long.o
 
 # vim:ts=4:noexpandtab
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

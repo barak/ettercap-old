@@ -20,7 +20,7 @@ SYSTEM                  STATUS                NOTES
 
 LINUX
 ------------------------------------------------------------------------------
-   Linux 2.6.x          FULL           
+   Linux 2.6.x          FULL           (primary development platform) 
 
    Linux 2.4.x          FULL           (primary development platform)
    
@@ -54,16 +54,21 @@ MAC OS X (Darwin)
    Darwin 6.x           untested 
    
 
+WINDOWS (native/mingw)                 thanks to G. Vanem <giva@bgnett.no>
+------------------------------------------------------------------------------
+   Windows 2000         untested
+   
+   Windows XP           FULL
+   
+   Windows 2003         FULL
+
+
 WINDOWS (cygwin)
 ------------------------------------------------------------------------------
-   Windows XP           in progress...
-   
    Windows 2000         in progress...
    
+   Windows XP           in progress...
 
-WINDOWS (native/mingw)
-------------------------------------------------------------------------------
-   Windows              FULL           thanks to G. Vanem <giva@bgnett.no>
 
 
 
@@ -170,6 +175,7 @@ doubt, go with the latest copy.
  + MINGW / MSYS (suggested)
    
    1) download the wpdpack from the winpcap website
+      - install the drivers (version >= 3.1 beta)
    2) download the libnet tarball from packetfactory.net
         apply this patch:
         http://ettercap.sf.net/devel/libnet-1.1.2.1-mingw.tar.gz
@@ -198,7 +204,7 @@ doubt, go with the latest copy.
       |-> zlib
   
       make sure each directory contains an 'include' dir with the .h files and a
-      'lib' directory with the .a files.
+      'lib' directory with the .a/.dll files.
   
    5) enter the ettercap_ng directory and execute the configure script
    6) issue the 'make' command and have fun :)
@@ -209,12 +215,13 @@ doubt, go with the latest copy.
 
    
    if you want precompiled packages:
-      http://www.bgnett.no/~giva/misc/
+      http://sourceforge.net/project/showfiles.php?group_id=17435
 
 
  + CYGWIN (deprecated)
 
    1) download the wpdpack from the winpcap website
+      - install the drivers (version >= 3.1 beta)
    2) download the libnet tarball from packetfactory.net
    3) copy the libs in Wpdpack/lib into /usr/lib
       copy the includes in Wpdpack/include into /usr/include/pcap
