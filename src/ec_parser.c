@@ -1,7 +1,7 @@
 /*
     ettercap -- parsing utilities
 
-    Copyright (C) 2001  ALoR <alor@users.sourceforge.net>, NaGA <crwm@freemail.it>
+    Copyright (C) ALoR & NaGA
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,1107 +17,537 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_parser.c,v 1.16 2001/12/20 20:09:45 alor Exp $
+    $Id: ec_parser.c,v 1.65 2004/07/20 09:53:53 alor Exp $
 */
 
 
-#include "include/ec_main.h"
+#include <ec.h>
+#include <ec_interfaces.h>
+#include <ec_sniff.h>
+#include <ec_send.h>
+#include <ec_log.h>
+#include <ec_format.h>
+#include <ec_update.h>
+#include <ec_mitm.h>
+#include <ec_filter.h>
+#include <ec_plugins.h>
+#include <ec_conf.h>
 
 #include <ctype.h>
+
 #ifdef HAVE_GETOPT_H
    #include <getopt.h>
 #else
-   #include "missing/getopt.h"
+   #include <missing/getopt.h>
 #endif
 
-#include "include/ec_error.h"
-#include "include/ec_inet.h"
-#include "include/ec_simple.h"
-#include "include/ec_dissector.h"
-#include "include/ec_inet_structures.h"
-#include "include/ec_filterdrop.h"
+/* protos... */
 
-extern char *Execute_Plugin;
+static void ec_usage(void);
+void parse_options(int argc, char **argv);
 
-char *list_to_parse;    // host list expanded from wildcards
-char *loading_plugs;    // list of plugin to be loaded.  it has this form: "|dummy|foo|bar|..."
+int expand_token(char *s, u_int max, void (*func)(void *t, u_int n), void *t );
+int set_regex(char *regex);
 
-// protos...
+/* from the ec_wifi.c decoder */
+extern int set_wep_key(u_char *string);
 
-extern void Main_Usage(void);
-void Parser_ParseConfFile(char *filename);
-void Parser_Dissectors(char *toparse);
-void Parser_Plugins(char *toparse);
-char Parser_Activated_Plugin(char *name);
-void Parser_ParseParameters(char *first, char *second, char *third, char *fourth);
-int Parser_ParseOptions(int counter, char **values);
-char * Parser_PrintFilter(DROP_FILTER *ptr, int i);
-void Parser_LoadFilters(char *filename);
-int Parser_HostList(char *to_parse);
-char * Parser_AddStr(char *list, char *string);
-void Parser_Expand(char *to_parse);
-int match_pattern(const char *s, const char *pattern);
-void Parser_Filters(char *line, DROP_FILTER *filter);
-char *Parser_StrSpacetoUnder(char *h_name);
+/*****************************************/
 
-//-----------------------------------
+void ec_usage(void)
+{
+
+   fprintf(stdout, "\nUsage: %s [OPTIONS] [TARGET1] [TARGET2]\n", GBL_PROGRAM);
+
+   fprintf(stdout, "\nTARGET is in the format MAC/IPs/PORTs (see the man for further detail)\n");
+   
+   fprintf(stdout, "\nSniffing and Attack options:\n");
+   fprintf(stdout, "  -M, --mitm <METHOD:ARGS>    perform a mitm attack\n");
+   fprintf(stdout, "  -o, --only-mitm             don't sniff, only perform the mitm attack\n");
+   fprintf(stdout, "  -B, --bridge <IFACE>        use bridged sniff (needs 2 ifaces)\n");
+   fprintf(stdout, "  -p, --nopromisc             do not put the iface in promisc mode\n");
+   fprintf(stdout, "  -u, --unoffensive           do not forward packets\n");
+   fprintf(stdout, "  -r, --read <file>           read data from pcapfile <file>\n");
+   fprintf(stdout, "  -f, --pcapfilter <string>   set the pcap filter <string>\n");
+   fprintf(stdout, "  -R, --reversed              use reversed TARGET matching\n");
+   fprintf(stdout, "  -t, --proto <proto>         sniff only this proto (default is all)\n");
+   
+   fprintf(stdout, "\nUser Interface Type:\n");
+   fprintf(stdout, "  -T, --text                  use text only GUI\n");
+   fprintf(stdout, "       -q, --quiet                 do not display packet contents\n");
+   fprintf(stdout, "       -s, --script <CMD>          issue these commands to the GUI\n");
+   fprintf(stdout, "  -C, --curses                use curses GUI\n");
+   fprintf(stdout, "  -G, --gtk                   use GTK+ GUI\n");
+   fprintf(stdout, "  -D, --daemon                daemonize ettercap (no GUI)\n");
+   
+   fprintf(stdout, "\nLogging options:\n");
+   fprintf(stdout, "  -w, --write <file>          write sniffed data to pcapfile <file>\n");
+   fprintf(stdout, "  -L, --log <logfile>         log all the traffic to this <logfile>\n");
+   fprintf(stdout, "  -l, --log-info <logfile>    log only passive infos to this <logfile>\n");
+   fprintf(stdout, "  -m, --log-msg <logfile>     log all the messages to this <logfile>\n");
+   fprintf(stdout, "  -c, --compress              use gzip compression on log files\n");
+   
+   fprintf(stdout, "\nVisualization options:\n");
+   fprintf(stdout, "  -d, --dns                   resolves ip addresses into hostnames\n");
+   fprintf(stdout, "  -V, --visual <format>       set the visualization format\n");
+   fprintf(stdout, "  -e, --regex <regex>         visualize only packets matching this regex\n");
+   fprintf(stdout, "  -E, --ext-headers           print extended header for every pck\n");
+   fprintf(stdout, "  -Q, --superquiet            do not display user and password\n");
+   
+   fprintf(stdout, "\nGeneral options:\n");
+   fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
+   fprintf(stdout, "  -I, --iflist                show all the network interfaces\n");
+   fprintf(stdout, "  -n, --netmask <netmask>     force this <netmask> on iface\n");
+   fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
+   fprintf(stdout, "  -F, --filter <file>         load the filter <file> (content filter)\n");
+   fprintf(stdout, "  -z, --silent                do not perform the initial ARP scan\n");
+   fprintf(stdout, "  -j, --load-hosts <file>     load the hosts list from <file>\n");
+   fprintf(stdout, "  -k, --save-hosts <file>     save the hosts list to <file>\n");
+   fprintf(stdout, "  -W, --wep-key <wkey>        use this wep key to decrypt wifi packets\n");
+   fprintf(stdout, "  -a, --config <config>       use the alterative config file <config>\n");
+   
+   fprintf(stdout, "\nStandard options:\n");
+   fprintf(stdout, "  -U, --update                updates the databases from ettercap website\n");
+   fprintf(stdout, "  -v, --version               prints the version and exit\n");
+   fprintf(stdout, "  -h, --help                  this help screen\n");
+
+   fprintf(stdout, "\n\n");
+
+   clean_exit(0);
+}
 
 
-int Parser_ParseOptions(int counter, char **values)
+void parse_options(int argc, char **argv)
 {
    int c;
 
    static struct option long_options[] = {
       { "help", no_argument, NULL, 'h' },
       { "version", no_argument, NULL, 'v' },
-      { "simple", no_argument, NULL, 'N' },
-      { "list", no_argument, NULL, 'l' },
-      { "arpsniff", no_argument, NULL, 'a' },
-      { "sniff", no_argument, NULL, 's' },
-      { "macsniff", no_argument, NULL, 'm' },
+      { "update", no_argument, NULL, 'U' },
+      
       { "iface", required_argument, NULL, 'i' },
+      { "iflist", no_argument, NULL, 'I' },
       { "netmask", required_argument, NULL, 'n' },
-      { "check", no_argument, NULL, 'c' },
-      { "plugin", required_argument, NULL, 'p' },
-      { "hexview", no_argument, NULL, 'x' },
-      { "silent", no_argument, NULL, 'z' },
-      { "udp", no_argument, NULL, 'u' },
-      { "fingerprint", no_argument, NULL, 'f' },
-      { "linktype", no_argument, NULL, 't' },
-      { "collect", no_argument, NULL, 'C' },
-      { "broadping", no_argument, NULL, 'b' },
-      { "logtofile", no_argument, NULL, 'L' },
-      { "quiet", no_argument, NULL, 'q' },
-      { "etterconf", required_argument, NULL, 'e' },
-      { "dontresolve", no_argument, NULL, 'd' },
-      { "newcert", no_argument, NULL, 'w' },
+      { "write", required_argument, NULL, 'w' },
+      { "read", required_argument, NULL, 'r' },
+      { "pcapfilter", required_argument, NULL, 'f' },
+      
+      { "reversed", no_argument, NULL, 'R' },
+      { "proto", required_argument, NULL, 't' },
+      
+      { "plugin", required_argument, NULL, 'P' },
+      
       { "filter", required_argument, NULL, 'F' },
-      { "hosts", required_argument, NULL, 'H' },
-      { "yes", no_argument, NULL, 'y' },
-      { "delay", required_argument, NULL, 'D' },
-      { "reverse", no_argument, NULL, 'R' },
-      { "spoof", required_argument, NULL, 'S' },
-      { "stormdelay", required_argument, NULL, 'Z' },
-      { "passive", no_argument, NULL, 'O' },
-      { "loadhosts", required_argument, NULL, 'j' },
-      { "savehosts", no_argument, NULL, 'k' },
+      
+      { "superquiet", no_argument, NULL, 'Q' },
+      { "quiet", no_argument, NULL, 'q' },
+      { "script", required_argument, NULL, 's' },
+      { "silent", no_argument, NULL, 'z' },
+      { "unoffensive", no_argument, NULL, 'u' },
+      { "load-hosts", required_argument, NULL, 'j' },
+      { "save-hosts", required_argument, NULL, 'k' },
+      { "wep-key", required_argument, NULL, 'W' },
+      { "config", required_argument, NULL, 'a' },
+      
+      { "dns", no_argument, NULL, 'd' },
+      { "regex", required_argument, NULL, 'e' },
+      { "visual", required_argument, NULL, 'V' },
+      { "ext-headers", no_argument, NULL, 'E' },
+      
+      { "log", required_argument, NULL, 'L' },
+      { "log-info", required_argument, NULL, 'l' },
+      { "log-msg", required_argument, NULL, 'm' },
+      { "compress", no_argument, NULL, 'c' },
+      
+      { "text", no_argument, NULL, 'T' },
+      { "curses", no_argument, NULL, 'C' },
+      { "gtk", no_argument, NULL, 'G' },
+      { "daemon", no_argument, NULL, 'D' },
+      
+      { "mitm", required_argument, NULL, 'M' },
+      { "only-mitm", no_argument, NULL, 'o' },
+      { "bridge", required_argument, NULL, 'B' },
+      { "promisc", no_argument, NULL, 'p' },
+      
       { 0 , 0 , 0 , 0}
    };
 
-#ifdef DEBUG
-   Debug_msg("Parser_ParseOptions -- [%d] [%s]", counter, *values);
-#endif
+   for (c = 0; c < argc; c++)
+      DEBUG_MSG("parse_options -- [%d] [%s]", c, argv[c]);
 
+   
+/* OPTIONS INITIALIZATION */
+   
+   GBL_PCAP->promisc = 1;
+   GBL_FORMAT = &ascii_format;
+
+/* OPTIONS INITIALIZED */
+   
    optind = 0;
 
-#ifdef PERMIT_PLUGINS
-   while ((c = getopt_long (counter, values, "hvyNlasmci:p:xzuftCbn:Lqe:dwF:H:D:RS:Z:Oj:k",long_options, (int *)0)) != EOF) {
-#else
-   while ((c = getopt_long (counter, values, "hvyNlasmci:xzuftCbn:Lqe:dwF:H:D:RS:Z:Oj:k",long_options, (int *)0)) != EOF) {    // no plugin
-#endif
+   while ((c = getopt_long (argc, argv, "a:B:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:Tt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
 
       switch (c) {
 
-         case 'h':
-            Main_Usage();
-         break;
-
-         case 'v':   Options.version = 1;
-                     Options.normal = 1;        break;
-
-         case 'y':   Options.yes = 1;           break;
-
-         case 'N':   Options.normal = 1;        break;
-
-         case 'l':   Options.list = 1;          break;
-
-         case 'a':   Options.arpsniff = 1;      break;
-
-         case 's':   Options.sniff = 1;         break;
-
-         case 'm':   Options.macsniff = 1;      break;
-
-         case 'c':   Options.check = 1;         break;
-
-         case 'x':   Options.hexview = 1;       break;
-
-         case 'z':   Options.silent = 1;        break;
-
-         case 'u':   Options.udp = 1;           break;
-
-         case 'f':   Options.finger = 1;        break;
-
-         case 't':   Options.link = 1;          break;
-
-         case 'C':   Options.collect = 1;       break;
-
-         case 'b':   Options.broadping = 1;     break;
-
-         case 'L':   Options.logtofile = 1;     break;
-
-         case 'q':   Options.quiet = 1;         break;
-
-         case 'd':   Options.dontresolve = 1;   break;
-
-         case 'R':   Options.reverse = 1;       break;
-
-         case 'O':   Options.passive = 1;
-                     Options.silent = 1;        break;
-
-#ifdef PERMIT_PLUGINS
+         case 'M':
+                  GBL_OPTIONS->mitm = 1;
+                  if (mitm_set(optarg) != ESUCCESS)
+                     FATAL_ERROR("MITM method '%s' not supported...\n", optarg);
+                  break;
+                  
+         case 'o':
+                  GBL_OPTIONS->only_mitm = 1;
+                  select_text_interface();
+                  break;
+                  
+         case 'B':
+                  GBL_OPTIONS->iface_bridge = strdup(optarg);
+                  set_bridge_sniff();
+                  break;
+                  
          case 'p':
-            Options.plugin = 1;
-            Execute_Plugin = strdup(optarg);
-         break;
-#endif
-
-         case 'i':
-            strlcpy(Options.netiface, optarg, sizeof(Options.netiface));
-         break;
-
-         case 'j':
-            Options.hostsfromfile = 1;
-            Options.hostfile = strdup(optarg);
-         break;
-
-         case 'k':
-            Options.hoststofile = 1;
-         break;
-
-         case 'n':
-            strlcpy(Options.netmask, optarg, sizeof(Options.netmask));
-         break;
-
+                  GBL_PCAP->promisc = 0;
+                  break;
+                 
+         case 'T':
+                  select_text_interface();
+                  break;
+                  
+         case 'C':
+                  select_curses_interface();
+                  break;
+                  
+         case 'G':
+                  select_gtk_interface();
+                  break;
+         
          case 'D':
-            Options.delay = atoi(optarg);
-            if (Options.delay == 0) Options.delay = 1;      // at least one second...
-         break;
+                  select_daemon_interface();
+                  break;
+                  
+         case 'R':
+                  GBL_OPTIONS->reversed = 1;
+                  break;
+                  
+         case 't':
+                  GBL_OPTIONS->proto = strdup(optarg);
+                  break;
+                  
+         case 'P':
+                  /* user has requested the list */
+                  if (!strcasecmp(optarg, "list")) {
+                     plugin_list();
+                     clean_exit(0);
+                  }
+                  /* else set the plugin */
+                  GBL_OPTIONS->plugin = strdup(optarg);
+                  break;
+                  
+         case 'i':
+                  GBL_OPTIONS->iface = strdup(optarg);
+                  break;
+                  
+         case 'I':
+                  /* this option is only useful in the text interface */
+                  select_text_interface();
+                  GBL_OPTIONS->iflist = 1;
+                  break;
+         
+         case 'n':
+                  GBL_OPTIONS->netmask = strdup(optarg);
+                  break;
+                  
+         case 'r':
+                  /* we don't want to scan the lan while reading from file */
+                  GBL_OPTIONS->silent = 1;
+                  GBL_OPTIONS->read = 1;
+                  GBL_OPTIONS->pcapfile_in = strdup(optarg);
+                  break;
+                 
+         case 'w':
+                  GBL_OPTIONS->write = 1;
+                  GBL_OPTIONS->pcapfile_out = strdup(optarg);
+                  break;
+                  
+         case 'f':
+                  GBL_PCAP->filter = strdup(optarg);
+                  break;
+                  
+         case 'F':
+                  if (filter_load_file(optarg, GBL_FILTERS) != ESUCCESS)
+                     FATAL_ERROR("Cannot load filter file \"%s\"", optarg);
+                  break;
+                  
+         case 'L':
+                  if (set_loglevel(LOG_PACKET, optarg) == -EFATAL)
+                     clean_exit(-EFATAL);
+                  break;
 
-         case 'Z':
-            Options.storm_delay = atoi(optarg);
-            if (Options.storm_delay == 0) Options.storm_delay = 1;      // at least one usec...
-         break;
+         case 'l':
+                  if (set_loglevel(LOG_INFO, optarg) == -EFATAL)
+                     clean_exit(-EFATAL);
+                  break;
 
-         case 'S':
-            Options.spoofIp = inet_addr(optarg);
-         break;
+         case 'm':
+                  if (set_msg_loglevel(LOG_TRUE, optarg) == -EFATAL)
+                     clean_exit(-EFATAL);
+                  break;
+                  
+         case 'c':
+                  GBL_OPTIONS->compress = 1;
+                  break;
 
          case 'e':
-            if (!strcmp(values[0], "etter.conf"))
-               Error_msg("You can't specify the --etterconf option in the conf file !! (safe exit avoiding loops)");
-            else
-               return 1;
-         break;
+                  if (set_regex(optarg) == -EFATAL)
+                     clean_exit(-EFATAL);
+                  break;
+         
+         case 'Q':
+                  GBL_OPTIONS->superquiet = 1;
+                  /* no break, quiet must be enabled */
+         case 'q':
+                  GBL_OPTIONS->quiet = 1;
+                  break;
+                  
+         case 's':
+                  GBL_OPTIONS->script = strdup(optarg);
+                  break;
+                  
+         case 'z':
+                  GBL_OPTIONS->silent = 1;
+                  break;
+                  
+         case 'u':
+                  GBL_OPTIONS->unoffensive = 1;
+                  break;
+                  
+         case 'd':
+                  GBL_OPTIONS->resolve = 1;
+                  break;
+                  
+         case 'j':
+                  GBL_OPTIONS->silent = 1;
+                  GBL_OPTIONS->load_hosts = 1;
+                  GBL_OPTIONS->hostsfile = strdup(optarg);
+                  break;
+                  
+         case 'k':
+                  GBL_OPTIONS->save_hosts = 1;
+                  GBL_OPTIONS->hostsfile = strdup(optarg);
+                  break;
+                  
+         case 'V':
+                  if (set_format(optarg) != ESUCCESS)
+                     clean_exit(-EFATAL);
+                  break;
+                  
+         case 'E':
+                  GBL_OPTIONS->ext_headers = 1;
+                  break;
+                  
+         case 'W':
+                  set_wep_key(optarg);
+                  break;
+                  
+         case 'a':
+                  GBL_CONF->file = strdup(optarg);
+                  break;
+         
+         case 'U':
+                  /* load the conf for the connect timeout value */
+                  load_conf();
+                  global_update();
+                  /* NOT REACHED */
+                  break;
+                  
+         case 'h':
+                  ec_usage();
+                  break;
 
-         case 'w':
-            Options.normal = 1;
-            Simple_CreateCertFile();
-         break;
-
-         case 'F':
-            filter_on_source = 1;
-            filter_on_dest = 1;
-            Parser_LoadFilters(optarg);
-            Options.filter = 1;
-         break;
-
-         case 'H':
-            host_to_be_scanned = Parser_HostList(optarg);
-         break;
+         case 'v':
+                  printf("%s %s\n", GBL_PROGRAM, GBL_VERSION);
+                  clean_exit(0);
+                  break;
 
          case ':': // missing parameter
-            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", PROGRAM);
-            exit(0);
+            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", GBL_PROGRAM);
+            clean_exit(-1);
          break;
 
          case '?': // unknown option
-            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", PROGRAM);
-            exit(0);
+            fprintf(stdout, "\nTry `%s --help' for more options.\n\n", GBL_PROGRAM);
+            clean_exit(-1);
          break;
       }
    }
 
-   Parser_ParseParameters(values[optind], values[optind+1], values[optind+2], values[optind+3]);
-
-   return 0;
-}
-
-
-void Parser_ParseParameters(char *first, char *second, char *third, char *fourth)
-{
-
-#ifdef DEBUG
-   if (first)  Debug_msg("Parser_ParseParameters -- 1 [%s]", first); else goto exit_debug;
-   if (second) Debug_msg("Parser_ParseParameters -- 2 [%s]", second); else goto exit_debug;
-   if (third)  Debug_msg("Parser_ParseParameters -- 3 [%s]", third); else goto exit_debug;
-   if (fourth) Debug_msg("Parser_ParseParameters -- 4 [%s]", fourth); else goto exit_debug;
-exit_debug:
-#endif
-
-#define R(a,b,c) (a & b) | ((a ^ b) & c)     // returns true if more than one was selected
-
-   if (!Options.normal) Options.reverse = 0;
-
-   if (Options.quiet && !Options.normal && !Options.logtofile )
-      Error_msg("Demonization is only useful with -NL or -NLC !!\n\n");
-
-   if ( R(Options.arpsniff, Options.sniff, Options.macsniff) )
-      Error_msg("Please select only one sniffing method !!\n\n");
-
-   if (Options.silent && Options.broadping)
-      Error_msg("Please select only one start up method !!\n\n");
-
-   if (Options.collect && !(Options.sniff || Options.arpsniff || Options.macsniff))
-      Error_msg("Please select one sniffing method to be used for collecting password !!\n\n");
-
-   if (Options.normal && Options.passive && (Options.sniff || Options.arpsniff || Options.macsniff))
-      Error_msg("Passive scanning can't be combined with a sniffing method !!\n\n");
-
-   if (Options.sniff || Options.macsniff)
-      Options.silent = 1;
-
-   if (Options.silent)
-   {
-      if (Options.macsniff)
-      {
-         char check[6];
-
-         if (first)
-         {
-            sscanf(first, "%17s", Host_Dest.mac);
-            if (second)
-               sscanf(second, "%17s", Host_Source.mac);
-         }
-
-         if ( strcmp(Host_Dest.mac, "") && Inet_GetMACfromString(Host_Dest.mac, check ) == -1)   // check for valid mac
-            Error_msg("Incorrect parsing of MAC [%s] !!\nIt must be in the form 01:02:03:04:05:06 !!", Host_Dest.mac);
-         if ( strcmp(Host_Source.mac, "") && Inet_GetMACfromString(Host_Source.mac, check ) == -1)   // check for valid mac
-            Error_msg("Incorrect parsing of MAC [%s] !!\nIt must be in the form 01:02:03:04:05:06 !!", Host_Source.mac);
-         if ( !strcmp(Host_Source.mac, Host_Dest.mac) && strcmp(Host_Source.mac, ""))
-            Error_msg("SOURCE and DEST MAC address must be different !!");
-      }
-
-      if (Options.arpsniff)
-      {
-         int i=0;
-         char check[6];
-
-         if (first)
-         {
-            i++;
-            sscanf(first, "%128[^:]:%d", Host_Dest.name, &Host_Dest.port);
-            if (second)
-            {
-               i++;
-               sscanf(second, "%128[^:]:%d", Host_Source.name, &Host_Source.port);
-               if (third)
-               {
-                  i++;
-                  sscanf(third, "%17s", Host_Dest.mac);
-                  if (fourth)
-                  {
-                     i++;
-                     sscanf(fourth, "%17s", Host_Source.mac);
-                  }
-               }
-            }
-         }
-         if (i == 2)       // PUBLIC ARP
-         {
-            sscanf(second, "%17s", Host_Dest.mac);    // rescan the second parameter
-            Host_Source.port = 0;
-            strcpy(Host_Source.name, "");
-            strcpy(Host_Source.ip, "");
-            Host_Source.port = 0;
-
-            if (Inet_GetMACfromString(Host_Dest.mac, check ) == -1)   // check for valid mac
-               Error_msg("Incorrect parsing of MAC [%s] !!\nIt must be in the form 01:02:03:04:05:06 !!", Host_Dest.mac);
-         }
-         else if (i == 4)  // ARP BASED
-         {
-            if (Inet_GetMACfromString(Host_Dest.mac, check ) == -1)   // check for valid mac
-               Error_msg("Incorrect parsing of MAC [%s] !!\nIt must be in the form 01:02:03:04:05:06 !!", Host_Dest.mac);
-            if (Inet_GetMACfromString(Host_Source.mac, check ) == -1)   // check for valid mac
-               Error_msg("Incorrect parsing of MAC [%s] !!\nIt must be in the form 01:02:03:04:05:06 !!", Host_Source.mac);
-         }
-         else
-            Error_msg("Please specify both source and destination IP and MAC for ARP Based (full-duplex)\n"
-                      "or only one IP and MAC for PUBLIC ARP (half-duplex)");
-
-         if ( !strcmp(Host_Source.ip, Host_Dest.ip) && strcmp(Host_Source.ip, "") )
-            Error_msg("SOURCE and DEST IP address must be different !!");
-         if ( !strcmp(Host_Source.mac, Host_Dest.mac) && strcmp(Host_Source.mac, ""))
-            Error_msg("SOURCE and DEST MAC address must be different !!");
-
-      }
-
-      if (Options.sniff || Options.plugin)
-      {
-         if (first)
-         {
-            sscanf(first, "%128[^:]:%d", Host_Dest.name, &Host_Dest.port);
-            if (second) sscanf(second, "%128[^:]:%d", Host_Source.name, &Host_Source.port);
-
-            if (!strcasecmp(Host_Source.name, "ANY") || !strcmp(Host_Source.name, "0") )
-               strcpy(Host_Source.name, "");
-
-            if (!strcasecmp(Host_Dest.name, "ANY") || !strcmp(Host_Dest.name, "0") )
-               strcpy(Host_Dest.name, "");
-
-            if ( !strcmp(Host_Source.name, Host_Dest.name) && strcmp(Host_Source.name, "") )
-               Error_msg("SOURCE and DEST IP address must be different !!");
-         }
-      }
-
-      if (Options.check)   Error_msg("You can't check for poisoners in silent mode !!");
-
-      if (Options.list)    Error_msg("You can't make the list in silent mode !!");
-   }
-   else // !silent
-   {
-      if (Options.arpsniff && !first)
-         Error_msg("Please specify  source and destination IP for ARP Based (full-duplex)\n"
-                   "or only one IP for PUBLIC ARP (half-duplex)");
-
-      if (first)
-      {
-         sscanf(first, "%128[^:]:%d", Host_Dest.name, &Host_Dest.port);
-         if (second)
-         {
-            char check[6];
-            if (Inet_GetMACfromString(second, check ) == -1)   // if it is a mac take it in dest, else it is the source ip
-               sscanf(second, "%128[^:]:%d", Host_Source.name, &Host_Source.port);
-            else
-               sscanf(second, "%17s", Host_Dest.mac);
-         }
+   DEBUG_MSG("parse_options: options parsed");
+   
+   /* TARGET1 and TARGET2 parsing */
+   if (argv[optind]) {
+      GBL_OPTIONS->target1 = strdup(argv[optind]);
+      DEBUG_MSG("TARGET1: %s", GBL_OPTIONS->target1);
+      
+      if (argv[optind+1]) {
+         GBL_OPTIONS->target2 = strdup(argv[optind+1]);
+         DEBUG_MSG("TARGET2: %s", GBL_OPTIONS->target2);
       }
    }
 
-   if (strcmp(Host_Source.name, ""))
-      strcpy(Host_Source.ip, Inet_NameToIp(Host_Source.name));
-
-   if (strcmp(Host_Dest.name, ""))
-      strcpy(Host_Dest.ip, Inet_NameToIp(Host_Dest.name));
-
-
-
-#ifdef DEBUG
-   Debug_msg("Parser_ParseParameters - name - [%s][%s]", Host_Dest.name, Host_Source.name);
-   Debug_msg("Parser_ParseParameters -  IP  - [%s][%s]", Host_Dest.ip, Host_Source.ip);
-   Debug_msg("Parser_ParseParameters - port - [%d][%d]", Host_Dest.port, Host_Source.port);
-   Debug_msg("Parser_ParseParameters -  MAC - [%s][%s]", Host_Dest.mac, Host_Source.mac);
-#endif
-
-}
-
-
-
-char * Parser_AddStr(char *list, char *string)
-{
-	int len = strlen(list)+strlen(string)+1;
-
-   list = realloc(list, len);
-   if (list == NULL)
-      ERROR_MSG("realloc()");
-   strlcat(list, string, len);
-
-   return list;
-}
-
-
-
-void Parser_ParseConfFile(char *filename)
-{
-
-   FILE *etterconf;
-   char line[1024];
-   char *to_be_parsed = NULL;
-   char *option = NULL;
-   char *ptr;
-   int pargc = 0;
-   char *pargv[256];
-   char dissectors = 0;
-#ifdef PERMIT_PLUGINS
-   char plugins = 0;
-#endif
-
-#ifdef DEBUG
-   Debug_msg("Parser_ParseConfFile - %s", filename);
-#endif
-
-   memset(&pargv, 0, 256*sizeof(int));
-
-   fprintf (stdout, "Loading options from %s...\n", filename);
-
-   to_be_parsed = calloc(1, 1);
-   to_be_parsed = Parser_AddStr(to_be_parsed, "etter.conf ");
-
-   etterconf = fopen(filename, "r");
-   if (etterconf == NULL)
-      ERROR_MSG("fopen()");
-
-   do
-   {
-      fgets(line, 100, etterconf);
-      if ( (ptr = strchr(line, '#')) )
-         *ptr = 0;
-
-      if ( (ptr = strchr(line, '\n')) )
-         *ptr = 0;
-
-      if (!strlen(line))   // skip 0 length line
-         continue;
-
-      #ifdef DEBUG
-         Debug_msg("Parser_ParseConfFile - [%s]", line);
-      #endif
-
-      if (!strncasecmp(line, "OPTIONS: ", 9))
-      {
-         option = strdup(strchr(line, '-'));
-         to_be_parsed = Parser_AddStr(to_be_parsed, option);
-         free(option);
-      }
-
-      if (!strncasecmp(line, "IFACE: ", 7))
-      {
-         option = strdup(line+7);
-         to_be_parsed = Parser_AddStr(to_be_parsed, " --iface ");
-         to_be_parsed = Parser_AddStr(to_be_parsed, option);
-         free(option);
-      }
-
-      if (!strncasecmp(line, "NETMASK: ", 9))
-      {
-         option = strdup(line+9);
-         to_be_parsed = Parser_AddStr(to_be_parsed, " --netmask ");
-         to_be_parsed = Parser_AddStr(to_be_parsed, option);
-         free(option);
-      }
-
-      if (!strncasecmp(line, "DELAY: ", 7))
-      {
-         option = strdup(line+7);
-         to_be_parsed = Parser_AddStr(to_be_parsed, " --delay ");
-         to_be_parsed = Parser_AddStr(to_be_parsed, option);
-         free(option);
-      }
-
-      if (!strncasecmp(line, "HOSTS: ", 7))
-      {
-         option = strdup(line+7);
-         to_be_parsed = Parser_AddStr(to_be_parsed, " --hosts ");
-         to_be_parsed = Parser_AddStr(to_be_parsed, option);
-         free(option);
-      }
-
-#ifdef PERMIT_PLUGINS
-      if (!strncasecmp(line, "PLUGIN: ", 8))
-      {
-         option = strdup(line+8);
-         to_be_parsed = Parser_AddStr(to_be_parsed, " --plugin ");
-         to_be_parsed = Parser_AddStr(to_be_parsed, option);
-         free(option);
-      }
-#endif
-
-      if (!strncasecmp(line, "FILTER: ", 8))
-      {
-         option = strdup(line+8);
-         to_be_parsed = Parser_AddStr(to_be_parsed, " --filter ");
-         to_be_parsed = Parser_AddStr(to_be_parsed, option);
-         free(option);
-      }
-
-      if (!strncasecmp(line, "IP1: ", 5))
-      {
-         option = strdup(line+5);
-         to_be_parsed = Parser_AddStr(to_be_parsed, " ");
-         to_be_parsed = Parser_AddStr(to_be_parsed, option);
-         free(option);
-      }
-
-      if (!strncasecmp(line, "IP2: ", 5))
-      {
-         option = strdup(line+5);
-         to_be_parsed = Parser_AddStr(to_be_parsed, " ");
-         to_be_parsed = Parser_AddStr(to_be_parsed, option);
-         free(option);
-      }
-
-      if (!strncasecmp(line, "MAC1: ", 6))
-      {
-         option = strdup(line+6);
-         to_be_parsed = Parser_AddStr(to_be_parsed, " ");
-         to_be_parsed = Parser_AddStr(to_be_parsed, option);
-         free(option);
-      }
-
-      if (!strncasecmp(line, "MAC2: ", 6))
-      {
-         option = strdup(line+6);
-         to_be_parsed = Parser_AddStr(to_be_parsed, " ");
-         to_be_parsed = Parser_AddStr(to_be_parsed, option);
-         free(option);
-      }
-
-      if (!strncasecmp(line, "GWIP: ", 6))
-      {
-         extern int illithid_gwip;
-
-         option = strdup(line+6);
-         if ( inet_aton(option, (struct in_addr *)&illithid_gwip) == 0)
-         {
-            Options.normal = 1;  // prevent Error_msg to close the screen
-            Error_msg("Incorrect GWIP (%s) in the conf file !!", option);
-         }
-         free(option);
-      }
-
-      if (!strncasecmp(line, "</dissectors>", 13))
-         dissectors = 0;
-
-      if (dissectors)
-         Parser_Dissectors(line);
-
-      if (!strncasecmp(line, "<dissectors>", 12))
-      {
-         fprintf (stdout, "Setting dissectors handlers...\n");
-         dissectors = 1;
-      }
-#ifdef PERMIT_PLUGINS
-      if (!strncasecmp(line, "</hooking plugins>", 18))
-         plugins = 0;
-
-      if (plugins)
-         Parser_Plugins(line);
-
-      if (!strncasecmp(line, "<hooking plugins>", 17))
-      {
-         fprintf (stdout, "Plugins to be loaded...\n");
-         plugins = 1;
-      }
-#endif
-
-   } while (!feof(etterconf));
-
-
-   if (!strcmp(to_be_parsed, "etter.conf ")) // no options in the file....
-      return;
-
-#ifdef DEBUG
-      Debug_msg("Parser_ParseConfFile - [%s]", to_be_parsed);
-#endif
-
-   ptr = strtok(to_be_parsed, " ");
-   pargv[pargc++] = strdup(ptr);
-
-   while( (ptr = strtok(NULL, " ")) )
-      pargv[pargc++] = strdup(ptr);
-
-#ifdef DEBUG
-{
-   int i;
-   for(i=0; i<pargc; i++)
-      Debug_msg("Parser_ParseConfFile - [%d] %s", i, pargv[i]);
-
-   Debug_msg("Parser_ParseConfFile - pargc [%d]", pargc);
-}
-#endif
-
-   free(to_be_parsed);
-
-   Parser_ParseOptions(pargc, pargv);
-}
-
-
-
-
-void Parser_Dissectors(char *toparse)
-{
-   char name[15];
-   char arguments[25];
-   char *parseport;
-   char *proto;
-   short port=0;
-
-   if (!strchr(toparse, '='))    // malformed line
-      return;
-
-   memset(name, 0, sizeof(name));
-   memset(arguments, 0, sizeof(arguments));
-
-   strlcpy(name, strtok(toparse, "="), sizeof(name));
-
-   strlcpy(arguments, strtok(NULL, "="), sizeof(arguments));
-
-   if (!strncmp(arguments, "OFF", 3))
-   {
-      fprintf(stdout, "%11s... disabled!\n", name);
-      Dissector_SetHandle(name, 0, 0, 0); // disable this dissector
-   }
-   else if (!strncmp(arguments, "ON", 2))
-   {
-      if ( (parseport = strchr(arguments, '|')) )
-      {
-         parseport++;
-
-         proto = strchr(parseport, '/');
-         if (proto)
-         {
-            proto++;
-            port = atoi(strtok(parseport, "/"));
-
-            if (!strncasecmp(proto, "tcp", 3))
-               Dissector_SetHandle(name, 1, port, IPPROTO_TCP);
-            else if (!strncasecmp(proto, "udp", 3))
-               Dissector_SetHandle(name, 1, port, IPPROTO_UDP);
-            else if (!strcmp(name, "PROXYHTTPS"))
-            {
-#if defined (HAVE_OPENSSL) && defined (PERMIT_HTTPS)
-               extern int Grell_ProxyIP;
-               extern int Grell_ProxyPort;
-               Grell_ProxyIP = inet_addr(strtok(NULL, "/"));
-               Grell_ProxyPort = port;
-               Dissector_SetHandle(name, 1, port, IPPROTO_TCP);
-#else
-               fprintf(stdout, "%11s... not compiled in ettercap !!\n", name);
-               return;
-#endif
-            }
-            else
-               return;
-         }
-         else
-            return;
-
-         fprintf(stdout, "%11s... moved on port %d/%s\n", name, port, proto);
-      }
-   }
-}
-
-
-
-void Parser_Plugins(char *toparse)
-{
-   char name[20], l_name[22];
-   char args[4];
-
-   if (!strchr(toparse, '='))    // malformed line
-      return;
-
-   if (!loading_plugs) loading_plugs = (char *)calloc(1,1);
-
-   memset(name, 0, sizeof(name));
-   strlcpy(name, strtok(toparse, "="), 20);
-   strlcpy(args, strtok(NULL, "="), 4);
-
-   if (!strncmp(args, "ON", 2))
-   {
-      snprintf(l_name, sizeof(l_name), "|%s|", name);
-      loading_plugs = (char *)realloc(loading_plugs, strlen(loading_plugs)+strlen(l_name)+2);
-      strcat(loading_plugs, l_name);
-      fprintf(stdout, "%s\n", name);
-   }
-}
-
-
-
-
-char Parser_Activated_Plugin(char *name)
-{
-   char l_name[22];
-   snprintf(l_name, sizeof(l_name), "|%s|", name);
-
-   if (!loading_plugs) return 0;
-
-   if (strstr(loading_plugs, l_name)) return 1;
-
-   return 0;
-}
-
-
-
-void Parser_Filters(char *line, DROP_FILTER *filter)
-{
-   int i, j;
-   char tmp[50];
-   char tmp_search[MAX_FILTER+1];
-   char *p, *q;
-
-
-   if ((p = strstr(line, "<search>")))
-   {
-      q = strstr(p, "</search>");
-      i = ((int)q-(int)p) - strlen("<search>");
-      if (i==0) return;
-      snprintf(tmp, sizeof(tmp), "<search>%%%dc</search>", i);
-      sscanf(p, tmp, filter->display_search);
-      filter->wildcard = FilterDrop_ParseWildcard(tmp_search, filter->display_search, sizeof(tmp_search));
-      filter->slen = FilterDrop_strescape(filter->search, tmp_search);
-      return;
-   }
-
-   if ((p = strstr(line, "<replace>")))
-   {
-      q = strstr(p, "</replace>");
-      i = ((int)q-(int)p) - strlen("<replace>");
-      if (i==0) return;
-      snprintf(tmp,sizeof(tmp) ,"<replace>%%%dc</replace>", i);
-      sscanf(p, tmp, filter->display_replace);
-      filter->rlen = FilterDrop_strescape(filter->replace, filter->display_replace);
-      return;
-   }
-
-   if ((p = strstr(line, "<action>")))
-   {
-      sscanf(p, "<action>%c</action>", &filter->type);
-      filter->type = toupper(filter->type);
-      return;
-   }
-
-   if ((p = strstr(line, "<goto>")))
-   {
-      j = sscanf(p, "<goto>%d</goto>", &filter->go_to);
-      if (j == 0) filter->go_to = -1;
-   }
-
-   if ((p = strstr(line, "<elsegoto>")))
-   {
-      j = sscanf(p, "<elsegoto>%d</elsegoto>", &filter->else_go_to);
-      if (j == 0) filter->else_go_to = -1;
-   }
-
-   if ((p = strstr(line, "<proto>")))
-   {
-      sscanf(p, "<proto>%c</proto>", &filter->proto);
-      filter->proto = toupper(filter->proto);
-      return;
-   }
-
-   if ((p = strstr(line, "<source>")))
-      sscanf(p, "<source>%d</source>", &filter->source);
-
-   if ((p = strstr(line, "<dest>")))
-      sscanf(p, "<dest>%d</dest>", &filter->dest);
-
-}
-
-
-
-void Parser_LoadFilters(char *filename)
-{
-   FILE *etterfilter;
-   char line[1024];
-   char *ptr;
-   char filter=0;
-   DROP_FILTER filter_tmp;
-   extern char *Filter_File;
-
-   if (Filter_File)
-   {
-      etterfilter = fopen(Filter_File, "r");
-      #ifdef DEBUG
-         Debug_msg("Parser_LoadFilters - [%s]", Filter_File);
-      #endif
-   }
-   else if (!strcmp(filename, ""))
-   {
-      strcpy(line, "./etter.filter");
-      etterfilter = fopen(line, "r");
-      if (etterfilter == NULL)
-      {
-         strlcpy(line, DATA_PATH, sizeof(line));
-         strlcat(line, "/etter.filter", sizeof(line));
-         etterfilter = fopen(line, "r");
-      }
-      Filter_File = strdup(line);
-      #ifdef DEBUG
-         Debug_msg("Parser_LoadFilters - [%s]", line);
-      #endif
-   }
-   else
-   {
-      etterfilter = fopen(filename, "r");
-      Filter_File = strdup(filename);
-      #ifdef DEBUG
-         Debug_msg("Parser_LoadFilters - [%s]", filename);
-      #endif
-   }
-
-   if (etterfilter == NULL)
-         Error_msg("CAN'T find a filter file in ./ or in %s", DATA_PATH);
-
-   Filter_Source = 0;
-   Filter_Dest = 0;
-
-   if (Filter_Array_Source) free(Filter_Array_Source);
-   if (Filter_Array_Dest) free(Filter_Array_Dest);
-
-   Filter_Array_Source = NULL;
-   Filter_Array_Dest = NULL;
-
-   do
-   {
-      fgets(line, 1024, etterfilter);
-
-      if ( (ptr = strchr(line, '#')) )
-         *ptr = 0;
-
-      if (!strlen(line))   // skip 0 length line
-         continue;
-
-      if (!strncasecmp(line, "</filter source>", 16))
-      {
-         filter = 0;
-         memcpy(&Filter_Array_Source[Filter_Source-1], &filter_tmp, sizeof(DROP_FILTER));
-      }
-
-      if (!strncasecmp(line, "</filter dest>", 14))
-      {
-         filter = 0;
-         memcpy(&Filter_Array_Dest[Filter_Dest-1], &filter_tmp, sizeof(DROP_FILTER));
-      }
-
-      if (filter)
-         Parser_Filters(line, &filter_tmp);
-
-      if (!strncasecmp(line, "<filter source>", 15))
-      {
-         Filter_Source++;
-         filter = 1;
-         memset(&filter_tmp, 0, sizeof(DROP_FILTER));
-         Filter_Array_Source = (DROP_FILTER *)realloc(Filter_Array_Source, (Filter_Source) * sizeof(DROP_FILTER));
-         if (Filter_Array_Source == NULL)
-            ERROR_MSG("realloc()");
-      }
-
-      if (!strncasecmp(line, "<filter dest>", 13))
-      {
-         Filter_Dest++;
-         filter = 1;
-         memset(&filter_tmp, 0, sizeof(DROP_FILTER));
-         Filter_Array_Dest = (DROP_FILTER *)realloc(Filter_Array_Dest, (Filter_Dest) * sizeof(DROP_FILTER));
-         if (Filter_Array_Dest == NULL)
-            ERROR_MSG("realloc()");
-      }
-
-   } while (!feof(etterfilter));
-
-   fclose(etterfilter);
-
-#ifdef DEBUG
-{
-   short i;
-   for (i=0; i<Filter_Source; i++)
-      Debug_msg("\tSOURCE: %s", Parser_PrintFilter(Filter_Array_Source, i));
-
-   for (i=0; i<Filter_Dest; i++)
-      Debug_msg("\tDEST  : %s", Parser_PrintFilter(Filter_Array_Dest, i));
-}
-#endif
-
-}
-
-
-char * Parser_PrintFilter(DROP_FILTER *ptr, int i)
-{
-   static char tmp[100];
-   int j;
-
-   j = snprintf(tmp, sizeof(tmp), "%2d | %5d:%-5d %c [%-10.10s] %c ", i,  ptr[i].source, ptr[i].dest, ptr[i].proto, ptr[i].display_search, ptr[i].type);
-   if (ptr[i].type == 'R')
-      j += sprintf(tmp+j, "[%-10.10s] ", ptr[i].display_replace);
-   else
-      j += sprintf(tmp+j, "             ");
-   if (ptr[i].go_to >= 0 || ptr[i].else_go_to >= 0)
-      j += sprintf(tmp+j, "| => ");
-   if (ptr[i].go_to >= 0)
-      j += sprintf(tmp+j, "%2d ", ptr[i].go_to);
-   else
-      j += sprintf(tmp+j, "   ");
-   if (ptr[i].else_go_to >= 0)
-      j += sprintf(tmp+j, "! %-2d ", ptr[i].else_go_to);
-
-  return tmp;
-}
-
-
-
-void Parser_Expand(char *to_parse)
-{
-   static int j=0;
-   int i=0, found=0;
-   char *q;
-   char new_parse[25];
-   char ip[25];
-   char *pattern;
-
-   memset(new_parse, 0, sizeof(new_parse));
-   memset(ip, 0, sizeof(ip));
-   pattern = strdup(to_parse);
-
-   if (strstr(pattern, "*") || strstr(pattern, "?"))
-   {
-      for( q=strtok(pattern, "."); q!=NULL; q=strtok(NULL, "."))
-      {
-         i++;
-         if (!found && (strstr(q, "*") || strstr(q, "?")) )
-         {
-            strlcat(new_parse, "%d", sizeof(new_parse));
-            if (i<4) strlcat(new_parse, ".", sizeof(new_parse));
-            found=1;
-         }
-         else
-         {
-            strlcat(new_parse, q, sizeof(new_parse));
-            if (i<4) strlcat(new_parse, ".", sizeof(new_parse));
-         }
-      }
-   }
-   else
-   {
-      strncpy(new_parse, to_parse, sizeof(new_parse)-1);
-      new_parse[sizeof(new_parse)-1]='\0';
-   }
-
-   free(pattern);
-
-   if (!found) // no more wildcards
-   {
-      if (j++%10 == 0)  // the progress bar...
-      {
-         printf(".");
-         fflush(stdout);
-      }
-      list_to_parse = realloc(list_to_parse, strlen(list_to_parse)+strlen(to_parse)+2);
-      if (list_to_parse == NULL)
-         ERROR_MSG("realloc()");
-      strcat(list_to_parse, to_parse);
-      strcat(list_to_parse, ",");
-      return;
-   }
-
-   for(i=0; i<256; i++)
-   {
-      snprintf(ip, sizeof(ip), new_parse, i);
-      if (match_pattern(ip, to_parse))
-         Parser_Expand(ip);
-   }
-}
-
-
-
-int Parser_HostList(char *to_parse)
-{
-   char *ip;
-   u_long dummy;
-   int i=0;
-
-#ifdef DEBUG
-   Debug_msg("Parser_HostList - [%s]", to_parse);
-#endif
-
-   fprintf(stdout, "Expanding wildcarded hosts...");
-
-   if (strstr(to_parse, " "))
-   {
-      fprintf(stdout, "\n");
-      Options.normal = 1;
-      Error_msg("The host list can't contain blank spaces...");
-   }
-
-   list_to_parse = calloc(1,1);
-
-   for(ip=strsep(&to_parse, ","); ip != NULL; ip=strsep(&to_parse, ","))
-      Parser_Expand(ip);
-
-#ifdef DEBUG
-   Debug_msg("Parser_HostList - [%s]", list_to_parse);
-#endif
-
-   fprintf(stdout, "\nLoading IP addresses from list...\n");
-
-   Host_List = calloc(2, sizeof(char *));
-   if (Host_List == NULL)
-      ERROR_MSG("calloc()");
-
-   for(ip=strtok(list_to_parse, ","); ip != NULL; ip=strtok(NULL, ","))
-   {
-      if (inet_aton(ip, (struct in_addr *)&dummy) != 0)
-      {
-         Host_List[i++] = strdup(ip);
-         Host_List = realloc(Host_List, (i+2)*sizeof(char *));
-         if (Host_List == NULL)
-            ERROR_MSG("realloc()");
-      }
+   /* create the list form the TARGET format (MAC/IPrange/PORTrange) */
+   compile_display_filter();
+   
+   DEBUG_MSG("parse_options: targets parsed");
+   
+   /* check for other options */
+   
+   if (GBL_SNIFF->start == NULL)
+      set_unified_sniff();
+   
+   if (GBL_OPTIONS->read && GBL_PCAP->filter)
+      FATAL_ERROR("Cannot read from file and set a filter on interface");
+   
+   if (GBL_OPTIONS->read && GBL_SNIFF->type != SM_UNIFIED )
+      FATAL_ERROR("You can read from a file ONLY in unified sniffing mode !");
+   
+   if (GBL_OPTIONS->mitm && GBL_SNIFF->type != SM_UNIFIED )
+      FATAL_ERROR("You can't do mitm attacks in bridged sniffing mode !");
+
+   if (GBL_SNIFF->type == SM_BRIDGED && GBL_PCAP->promisc == 0)
+      FATAL_ERROR("During bridged sniffing the iface must be in promisc mode !");
+   
+   if (GBL_OPTIONS->quiet && GBL_UI->type != UI_TEXT)
+      FATAL_ERROR("The quiet option is useful only with text only UI");
+  
+   if (GBL_OPTIONS->load_hosts && GBL_OPTIONS->save_hosts)
+      FATAL_ERROR("Cannot load and save at the same time the hosts list...");
+  
+   if (GBL_OPTIONS->unoffensive && GBL_OPTIONS->mitm)
+      FATAL_ERROR("Cannot use mitm attacks in unoffensive mode");
+   
+   if (GBL_OPTIONS->read && GBL_OPTIONS->mitm)
+      FATAL_ERROR("Cannot use mitm attacks while reading from file");
+   
+   if (GBL_UI->init == NULL)
+      FATAL_ERROR("Please select an User Interface");
+     
+   /* force text interface for only mitm attack */
+   if (GBL_OPTIONS->only_mitm) {
+      if (GBL_OPTIONS->mitm)
+         select_text_interface();
       else
-         fprintf(stdout, "WARNING: %s is an invalid IP address\n", ip);
+         FATAL_ERROR("Only mitm requires at least one mitm method");
    }
 
-   free(list_to_parse);
-
-   return i;
+   DEBUG_MSG("parse_options: options combination looks good");
+   
+   return;
 }
 
 
+/*
+ * This function parses the input in the form [1-3,17,5-11]
+ * and fill the structure with expanded numbers.
+ */
 
-/* Pattern matching code from OpenSSH. */
-int match_pattern(const char *s, const char *pattern)
+int expand_token(char *s, u_int max, void (*func)(void *t, u_int n), void *t )
 {
-   for (;;)
-   {
-      if (!*pattern) return (!*s);
-
-      if (*pattern == '*')
-      {
-         pattern++;
-
-         if (!*pattern) return (1);
-
-         if (*pattern != '?' && *pattern != '*')
-         {
-            for (; *s; s++)
-            {
-               if (*s == *pattern && match_pattern(s + 1, pattern + 1))
-                  return (1);
-            }
-            return (0);
-         }
-         for (; *s; s++)
-         {
-            if (match_pattern(s, pattern))
-               return (1);
-         }
-         return (0);
+   char *str = strdup(s);
+   char *p, *q, r;
+   char *end;
+   u_int a = 0, b = 0;
+   
+   DEBUG_MSG("expand_token %s", s);
+   
+   p = str;
+   end = p + strlen(p);
+   
+   while (p < end) {
+      q = p;
+      
+      /* find the end of the first digit */
+      while ( isdigit((int)*q) && q++ < end);
+      
+      r = *q;   
+      *q = 0;
+      /* get the first digit */
+      a = atoi(p);
+      if (a > max) 
+         FATAL_MSG("Out of range (%d) !!", max);
+      
+      /* it is a range ? */
+      if ( r == '-') {
+         p = ++q;
+         /* find the end of the range */
+         while ( isdigit((int)*q) && q++ < end);
+         *q = 0;
+         if (*p == '\0') 
+            FATAL_MSG("Invalid range !!");
+         /* get the second digit */
+         b = atoi(p);
+         if (b > max) 
+            FATAL_MSG("Out of range (%d)!!", max);
+         if (b < a)
+            FATAL_MSG("Invalid decrementing range !!");
+      } else {
+         /* it is not a range */
+         b = a; 
+      } 
+      
+      /* process the range and invoke the callback */
+      for(; a <= b; a++) {
+         func(t, a);
       }
-      if (!*s) return (0);
-
-      if (*pattern != '?' && *pattern != *s)
-         return (0);
-
-      s++;
-      pattern++;
+      
+      if (q == end) break;
+      else  p = q + 1;      
    }
-   /* NOTREACHED */
+  
+   SAFE_FREE(str);
+   
+   return ESUCCESS;
 }
 
+/*
+ * compile the regex
+ */
 
-char *Parser_StrSpacetoUnder(char *h_name)
+int set_regex(char *regex)
 {
-   int i;
-   static char toggle_name[200];
+   int err;
+   char errbuf[100];
+   
+   DEBUG_MSG("set_regex: %s", regex);
 
-   strcpy(toggle_name, h_name);
-   i = strlen(toggle_name);
+   /* free any previous compilation */
+   if (GBL_OPTIONS->regex)
+      regfree(GBL_OPTIONS->regex);
 
-   for (i--;i>=0;i--)
-      if (toggle_name[i]==' ')
-         toggle_name[i]='_';
+   /* unset the regex if empty */
+   if (!strcmp(regex, "")) {
+      SAFE_FREE(GBL_OPTIONS->regex);
+      return ESUCCESS;
+   }
+  
+   /* allocate the new structure */
+   SAFE_CALLOC(GBL_OPTIONS->regex, 1, sizeof(regex_t));
+  
+   /* compile the regex */
+   err = regcomp(GBL_OPTIONS->regex, regex, REG_EXTENDED | REG_NOSUB | REG_ICASE );
 
-   return toggle_name;
+   if (err) {
+      regerror(err, GBL_OPTIONS->regex, errbuf, sizeof(errbuf));
+      FATAL_MSG("%s\n", errbuf);
+   }
+
+   return ESUCCESS;
 }
+
 
 
 /* EOF */
+
+
+// vim:ts=3:expandtab
 

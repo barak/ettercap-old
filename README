@@ -1,66 +1,64 @@
-============================================================================
-                                ettercap 0.6.4                    2002-02-12
-============================================================================
-
-    Even if blessed with a feeble intelligence they are cruel and smart...
+==============================================================================
+==============================================================================
 
 
        @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@ @@@@@@@
        @@        @@@     @@@   @@      @@   @@ @@      @@   @@ @@   @@
        @@@@@@    @@@     @@@   @@@@@@  @@@@@@  @@      @@@@@@@ @@@@@@
        @@        @@@     @@@   @@      @@  @@  @@      @@   @@ @@
-       @@@@@@@   @@@     @@@   @@@@@@@ @@  @@@ @@@@@@@ @@   @@ @@
+       @@@@@@@   @@@     @@@   @@@@@@@ @@  @@@ @@@@@@@ @@   @@ @@     NG
+
+                   A suite for man in the middle attacks
+
+                      Copyright 2001-2004 ALoR & NaGA
+
+==============================================================================
+==============================================================================
+
+Aoccdrnig to rscheearch at an Elingsh uinervtisy, it deosn't mttaer in waht
+oredr the ltteers in a wrod are, the olny iprmoetnt tihng is taht the frist
+and lsat ltteer are in the rghit pclae. The rset can be a toatl mses  and
+you can sitll raed it wouthit a porbelm. Tihs is bcuseae we do not raed
+ervey lteter by it slef but the wrod as a wlohe and the biran fguiers it
+out aynawy.
+
+... so please excuse us for every typo in the documentation, man pages or 
+code, btw fixes and patches are welcome.
+
+==============================================================================
 
 
-                     Multi purpose sniffer/interceptor
+==============================================================================
+                     R E Q U I R E D   L I B R A R I E S
+==============================================================================
 
+MANDATORY:
 
+   - libpcap >= 0.8.1
+   - libnet  >= 1.1.2.1 
+   - libpthread
+   - zlib
 
-         Required Libraries:              none ;)  (optionally ncurses)
+OPTIONAL:
 
-         Optional Libraries:              openssl  (if you want ssh support)
+   To enable plugins:
+      - libltdl (part of libtool)
 
-         Installation:                    configure
-                                          make
-                                          make install
+   To have perl regexp in the filters:
+      - libpcre
 
-                         (optional)       make plug-ins
-                                          make plug-ins_install
+   To support SSH and SSL decryption:
+      - openssl 0.9.7
 
-      (if you are lazy, just run)         make complete_install
+   For the cursed GUI:
+      - ncurses >= 5.3
 
-============================================================================
-                                    INTRO
-============================================================================
-
-Kiddie:   A friend of mine told me that it is possible to sniff on a LAN...
-          so I bought a switch ;)
-
-NaGoR:    mmhhh....
-
-Kiddie:   Now my LAN is SECURE ! you can't sniff my packets... ah ah ah
-
-NaGoR:    are you sure ? look at ettercap doing its work...
-
-Kiddie:   Oh my god... it sniffs all my traffic !!
-          I will use only ciphered connections on my LAN, so ettercap can't
-          sniff them ! ah ah ah
-
-NaGoR:    mmhhh....
-
-Kiddie:   Now I'm using SSH.  My LAN is SECURE !
-
-NaGoR:    are you sure ? look at ettercap doing its work...
-
-Kiddie:   shit !!  grrrr...
-
-
- "a false sense of security, is worse than insecurity"   -- Steve Gibson
-
- hey folks... wake up !  the net is NOT secure !!
-
- ettercap demonstrates that now is the time to encourage research on
- internet protocols to make them more secure.
+   For the GTK+ GUI:
+      - pkgconfig >= 0.15.0
+      - Glib      >= 2.2.2
+      - Gtk+      >= 2.2.2
+      - Atk       >= 1.2.4
+      - Pango     >= 1.2.3
 
 
 ============================================================================
@@ -78,61 +76,12 @@ Kiddie:   shit !!  grrrr...
 
    Alberto Ornaghi (ALoR) <alor@users.sourceforge.net>
 
-   Marco Valleri (NaGA) <crwm@freemail.it>
+   Marco Valleri (NaGA) <naga@antifork.org>
 
-
-============================================================================
-                              TABLE OF CONTENTS
-============================================================================
-
-
-   1. DISCLAIMER............................................sez.  1
-
-   2. INSTALLATION..........................................sez.  2
-
-   3. HOW TO USE IT.........................................sez.  3
-
-      3.1   ncurses interface
-      3.2   command line
-
-   4. TROUBLESHOOTING.......................................sez   4
-         common problems solved (READ THIS BEFORE MAIL US)
-
-   5. TECHNICAL PAPER.......................................sez   5
-
-      5.1   The host list
-      5.2   IP based sniffing
-      5.3   MAC based sniffing
-      5.4   ARP based sniffing
-         5.4.1    arp poisoning
-            5.4.1.1    public arp
-            5.4.1.2    smart public arp
-         5.4.2    characters injection
-         5.4.3    active protocol dissection
-         5.4.4    SSH1 man-in-the-middle
-         5.4.5    packet filtering
-      5.5   Passive scanning of the LAN
-         5.5.1   passive os fingerprint
-         5.5.2   open ports
-         5.5.3   gateways and routers
-
-   6. PLUG-INS..............................................sez.  6
-
-   7. USELESS INFORMATION...................................sez.  7
 
 
 ============================================================================
-1>                               DISCLAIMER
-============================================================================
-
-
- This software is provided "as is" and without any expressed or implied
- warranties, including, without limitation, the implied warranties of
- merchantability and fitness for any particular purpose.
-
-
-============================================================================
-2>                              INSTALLATION
+                                INSTALLATION
 ============================================================================
 
  The easiest way to compile ettercap is in the form:
@@ -143,353 +92,56 @@ Kiddie:   shit !!  grrrr...
 
     make install
 
- Now you should be able to run ettercap (default location is
- /usr/local/bin)
- There are a lot of useful options in configure: try using --help.
+ read INSTALL for further details... and REAME.PLATFORMS for any issue
+ regarding your operating system.
+ 
+============================================================================
+                                HOW TO USE IT
+============================================================================
 
- If you'd like to suid ettercap, thus enabling other users, and not only
- root, to use the program, use --enable-suid before applying suid to
- ettercap with chmod, otherwise it would drop the applied suid.
+ You can choose between 3 User Interfaces: Text mode, Curses, GTK.
 
- If you have problems with plug-ins, disable them by using --disable-plugins
-
- If you have installed OpenSSL in a different DIR use --with-openssl=DIR
- If you get an error linking OpenSSL with ettercap, try recompiling OpenSSL
- with "Config shared && make && make install" (on my box it worked ;) )
-
- If you still have difficulties, send an e-mail message one of the authors
- (alor@users.sourceforge.net or crwm@freemail.it).
- The sourceforge ettercap homesite could also contain useful information,
- latest bug fixes and updated versions (http://ettercap.sourceforge.net).
-
- Bug reports are welcome. Please report problems in the configure/make
- process by including a copy of config.status, config.cache and config.log,
- as well as the pertinent compiler diagnostics. If you have problems in the
- program, please configure with --enable-debug and send also a copy of
- ettercap_debug.log and a short description of your configuration
- (eg. kernel and glibc version) when reporting a sigfault or other strange
- behaviors.
+ Please read the man pages ettercap(8) and ettercap_curses(8) to learn how 
+ to use ettercap.
 
 
 ============================================================================
-3>                              HOW TO USE IT
-============================================================================
-
- There are two main interfaces available, black and white text-mode and
- a colored ncurses based character mode!
-
-3.1 NCURSES INTERFACE
-
- Let's start showing you the latter one:
- If ettercap is invoked without options (see later on, for the command line
- options) it will run the ncurses interface (a short delay to scan your LAN
- may be noticed =).
- The main window is divided in 3 subsections: top, middle and bottom.
- In the top window there is the connection diagram, displaying the two
- machines to sniff or to connect and operate to.
- Below you will see the list of known hosts in the current LAN (with hub or
- switch) that you can reach: select a couple to sniff them.
- The two identical columns let you choose the said couple: select with the
- arrow keys an entry representing an ip of an active machine ([enter] will
- do this job =) on the left.
- Then switch to the second column on the right with [tab], and move as usual
- to select the second ip. This will represent the traffic route you would
- like to sniff (and eventually connect/poison).
- Obviously you cannot select the same source and destination, but you are in
- any case forced to not select your IP.
- In the bottom window, there is a sort of status bar, giving you additional
- information about currently selected objects, current status and eventually
- other important hints.
- There are also a lot of other nifty options that are selectable at this
- point, first of all the 'p' plug-in feature (these are separate features,
- externally programmed in this project, covering a vast number of applications,
- not displayable here: there is a special README-PLUGIN for this).
- Or the ability to inspect with the 'c' key, if there is an other "evil"
- program in your LAN running, and thus alerting you of possible data
- interception.
- But remember that throughout all the stages of the program YOU CAN ALWAYS
- PRESS 'H' FOR HELP, and a nice help window will show up and list you the
- currently available keys!
-
- These should be self-explanatory help windows, so there is
- no need in reading this sections here, but.. in case.
- You'll notice that the top window will update while selecting source and
- destination ip, and finally show the current status scheme if you connect
- or sniff (respectively pressing 'a' and 's' or 'm')
- IP Based sniffing filters connections looking in the IP header for matching
- IPs. This is the old style, classic method performed by most programs.
- MAC Based sniffing filters connections looking in ETH header for matching
- MACs. This is useful if you want to sniff connections from your local host
- and a remote host through your gateway (simply selecting your host and your
- gateway as source and destination).
- Finally there is the connect option, as said, that lets you, if your
- computer results connected to a switched LAN, poison the ARP cache
- permitting you to sniff the traffic on your local net as if you where on
- a network with an hub.
- With this option you can specify one or two host. If you select only one
- host you'll enter the PublicARP mode and you will overtake the selected IP
- with yours.
- If you specify both hosts you will enter the ARPBased Mode that allows you
- to view all the bidirectional traffic between the two hosts.
-
- CONNECTIONS LIST:
-
- In any case, now you enter the second stage: the central window now
- will list any active connections between the two sources IPs.
- Eventually open connections will show up, and you can select them as usual,
- allowing you to enter the third stage: the actual sniff! =)
- In the meantime you can look at the status of the connections
- (active, closed, etc) and see what type of traffic/port is used (ftp, ssh,
- web, etc).
- It is also possible to kill an active connection of any type.
- If the application protocol is supported by ettercap you can see, in the
- bottom window, some useful information about the highlighted connection,
- such as USER and PASSWORD used for interactive sessions. (this information
- can be dumped to a file simply hitting the 'l' key)
- If you used ARPBased mode you can also start ACTIVE PROTOCOL DISSECTION,
- that allows you to view particular ciphered protocols like ssh.
-
- PACKET FACTORY:
-
- with 'x' you can create your own packet from ethernet layer to application
- level. By default the field of the packet factory form are filled with the
- current highlighted connection properties. The same can be done in the host
- list (the first interface) but now the field is not autocompleted if you
- don't select a target host. All the field can be modified as you want and
- for non supported protocol there is the possibility to build a raw header
- made up of hex string.
- example:  assume that we want to forge a RIP packet:
-      we fill the forms until UDP header (port 520) and in the payload we
-      write "\x01\x02\x00\x00\xFF\xFF\x00\x02here the pass"
-      we have built the RIP header by hex sequences...
-
- SNIFFING:
-
- Now assume you selected an active connection: two sub-windows appear in the
- main one. They show source packets passing through your computer before
- reaching the destination, you sniff traffic without them noticing it! There
- are different visualization options here: the type of stream can be hex
- ('x' key), ascii ('a' key) or text only ('t' key) that strips out all the
- unreadable chars (useful with unicode protocols).
- Some decoders needs the ACTIVE PROTOCOL DISSECTION to be ON.
- You can also specify to suspend the stream of data (only prevents their
- visualization, in reality they go forward in background) as a sort of
- scroll-lock (press 's' key), for better data-analysis.
-
- Finally, there is also a very cool feature: INJECT.
-
- With the 'i' key you can also inject some chars in the traffic, choosing
- the direction, being able to add commands to the stream (i.e. you could
- sniff a telnet session and also being able to transmit some commands to the
- machine connected to. Like "ls" or whatever you want, and they have
- absolutely effect as if originated by the source! The same way you could
- generate fake output on the originating machine, not responding to the real
- output).
-
- NOTE: Injector supports escape sequences. you can perform multi-line
-       injection.
- NOTE: remember to terminate your injection with \r\n if you want to inject
-       command to the server.
-
- Last, but not least, PACKET FILTERING:
-
- With the 'f' key a form is displayed asking you to set up a filter.
- Pay attention on the active window, because source and dest filter are
- different.
- You can set up a filter that searchs for a particular string (even hex) in
- the TCP or UDP payload and replace it with yours or drop the entire packet.
-
- Available commands while in the filtering form:
-
-  F10 or ESC -- exit the form
-  ^N         -- go to next field          ^P    -- go to previous field
-  Home       -- go to first field         End   -- go to last field
-  ^L         -- go to field to left       ^R    -- go to field to right
-  ^U         -- move upward to field      ^D    -- move downward to field
-  ^W         -- go to next word           ^B    -- go to previous word
-  ^S         -- go to start of field      ^E    -- go to end of field
-  ^H         -- delete previous char      ^Y    -- delete line
-  ^G         -- delete current word       ^C    -- clear to end of line
-  ^K         -- clear to end of field     ^X    -- clear field
-  ^] or Ins  -- toggle insert mode
-
- For a detailed explanation for "how to filter a connection" see sect. 5.4.5
-
- LOGGING:
-
- There is also an option to log all these beautiful data streams to a file,
- just press 'l', then read it down or pass it through to an automated script
- filter with calm.
- You can also set up a filter with the rule "Log" and only the packet
- matching the criteria will be logged to the file.
-
- As you will notice, using the tool in visual mode will be simpler when
- trying it on run than by reading these instructions.. help is also a good
- resource to count on while operating (simply hit 'h').
-
-3.2 COMMAND LINE
-
- Well here there are two classic commands that will display help.
- Launching ettercap with the --help switch and invoking our man page
- (man ettercap ;).
-
- NOTE: Some features are available only from visual interface.
-       - Packet factory
-       - Injection
-
- Starting in non interactive mode (-N) there are also some features
- available that are  bound to the interactive mode: you can activate
- a little help line and change visualization mode on the fly
- (between hex and ascii for example)
- In the same way it is possible to set up a lot of options from the command
- line and see them in interactive mode already set and started.
-
- Now there is also the possibility to shorten command usage, by specifying
- one or more hosts to sniff (if you are in silent mode, also one or none is
- possible by setting -z option: like sniffit that sniffs from everywhere =)
-
- Example:
-
-  ettercap -Nsz  (sniff data from every ip)
-
-  ettercap -NCsz  (collect only users and passwords from every ip)
-
-  ettercap -NCsz ghibli meltemi (collect only from "ghibli" to "meltemi")
-
- NOTE: if you had started in interactive mode (without -N) it would have
-       been necessary to specify 'r' to refresh the ip host list if you
-       returned with 'q' to the first interface, since no list has been
-       generated at the beginning due to the -z option.
-       ex: ettercap -zs ghibli meltemi          or
-           ettercap -zm 00:A0:24:4C:00:F9 00:A0:24:36:00:C2
-
- Ok, that's all..
-
- Have fun and await the next versions, including ssh handling, you could
- play tricks on your friends, especially if they are the ones who
- believe that ssh is an absolutely not-sniffable and cryptographically
- unbreakable thing, better yet if they also believe in switches doing their
- job! =)
-
-
-============================================================================
-4>                             TROUBLESHOOTING
-============================================================================
-
- There are really a lot of things that could happen to you after installing
- this proggy. Don't blame us in case of accidents or hours spent trying
- to compile etc.. Until we reach a *very* stable version there
- will be no troubleshooting section, which would be too large and infeasible
- to write down and do the necessary spread out betatests.
- But we'll do our best, try to compile on lots of machines, port it as much
- as possible, and clean up everything. For now the main aspect was to write
- down base ideas and see them work. When the main skeleton is completed
- there will be a lot of fine tune.
-
- The best thing to do if you need support or help in compiling is to READ
- THE FORUM ON ETTERCAP WEBSITE. Here you can find common solutions for many
- problems.
-
- Then we will write down a sort of FAQ and a problem resolve list or todos
- here in this section.
-
-RPM VERSION:
-
- We'd like to know if you are experiencing any problems when
- installing the rpm binary version of ettercap, including ncurses, which
- can easily be miss-detected: simply try to add --nodeps to the rpm line.
-
-COMPILING WITH OPENSSL:
-
- Ettercap needs the shared version of OpenSSL so if you experience a problem
- linking ettercap try recompiling OpenSSL with:
-
- "config shared && make && make install"
-
- then edit the /etc/ld.so.conf and add the installed path.
- then run "ldconfig"
-
-START UP TOO SLOW:
-
- if the "Building host list for netmask 255.255.255.0, please wait..."
- message is displayed for more than 5-10 seconds, probably your
- gethostbyaddr() is too slow resolving domains, so try starting with -d
- this option prevent the resolution of the IPs.
-
-
-============================================================================
-5>                             TECHNICAL PAPER
+                               TECHNICAL PAPER
 ============================================================================
 
 
-5.1   THE HOST LIST
+THE HOST LIST
 
- When ettercap starts it makes the list of the hosts that are on the lan.
  Sending one ARP REQUEST for each ip in the lan (looking at the current ip
  and netmask), it is possible to get the ARP REPLIES and than make the
  list of the hosts that are responding on the lan. With this method even
  windows hosts, reply to the call-for-reply (they don't reply on
  broadcast-ping).
  Be very careful if the netmask is a class B (255.255.0.0) because ettercap
- will send 255*255 = 65025 arp requests, it takes more than a minute !! (the
- default delay between two requests is 1 millisecond)
+ will send 255*255 = 65025 arp requests (the default delay between two 
+ requests is 1 millisecond, can be configured in etter.conf)
 
 
-5.2   IP BASED SNIFFING
+UNIFIED SNIFFING
 
- This is the "old style" sniffing mode.
- It puts the network interface in promisc mode and then sniffs all packets
- matching the ip filter.
- If you are using the ncurses interface, the ip filter is made up of: ip
- source, port source, ip dest, port dest; in both the directions of the
- connection.
- Instead if using the command line, you can make a personalized ip filter.
- You can specify only the source, only the dest or both. each with or
- without an associated port.
-
-   Examples:
-
-     ettercap -N -s ghibli
-     ettercap -N -s ghibli:23
-
-  the first will sniff all the connections to the host "ghibli"
-  the second only those which are on the port 23
-
-     ettercap -N -s ghibli meltemi
-     ettercap -N -s ghibli:23  meltemi
-     ettercap -N -s ANY:23
-
-  the first will sniff all the connections between "ghibli" and "meltemi"
-  the second only those which are on ghibli:23 coming from "meltemi"
-  the third ANY host but on port 23 (telnet)
+ Ettercap NG uses the unified sniffing method which is the base for all the
+ attacks. The kernel ip forwarding is always disabled and this task is
+ accomplished by ettercap itself. Packet that needs to be forwarded are packets
+ with destination mac address equal to the attacker's one, but with different ip
+ address. Those packets are re-sent back to the wire to the real destination.
+ This way, you can plug in variuous mitm attacks at a time. You can even use
+ external attacker/poisoner, they only have to redirect packets to ettercap's
+ host and the game is over ;)
 
 
-5.3   MAC BASED SNIFFING
+BRIDGED SNIFFING
 
- It puts the network interface in promisc mode and then sniffs all the
- packets that match the mac filter.
- The mac filter is made up giving the IPs of the two hosts. Ettercap will
- scan the host list and associates the correct mac address to the filter.
- In this way specifying the gateway's ip and an host's ip, you will get
- all the connections between the host and the Internet.
-
-   Examples:
-
-   assuming that "meltemi" is the gateway to internet.
-
-     ettercap -N -m ghibli meltemi
-
-   this will return all the connections that "ghibli" makes to remote hosts.
+ 
 
 
-5.4   ARP BASED SNIFFING
+ARP POISONING ATTACK
 
- This method doesn't put the interface in promiscuous mode. It isn't
- necessary because the packets will be sent to us! :) The switch will
- forward the packets to us, so we have a good method for sniffing in
- switched LANs.
- Let's view how this is possible:
- when you select this method, ettercap will poison the arp cache of the
+ When you select this method, ettercap will poison the arp cache of the
  two hosts, identifying itself as the other host respectively (see the
  next section for this).
  Once the arp caches are poisoned, the two hosts start the connection, but
@@ -513,10 +165,6 @@ START UP TOO SLOW:
              - - - ->   the logic connection
              ------->   the real one
 
- Ok, cool! Though, how can I poison the arp cache ?
-
-
-5.4.1    ARP POISONING
 
  The arp protocol has an intrinsic insecurity. In order to reduce the
  traffic on the cable, it will insert an entry in the arp cache even if it
@@ -604,37 +252,43 @@ START UP TOO SLOW:
  entry is now in the cache...
 
 
-5.4.1.1    PUBLIC ARP
+ICMP REDIRECTION
 
- In order to sniff from one target host to all others on a switched lan,
- you have to use Publi ARP mode.
- With this method ettercap sends broadcast ARP replies with the IP of the
- victim and the mac of ettercap (poisoning the arp cache).
- All the hosts will get this reply and add it to the cache so they will send
- all the packet for the victim to ettercap.
- But, there is a problem, even the victim will receive this reply and it
- will notice a IP conflict (as exeriencing under win2k).
- to solve this problem, SMART PUBLIC ARP was born...
+ This attack implements ICMP redirection. It sends a spoofed icmp redirect
+ message to the hosts in the lan pretending to be a best route for internet. 
+ All connections to internet will be redirected to the attacker which, in turn,
+ will forward them to the real gateway. The resulting attack is an HALF-DUPLEX
+ mitm. Only the client is redirected, since the gateway will not accept redirect
+ messages for a directly connected network. 
 
 
-5.4.1.2    SMART PUBLIC ARP
+DHCP SPOOFING
 
- With this method the replies are sent selectively to all the host but the
- victim. in this way there are no IP conficts.
-
- NOTE: The poisoned hosts will be the ones in the list, so if you don't want
- to poison a host, you can remove it from the list hitting 'd'
-
- NOTE: to do SMART ARP, ettercap needs to know the hosts list. so it is
- better that you don't use the broadping startup (-b). however it is
- impossible to do smart arp without the list in silent mode (-z).
- ettercap automatically select the clever option, if it has the list, it will
- use smart arp, if not, it uses the old public arp method.
-
- NOTE: with this method more arp replies are sent to the lan...
+ This attack implements DHCP spoofing. It pretends to be a DHCP server and try
+ to win the race condition with the real one to force the client to accept
+ replies from it. This way the attacker is able to manipulate the GW parameter and
+ hijack all the outgoing traffic generated by the clients.
+ The resulting attack is an HALF-DUPLEX mitm. 
 
 
-5.4.2    CHARACTERS INJECTION
+PORT STEALING
+
+ This techinque is useful to sniff in a switched environment when ARP poisoning
+ is not effective (for example where static mapped ARPs are used).
+ It floods the LAN with ARP packets. The destination MAC address of each 
+ "stealing" packet is the same as the attacker's one (other NICs won't see these 
+ packets), the source MAC address will be one of the MACs of the victims.
+ This process "steals" the switch's port of each victim. 
+ Using low delays, packets destinated to "stolen" MAC addresses will be received 
+ by the attacker, winning the race condition with the real port owner. 
+ When the attacker receives packets for "stolen" hosts, it stops the flooding 
+ process and performs an ARP request for the real destination of the packet. 
+ When it receives the ARP reply it's sure that the victim has "taken back" his 
+ port, so ettercap can re-send the packet to the destination as is.
+ Now we can re-start the flooding process waiting for new packets.
+
+
+CHARACTERS INJECTION
 
  We have stated that the packets are for us...
  And the packets will not be received by destination until we forward them.
@@ -660,19 +314,7 @@ START UP TOO SLOW:
        command to the server.
 
 
-5.4.3 ACTIVE PROTOCOL DISSECTION (for ARPBASED mode)
-
- To view in strongly-ciphered streams you need to act straight on the stream
- For example you need to change key-packets (man-in-the-middle technique).
- In particular cases this will result in a fault of the protocol, so pay
- attention using this feature.
- The used method changes from protocol to protocol and is more difficult to
- explain than to code it.
- So I'm sorry but you have to examine the source code if you really want
- to know how it works.
-
-
-5.4.4 SSH1 MAN-IN-THE-MIDDLE
+SSH1 MAN-IN-THE-MIDDLE
 
  When the connection starts (remember that we are the master-of-packets, all
  packets go through ettercap) we substitute the server public key with one
@@ -689,79 +331,17 @@ START UP TOO SLOW:
  ettercap is only a spectator... ;)
 
 
-5.4.5 PACKET FILTERING
+PACKET FILTERING
 
  Like character injection, we can modify the packets payload and replace
  the right sequence and acknowledgement number if needed.
- With the integrated filtering engine you can program your own filter chain
- to make the best filter for your scopes.
- A filter chain is a simple array of filter that can be viewed as a list of
- instruction of a virtual machine. The entry point of the program is the
- filter 0 (zero). You can specify a jump if the filter is true and a different
- jump if the filter is false. A filter is considered true if  <protocol, source
- port, dest port, payload> is (in logical AND) equal to the filter.
- A NULL search string is always considered true. (NULL = 0 for the ports)
- If the filter matches, it will do the action (Log, Replace or Drop) and
- evaluate the right jump to be executed. So the "instruction pointer" will
- change to the filter jumped to. When the value of a jump is blank the filter
- chain is considered terminated and the packet is forwarded to the target host.
- So you can set up a filter that search for a particular string (even hex)
- in the TCP or UDP payload and replace it with yours or drop the entire
- packet. You can use wildcard in the search string using the special
- notation [n*] where n is the number of character to be matched.
- e.g.
+ With the integrated filtering engine you can program your own filters
+ to make the best filter for your aims.
+ A scripting languages is used to make filters source that must be compiled
+ with etterfilter(8) in order to be used by ettercap.
+ 
 
-   suppose a data flow as follow:
-
-      packet 1:   "var1=123&var2=400"
-      packet 2:   "var1=124&var2=420"
-      packet 3:   "var1=125&var2=460"
-      packet 4:   "var1=126&var2=540"
-      packet 5:   "var1=127&var2=700"
-      ...
-      ...
-
-   we want to assign a value to the var1 disregarding the current value.
-   so we set up the filter as follow:
-
-         Search:  "var1=[3*]"
-         Replace: "var1=000"
-
-   this filter will produce this output:
-
-      packet 1:   "var1=000&var2=400"
-      packet 2:   "var1=000&var2=420"
-      packet 3:   "var1=000&var2=460"
-      packet 4:   "var1=000&var2=540"
-      packet 5:   "var1=000&var2=700"
-      ...
-      ...
-
-   and whenever a payload contains the "var1=" assignement it will modify it
-   to "var1=000"
-
- NOTE: you can only set up the wildcard at the end of the search string !!
- e.g.
-         "var1=[5*]"             OK
-         "[4*]=123"              NOT PERMITTED
-         "var1=[3*]&pippo"       WILL BE TRANSLATED TO "var1=[3*]"
-         "var1=[3*]&var2=[3*]"   NOT PERMITTED
-                                 to do multiple filter set up a first filter
-                                 that makes the var1 replacement with the jump
-                                 to a second filter that makes the second.
-                                 i.e:  0 | var1=[3*] R var1=000  | => 1
-                                       1 | var2=[3*] R var2=111
-
-
- You can search and replace even escaped strings like "\x72\x6f\x6f\x74".
-
- NOTE: the form automatically trims the trailing spaces of the strings, so
-       if you want to search for "ettercap ", you have to set a filter on
-       "ettercap\x20". "\x20" will be escaped with " ".
-       And if you want to search the magic word "[*]" you have to escape it.
-
-
-5.5 PASSIVE SCANNING OF THE LAN
+PASSIVE SCANNING OF THE LAN
 
  This feature is very useful if you want to know the topology of the lan but
  you don't want to send any packet on it. In this way the scan is done entirely
@@ -776,7 +356,7 @@ START UP TOO SLOW:
  the hosts in the lan.
 
 
-5.5.1 PASSIVE OS FINGERPRINT
+PASSIVE OS FINGERPRINT
 
  The main idea is to analyze the passive information coming form an host
  when it makes or receives connections with other hosts. This information
@@ -817,7 +397,7 @@ START UP TOO SLOW:
  in the database.
 
 
-5.5.2 OPEN PORTS
+OPEN PORTS
 
  Open ports are identified by looking for stn+ack packets.
  If a syn+ack comes form a port, it is for sure open, except for the
@@ -830,7 +410,7 @@ START UP TOO SLOW:
  sends packet to a server.
 
 
-5.5.3 GATEWAY AND ROUTERS
+GATEWAY AND ROUTERS
 
  The gateway is simply recognized looking at IP packet with a non local ip
  ( checking the netmask ). If a non local IP is found, ettercap look at the
@@ -841,63 +421,7 @@ START UP TOO SLOW:
  TTL-exceeded or a redirect messages it is a router or an host acting as it.
 
 
+==============================================================================
 
-============================================================================
-6>                                 PLUG-INs
-============================================================================
+vim:ts=3:expandtab
 
-
- see README.PLUGINS
-
-
-============================================================================
-7>                            USELESS INFORMATION
-============================================================================
-
-
-Project started on :       2000-11-25
-
-Last stable release :      0.6.4          Our software never has bugs.
-                                          It just develops random features.
-
-Published on :             2002-02-12
-                                    whenever a code runs it's just obsolete
-
-
-Editor :                   vi, vim, gvim, mcedit, UltraEdit
-
-
-greetings to :             The IEEE 802.3  standard  :)
-                           ISO/OSI organization
-                           Andrew S.Tanenbaum
-                           Berkeley University
-
-                           the SiLAB (university lab)
-                           JJ's corner PUB
-
-ALoR greetings:            VMWare staff ;)
-                           elle (she knows for what...)
-                           Raptor & awgn
-                           My car hi-fi
-                           My New Car (Volkswagen Polo 1.4 TDi) wow !
-
-
-NaGA greetings:            Heineken Inc.
-                           My MP3 player
-                           N-Team
-                           MegaBug
-
-
-fucks to :                 tutte le tipe che se la menano ;)
-                           mcedit (it sucks!)
-
-
-Motto :                    Specialization is for insects, a human being
-                           should be able to do anything!
-
-Who we are :               If you think you know us... YOU DON'T.
-                           If you don't know us... YOU WILL.
-
-Shakespeare :              question = ( to ) ? be : !be;
-
-0xABADC0DE==============================================================EC-2K
