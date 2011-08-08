@@ -1,3 +1,30 @@
+ettercap (1:0.7.4-1) unstable; urgency=low
+
+  * Add new maintainer
+  * Merge NMUs and Ubuntu patches
+  * New upstream release
+    - remove superceded quilt patches
+    - remove superceded Ubuntu patches
+    - includes desktop and icon files
+    - devleopment moved to github
+  * Update debian packaging
+    - Reorganised package names: ettercap-common holds everything
+      except the actual ettercap executable.  This comes in two varieties,
+      which are in ettercap-text-only and ettercap-graphical.  The latter
+      has both the textual and graphical interfaces, and is thus a
+      functional superset of the former.
+    - bump to source format 3
+    - add watch file pointing to new upstream repo on github
+    - dh 8
+    - simplify and shorten rules and related info
+    - bump policy version
+    - add homepage and vcs control fields
+    - put long description on ettercap-common, stub descriptions elsewhere
+    - silence most lintian issues, such as duplicated upsteam changelog
+    - remove old /usr/share/ettercap symlink deletion in installation scripts
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Fri, 12 Aug 2011 15:28:59 +0200
+
 ettercap (1:0.7.3-2.2) unstable; urgency=low
 
   * Non-maintainer upload.
@@ -169,6 +196,3 @@ ettercap (0.6.3.1-1) unstable; urgency=low
   * Initial Release (Closes: #112980)
 
  -- Murat Demirten <murat@debian.org>  Wed, 19 Dec 2001 13:08:46 +0200
-
-
-

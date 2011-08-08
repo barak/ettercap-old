@@ -1,131 +1,36 @@
 #!/usr/bin/make -f
-# Sample debian/rules that uses debhelper. 
-# GNU copyright 1997 by Joey Hess.
-#
-# This version is for a hypothetical package that builds an
-# architecture-dependant package, as well as an architecture-independent
-# package.
 
-# Uncomment this to turn on verbose mode. 
-# export DH_VERBOSE=1
+dh_targets=binary binary-arch binary-indep build build-arch build-indep clean install
 
-configure: configure-stamp
-configure-stamp:
-	dh_testdir
-	# Add here commands to configure the package.
-	cp -f /usr/share/misc/config.guess config.guess
-	cp -f /usr/share/misc/config.sub config.sub
-	dh_quilt_patch
+$(dh_targets) %:
+	dh $@ --with autoreconf --parallel
 
-	touch configure-stamp
+.PHONY: $(dh_targets)
 
-build: configure-stamp build-stamp
-build-stamp:
-	dh_testdir
+override_dh_autoreconf:
+	mkdir -p libltdl/m4
+	dh_autoreconf
 
-	## To build ettercap.fr.8 added AC_OUTPUT entry
-	# sed -e 's/AC_OUTPUT(ettercap.spec ettercap.8 Makefile $makeplug win32\/ettercap.nsi)/AC_OUTPUT(docs\/fr\/ettercap.fr.8 ettercap.spec ettercap.8 Makefile $makeplug win32\/ettercap.nsi)/' configure.in > .debian.configure.in
-	#mv .debian.configure.in configure.in
-	#autoconf
+override_dh_auto_configure:
+	@echo main configuration deferred until build, as it must be done twice
 
-	# Add here commands to compile the package.
-	./configure --prefix=/usr --mandir=\$${prefix}/share/man \
-	--exec-prefix=/usr --enable-https --enable-gtk --enable-plugins \
-	--sysconfdir=/etc 
-
+override_dh_auto_build:
+	dh_auto_configure -- --enable-https --enable-plugins --disable-gtk
+	$(MAKE) -C src
+	cp src/ettercap ettercap-text-only
+	$(MAKE) -C src clean
+	dh_auto_configure -- --enable-https --enable-plugins --enable-gtk
 	$(MAKE)
 
-	cp src/ettercap ettercap-gtk
+override_dh_auto_install:
+	dh_auto_install
+	mkdir -p debian/tmp/usr/sbin
+	install --mode=0755 ettercap-text-only debian/tmp/usr/sbin/
 
-	make clean	
-
-	./configure --disable-gtk --enable-plugins \
-	--prefix=/usr --mandir=/usr/share/man --enable-https \
-	--sysconfdir=/etc
-
-	$(MAKE)
-
-#	dh_testdir
-#	cd plugins && $(MAKE)
-	touch build-stamp
-
-clean: 
-	dh_testdir
-	dh_testroot
-	rm -f build-stamp configure-stamp
-
-	# Add here commands to clean up after the build process.
-	dh_quilt_unpatch
-	rm -f config.guess config.sub
-	-$(MAKE) distclean
-
-	rm -f ettercap-gtk
-	dh_clean
-
-install: DH_OPTIONS=
-install: build
-	dh_testdir
-	dh_testroot
-	dh_prep
-	dh_installdirs
-
-	cp debian/ettercap.xpm debian/ettercap-gtk/usr/share/pixmaps/
-	cp debian/ettercap.desktop debian/ettercap-gtk/usr/share/applications
-
-	# Add here commands to install the package into debian/ettercap.
-	$(MAKE) DATADIR=/etc/ettercap DESTDIR=$(CURDIR)/debian/ettercap-common install
-	#/usr/bin/install -m 700 ettercap debian/ettercap/usr/sbin/
-	rm -rf debian/ettercap-common/usr/share/doc/ettercap
-	rm -f debian/ettercap-common/etc/ettercap/AUTHORS
-	rm -f debian/ettercap-common/etc/ettercap/THANKS
-	rm -f debian/ettercap-common/usr/share/man/man8/ettercap.8
-	rm -f debian/ettercap/usr/share/doc/ettercap-common/CHANGELOG
-	rm -f debian/ettercap/usr/share/doc/ettercap-common/ettercap.8
-
-	rm -f debian/ettercap-common/usr/bin/ettercap
-
-	install -m 700 ettercap-gtk debian/ettercap-gtk/usr/sbin/ettercap
-	install -m 700 src/ettercap debian/ettercap/usr/sbin/ettercap 
-	
-	# dh_testdir
-	cd plug-ins && $(MAKE) DATADIR=/etc/ettercap DESTDIR=$(CURDIR)/debian/ettercap-common install
-
-#	dh_movefiles
-
-# Build architecture-independent files here.
-# Pass -i to all debhelper commands in this target to reduce clutter.
-binary-indep: build install
-
-# Build architecture-dependent files here.
-binary-arch: build install
-	dh_testdir -a
-	dh_testroot -a
-#	dh_installdebconf -a
-	dh_installdocs -a
-#	dh_installexamples -a
-	dh_installmenu -a
-#	dh_installlogrotate -a
-#	dh_installemacsen -a
-#	dh_installpam -a
-#	dh_installmime -a
-#	dh_installinit -a
-#	dh_installcron -a
-	dh_installman -pettercap-gtk man/ettercap.8
-	dh_installman -pettercap man/ettercap.8
-	dh_installinfo -a
-#	dh_undocumented -a
-	dh_installchangelogs CHANGELOG -a
-	dh_strip -a
-	dh_link -a
-	dh_compress -a
-	dh_fixperms -a
-#	dh_makeshlibs -a
-	dh_installdeb -a
-#	dh_perl -a
-	dh_shlibdeps -a
-	dh_gencontrol -a
-	dh_md5sums -a
-	dh_builddeb -a
-
-binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install configure
+override_dh_install:
+	dh_install
+	mkdir -p debian/ettercap-text-only/usr/sbin
+	install --mode=0755 \
+	 debian/tmp/usr/sbin/ettercap-text-only \
+	 debian/ettercap-text-only/usr/sbin/ettercap
+	-rm --verbose debian/ettercap-common/usr/share/ettercap/ettercap.png

@@ -1,65 +1,64 @@
 Source: ettercap
 Section: net
 Priority: optional
-Maintainer: Murat Demirten <murat@debian.org>
-Build-Depends: debhelper (>= 7), quilt (>= 0.46-7~), autotools-dev, autoconf, libncurses-dev, libgtk2.0-dev, libltdl3-dev, libssl-dev, libssl-dev, libpcap0.8-dev, libnet1-dev, libpcre3-dev 
-Standards-Version: 3.8.3
+Maintainer: Barak A. Pearlmutter <bap@debian.org>
+Uploaders: Murat Demirten <murat@debian.org>
+Build-Depends: debhelper (>= 8),
+	dh-autoreconf,
+	libgtk2.0-dev,
+	libltdl3-dev,
+	libncurses-dev,
+	libnet1-dev,
+	libpcap0.8-dev,
+	libpcre3-dev,
+	libssl-dev,
+Standards-Version: 3.9.2
+Homepage: http://ettercap.sourceforge.net
+Vcs-Git: git://github.com/barak/ettercap.git
+Vcs-Browser: http://github.com/barak/ettercap
 
 Package: ettercap-common
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: ettercap | ettercap-gtk
-Replaces: ettercap-plugins, ettercap (<= 1:0.6.a-2)
-Conflicts: ettercap-plugins, ettercap (<= 1:0.6.a-2)
-Description: Common support files and plugins for ettercap
- It includes all of the configuration files, plugins and documentation.
-
-Package: ettercap
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ettercap-common (= ${binary:Version})
-Replaces: ettercap-gtk
-Conflicts: ettercap-gtk
+Recommends: ettercap-graphical | ettercap-text-only
+Replaces: ettercap-plugins
+Conflicts: ettercap-plugins, ettercap (<= 1:0.7.3)
 Description: Multipurpose sniffer/interceptor/logger for switched LAN
  Ettercap supports active and passive dissection of many protocols 
- (even ciphered ones) and includes many feature for network and host 
+ (even encrypted ones) and includes many feature for network and host 
  analysis.
  .
  Data injection in an established connection and filtering (substitute
  or drop a packet) on the fly is also possible, keeping the connection
  synchronized.
  .
- Many sniffing modes were implemented to give you a powerful and complete 
- sniffing suite. It's possible to sniff in four modes: IP Based, MAC Based,
+ Many sniffing modes are implemented, for a powerful and complete 
+ sniffing suite. It is possible to sniff in four modes: IP Based, MAC Based,
  ARP Based (full-duplex) and PublicARP Based (half-duplex).
  .
- It has the ability to check whether you are in a switched LAN or
- not, and to use OS fingerprints (active or passive) to let you know the
- geometry of the LAN.
+ Ettercap also has the ability to detect a switched LAN, and to use OS
+ fingerprints (active or passive) to find the geometry of the LAN.
+ .
+ This package contains the Common support files, configuration files,
+ plugins, and documentation.  You must also install either
+ ettercap-graphical or ettercap-text-only for the actual GUI-enabled
+ or text-only ettercap executable, respectively.
 
-Package: ettercap-gtk
+Package: ettercap-text-only
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, ettercap-common (= ${binary:Version})
-Replaces: ettercap
-Conflicts: ettercap
+Replaces: ettercap-gtk, ettercap-graphical, ettercap (<= 1:0.7.3)
+Conflicts: ettercap-gtk, ettercap-graphical, ettercap (<= 1:0.7.3)
+Provides: ettercap
+Description: Ettercap console-mode executable
+ Ettercap text-mode-only executable.
+
+Package: ettercap-graphical
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ettercap-common (= ${binary:Version})
+Replaces: ettercap-gtk, ettercap-text-only, ettercap (<= 1:0.7.3)
+Conflicts: ettercap-gtk, ettercap-text-only, ettercap (<= 1:0.7.3)
+Provides: ettercap
 Recommends: gksu
-Description: Multipurpose sniffer/interceptor/logger for switched LAN
- .
- This package includes gtk enabled version of ettercap. It also
- includes ncurses support.
- .
- Ettercap supports active and passive dissection of many protocols 
- (even ciphered ones) and includes many feature for network and host 
- analysis.
- .
- Data injection in an established connection and filtering (substitute
- or drop a packet) on the fly is also possible, keeping the connection
- synchronized.
- .
- Many sniffing modes were implemented to give you a powerful and complete 
- sniffing suite. It's possible to sniff in four modes: IP Based, MAC Based,
- ARP Based (full-duplex) and PublicARP Based (half-duplex).
- .
- It has the ability to check whether you are in a switched LAN or
- not, and to use OS fingerprints (active or passive) to let you know the
- geometry of the LAN.
-
+Description: Ettercap GUI-enabled executable
+ Ettercap GUI-enabled executable.
