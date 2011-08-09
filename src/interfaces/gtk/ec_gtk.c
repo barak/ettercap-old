@@ -482,6 +482,9 @@ static void gtkui_progress(char *title, int value, int max)
     * when 100%, destroy it
     */
    if (value == max) {
+#ifndef OS_MINGW
+      gdk_threads_enter();
+#endif
       gtk_widget_destroy(progress_dialog);
       progress_dialog = NULL;
       progress_bar = NULL;
