@@ -19,7 +19,9 @@ dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 dnl
 
 AC_INIT
-AC_CONFIG_SRCDIR([include/ec.h])
+AC_CONFIG_SRCDIR([src/ec_main.c])
+AC_CONFIG_MACRO_DIR([libltdl/m4])
+AC_CONFIG_AUX_DIR([libltdl/config])
 
 dnl Force autoconf 2.57 
 AC_PREREQ(2.57)
@@ -38,7 +40,6 @@ AC_SUBST(EB)
 AC_SUBST(VERSION)
 EC_MESSAGE(Configuring ettercap $VERSION)
 
-AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(ettercap, $VERSION)
 
 AC_CONFIG_HEADERS([include/config.h])
@@ -208,6 +209,7 @@ AC_LIBTOOL_WIN32_DLL
 AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
 AC_SEARCH_LIBS(dlopen,c dl,,)
+LT_CONFIG_LTDL_DIR([libltdl])
 AC_LIB_LTDL
 ac_ec_lt_dlopen=yes
 AC_SEARCH_LIBS(lt_dlopen,c dl ltdl,,ac_ec_lt_dlopen=no)

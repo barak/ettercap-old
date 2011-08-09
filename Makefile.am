@@ -1,5 +1,7 @@
 include $(top_srcdir)/Makefile.am.common
 
+ACLOCAL_AMFLAGS = -I libltdl/m4
+
 SUBDIRS = man share include include src utils
 
 if PLUGINS
