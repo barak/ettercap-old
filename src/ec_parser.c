@@ -214,7 +214,7 @@ void parse_options(int argc, char **argv)
                   
          case 'o':
                   GBL_OPTIONS->only_mitm = 1;
-                  select_text_interface();
+                  //select_text_interface();
                   break;
                   
          case 'B':
@@ -459,12 +459,12 @@ void parse_options(int argc, char **argv)
     }
      
    /* force text interface for only mitm attack */
-   if (GBL_OPTIONS->only_mitm) {
-      if (GBL_OPTIONS->mitm)
-         select_text_interface();
-      else
-         FATAL_ERROR("Only mitm requires at least one mitm method");
-   }
+   //if (GBL_OPTIONS->only_mitm) {
+   //   if (GBL_OPTIONS->mitm)
+   //      select_text_interface();
+   //   else
+   //      FATAL_ERROR("Only mitm requires at least one mitm method");
+   //}
 
    DEBUG_MSG("parse_options: options combination looks good");
    
