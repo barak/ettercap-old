@@ -337,7 +337,7 @@ AC_ARG_ENABLE(debug, AC_HELP_STRING(--enable-debug,create a file for debugging m
 [ case "$enableval" in
    yes)
       AC_DEFINE(DEBUG, 1)
-      DEBUG_FLAGS="-g -ggdb -Wmissing-prototypes -Wno-uninitialized -Werror -Wformat-security -Wsign-compare -Wall -Wno-pointer-sign"
+      DEBUG_FLAGS="-g -ggdb -Wmissing-prototypes -Wno-uninitialized -Wformat-security -Wsign-compare -Wall -Wno-pointer-sign"
       AC_MSG_RESULT(yes)
       ac_ec_debug=yes
       ;;
