@@ -3,7 +3,7 @@
 #ifndef EC_VERS_H
 #define EC_VERS_H
 
-#define EC_VERSION            "NG-0.7.4_cvs"
+#define EC_VERSION            "NG-0.7.4pre"
 #define EC_VERSION_MAJOR      0
 #define EC_VERSION_MINOR      7
 #define EC_VERSION_REVISION   3

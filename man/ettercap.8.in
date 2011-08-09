@@ -906,13 +906,14 @@ Marco Valleri (NaGA) <naga@antifork.org>
 
 
 .SH AVAILABILITY
+Moribund on
 http://ettercap.sourceforge.net/download/
+development revived in
+http://github.com/drizztbsd/ettercap
 
 
-.SH CVS
-cvs -d:pserver:anonymous@cvs.ettercap.sf.net:/cvsroot/ettercap login
-.br
-cvs -d:pserver:anonymous@cvs.ettercap.sf.net:/cvsroot/ettercap co ettercap_ng
+.SH SOURCE REPOSITORY
+git clone git://github.com/drizztbsd/ettercap.git
 
 
 .SH BUGS
