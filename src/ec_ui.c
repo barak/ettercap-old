@@ -336,7 +336,7 @@ void ui_register(struct ui_ops *ops)
    BUG_IF(ops->fatal_error == NULL);
    GBL_UI->fatal_error = ops->fatal_error;
    
-   BUG_IF(ops->input == NULL);
+   BUG_IF((ops->input == NULL)&&(ops->type != UI_DAEMONIZE));
    GBL_UI->input = ops->input;
    
    BUG_IF(ops->progress == NULL);
