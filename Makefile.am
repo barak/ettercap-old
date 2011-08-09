@@ -24,6 +24,12 @@ EXTRA_DIST = AUTHORS \
              contrib/* \
              doc/*
 
+icondir = $(datadir)/icons/hicolor/32x32/apps/
+dist_icon_DATA = ettercap.xpm
+
+desktopdir = $(datadir)/applications
+dist_desktop_DATA = ettercap.desktop
+
 CLEANFILES = -R auto4te.cache *~ *.log *.out *.cache *.so ettercap etterlog etterfilter
 
 dist-hook:
