@@ -17,7 +17,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-    $Id: ec_inject.c,v 1.16 2004/05/27 10:59:52 alor Exp $
+    $Id$
 */
 
 #include <ec.h>

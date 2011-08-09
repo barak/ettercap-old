@@ -1,5 +1,5 @@
 
-/* $Id: ec_proto.h,v 1.15 2004/06/08 08:58:42 alor Exp $ */
+/* $Id$ */
 
 #ifndef EC_PROTO_H
 #define EC_PROTO_H

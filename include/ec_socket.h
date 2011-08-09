@@ -1,5 +1,5 @@
 
-/* $Id: ec_socket.h,v 1.6 2004/07/29 09:46:47 alor Exp $ */
+/* $Id$ */
 
 #ifndef EC_SOCKET_H
 #define EC_SOCKET_H

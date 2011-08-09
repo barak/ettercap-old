@@ -1,5 +1,5 @@
 
-/* $Id: ec_curses.h,v 1.7 2004/10/12 14:27:28 alor Exp $ */
+/* $Id$ */
 
 #ifndef EC_CURSES_H
 #define EC_CURSES_H

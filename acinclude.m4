@@ -1,5 +1,5 @@
 
-dnl $Id: acinclude.m4,v 1.21 2004/09/17 19:38:34 alor Exp $
+dnl $Id$
 
 dnl
 dnl EC_MESSAGE(MESSAGE)

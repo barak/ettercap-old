@@ -1,5 +1,5 @@
 
-# $Id: Makefile.am,v 1.85 2005/07/07 10:08:56 alor Exp $
+# $Id$
 
 include $(top_srcdir)/Makefile.am.common
 

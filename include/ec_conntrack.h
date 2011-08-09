@@ -1,5 +1,5 @@
 
-/* $Id: ec_conntrack.h,v 1.14 2004/07/24 10:43:21 alor Exp $ */
+/* $Id$ */
 
 #ifndef EC_CONNTRACK_H
 #define EC_CONNTRACK_H

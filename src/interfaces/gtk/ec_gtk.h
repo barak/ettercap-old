@@ -1,5 +1,5 @@
 
-/* $Id: ec_gtk.h,v 1.18 2004/10/12 21:43:03 daten Exp $ */
+/* $Id$ */
 
 #ifndef EC_GTK_H
 #define EC_GTK_H

@@ -1,5 +1,5 @@
 
-/* $Id: ef.h,v 1.17 2004/09/30 16:01:45 alor Exp $ */
+/* $Id$ */
 
 #ifndef EF_H
 #define EF_H

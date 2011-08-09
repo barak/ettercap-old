@@ -1,5 +1,5 @@
 
-/* $Id: ec_poll.h,v 1.5 2004/07/24 10:43:21 alor Exp $ */
+/* $Id$ */
 
 #ifndef EC_POLL_H
 #define EC_POLL_H

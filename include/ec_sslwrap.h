@@ -1,5 +1,5 @@
 
-/* $Id: ec_sslwrap.h,v 1.6 2004/07/24 10:43:21 alor Exp $ */
+/* $Id$ */
 
 #ifndef EC_SSLWRAP_H
 #define EC_SSLWRAP_H

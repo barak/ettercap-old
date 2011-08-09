@@ -1,5 +1,5 @@
 
-/* $Id: ec_threads.h,v 1.11 2004/11/05 14:11:52 alor Exp $ */
+/* $Id$ */
 
 #ifndef EC_THREADS_H
 #define EC_THREADS_H

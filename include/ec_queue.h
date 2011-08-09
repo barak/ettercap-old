@@ -1,6 +1,6 @@
 
 /*      
- * $Id: ec_queue.h,v 1.4 2004/07/12 19:57:26 alor Exp $
+ * $Id$
  *      
  *      added the _SAFE functions from:
  *      $FreeBSD: queue.h,v 1.56 2003/08/14 14:49:26 kan Exp $          
