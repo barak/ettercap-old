@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_SNIFF_UNIFIED_H
 #define EC_SNIFF_UNIFIED_H

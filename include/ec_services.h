@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_SERVICES_H
 #define EC_SERVICES_H

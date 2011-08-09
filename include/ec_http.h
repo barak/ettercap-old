@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_HTTP_H
 #define EC_HTTP_H

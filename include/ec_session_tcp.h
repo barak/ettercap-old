@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_SESSION_TCP_H
 #define EC_SESSION_TCP_H

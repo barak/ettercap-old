@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_HOOK_H
 #define EC_HOOK_H

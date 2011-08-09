@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_PROTO_H
 #define EC_PROTO_H

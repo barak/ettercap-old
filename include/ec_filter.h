@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_FILTER_H
 #define EC_FILTER_H

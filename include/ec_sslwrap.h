@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_SSLWRAP_H
 #define EC_SSLWRAP_H

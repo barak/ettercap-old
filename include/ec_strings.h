@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_STRINGS_H
 #define EC_STRINGS_H

@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_CONNBUF_H
 #define EC_CONNBUF_H

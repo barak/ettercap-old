@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_THREADS_H
 #define EC_THREADS_H

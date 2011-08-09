@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_PARSER_H
 #define EC_PARSER_H

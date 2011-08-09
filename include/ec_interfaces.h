@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_INTERFACES_H
 #define EC_INTERFACES_H

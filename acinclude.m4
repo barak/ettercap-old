@@ -1,6 +1,3 @@
-
-dnl $Id$
-
 dnl
 dnl EC_MESSAGE(MESSAGE)
 dnl

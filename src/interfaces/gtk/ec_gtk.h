@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_GTK_H
 #define EC_GTK_H

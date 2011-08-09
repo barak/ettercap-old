@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_CURSES_H
 #define EC_CURSES_H

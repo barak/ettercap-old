@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_SIGNAL_H
 #define EC_SIGNAL_H

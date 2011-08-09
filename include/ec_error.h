@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_ERROR_H
 #define EC_ERROR_H

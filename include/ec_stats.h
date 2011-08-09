@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_STATS_H
 #define EC_STATS_H

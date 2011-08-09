@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_DISPATCHER_H
 #define EC_DISPATCHER_H

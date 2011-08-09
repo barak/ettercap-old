@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_VERS_H
 #define EC_VERS_H

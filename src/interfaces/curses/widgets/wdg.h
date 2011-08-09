@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef WDG_H
 #define WDG_H

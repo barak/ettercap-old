@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_FINGERPRINT_H
 #define EC_FINGERPRINT_H

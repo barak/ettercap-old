@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_DECODE_H
 #define EC_DECODE_H

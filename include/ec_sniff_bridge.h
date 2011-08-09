@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_SNIFF_BRIDGE_H
 #define EC_SNIFF_BRIDGE_H

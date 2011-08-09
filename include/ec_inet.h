@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_INET_H
 #define EC_INET_H

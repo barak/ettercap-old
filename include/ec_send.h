@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_SEND_H
 #define EC_SEND_H

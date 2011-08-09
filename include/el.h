@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EL_H
 #define EL_H

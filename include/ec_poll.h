@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_POLL_H
 #define EC_POLL_H

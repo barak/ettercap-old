@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_PLUGINS_H
 #define EC_PLUGINS_H

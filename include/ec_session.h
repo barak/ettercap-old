@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_SESSION_H
 #define EC_SESSION_H

@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_SCAN_H
 #define EC_SCAN_H

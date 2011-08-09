@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_RESOLV_H
 #define EC_RESOLV_H

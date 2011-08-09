@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EF_FUNCTIONS_H
 #define EF_FUNCTIONS_H

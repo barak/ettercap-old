@@ -1,6 +1,3 @@
-
-# $Id$
-
 include $(top_srcdir)/Makefile.am.common
 
 pkglib_LTLIBRARIES = ec_pptp_clear.la

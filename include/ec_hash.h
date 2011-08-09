@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef __FNV_H__
 #define __FNV_H__

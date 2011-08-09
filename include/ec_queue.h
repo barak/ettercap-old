@@ -1,7 +1,5 @@
 
 /*      
- * $Id$
- *      
  *      added the _SAFE functions from:
  *      $FreeBSD: queue.h,v 1.56 2003/08/14 14:49:26 kan Exp $          
  *

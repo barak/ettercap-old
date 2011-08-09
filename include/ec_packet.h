@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #if !defined(EC_PACKET_H)
 #define EC_PACKET_H

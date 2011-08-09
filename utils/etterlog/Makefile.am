@@ -1,6 +1,3 @@
-
-# $Id$
-
 include $(top_srcdir)/Makefile.am.common
 
 # do not link ettercap libs

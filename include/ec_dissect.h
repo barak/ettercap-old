@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_DISSECT_H
 #define EC_DISSECT_H

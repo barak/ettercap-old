@@ -1,6 +1,3 @@
-
-# $Id$
-
 include $(top_srcdir)/Makefile.am.common
 
 man_MANS = ettercap.8 ettercap_curses.8 etterlog.8 etterfilter.8 etter.conf.5

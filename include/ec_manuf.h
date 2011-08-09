@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_MANUF_H
 #define EC_MANUF_H

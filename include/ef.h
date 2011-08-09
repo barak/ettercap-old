@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EF_H
 #define EF_H

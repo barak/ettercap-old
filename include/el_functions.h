@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EL_FUNCTIONS_H
 #define EL_FUNCTIONS_H

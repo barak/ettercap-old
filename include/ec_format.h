@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_FORMAT_H
 #define EC_FORMAT_H

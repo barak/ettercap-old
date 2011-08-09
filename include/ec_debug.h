@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #if defined (DEBUG) && !defined(EC_DEBUG_H)
 #define EC_DEBUG_H

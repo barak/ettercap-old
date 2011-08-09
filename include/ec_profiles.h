@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_PROFILES_H
 #define EC_PROFILES_H

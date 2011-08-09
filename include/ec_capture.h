@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_CAPTURE_H
 #define EC_CAPTURE_H

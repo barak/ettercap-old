@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_SOCKET_H
 #define EC_SOCKET_H

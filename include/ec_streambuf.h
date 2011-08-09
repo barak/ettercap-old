@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_STREAMBUF_H
 #define EC_STREAMBUF_H

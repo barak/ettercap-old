@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_INJECT_H
 #define EC_INJECT_H

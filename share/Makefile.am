@@ -1,6 +1,3 @@
-
-# $Id$
-
 include $(top_srcdir)/Makefile.am.common
 
 pkgdata_DATA = etter.dns \

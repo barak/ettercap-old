@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_GLOBALS_H
 #define EC_GLOBALS_H

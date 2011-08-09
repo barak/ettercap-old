@@ -1,5 +1,4 @@
 
-/* $Id$ */
 
 #ifndef EC_UI_H
 #define EC_UI_H
