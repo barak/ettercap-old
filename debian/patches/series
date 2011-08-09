@@ -1,4 +1,4 @@
 01_pointers_and_ints_dont_mix.diff
 02_configure_fix.diff
-
+02_file_permissions.diff
 03_fix_ltmain_check.diff
