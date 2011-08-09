@@ -1,9 +1,10 @@
 [Desktop Entry]
-Encoding=UTF-8
-Name=Ettercap
-Comment=Nework sniffer/analyser
-Exec=ettercap-gtk
-Icon=ettercap
-Terminal=false
 Type=Application
-Categories=Network;
+Encoding=UTF-8
+Name=ettercap
+GenericName=Ettercap
+Comment=Multipurpose sniffer/interceptor/logger
+Icon=ettercap.xpm
+Exec=gksu "/usr/sbin/ettercap --gtk"
+Terminal=false
+Categories=Application;Network;System;Security;GTK
