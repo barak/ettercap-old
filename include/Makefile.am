@@ -55,7 +55,6 @@ noinst_HEADERS = ec.h \
                  ec_strings.h \
                  ec_threads.h \
                  ec_ui.h \
-                 ec_update.h \
                  ec_version.h \
                  el.h \
                  el_functions.h \

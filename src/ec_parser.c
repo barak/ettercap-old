@@ -27,7 +27,6 @@
 #include <ec_send.h>
 #include <ec_log.h>
 #include <ec_format.h>
-#include <ec_update.h>
 #include <ec_mitm.h>
 #include <ec_filter.h>
 #include <ec_plugins.h>
@@ -111,7 +110,6 @@ void ec_usage(void)
    fprintf(stdout, "  -a, --config <config>       use the alterative config file <config>\n");
    
    fprintf(stdout, "\nStandard options:\n");
-   fprintf(stdout, "  -U, --update                updates the databases from ettercap website\n");
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
    fprintf(stdout, "  -h, --help                  this help screen\n");
 
@@ -128,7 +126,6 @@ void parse_options(int argc, char **argv)
    static struct option long_options[] = {
       { "help", no_argument, NULL, 'h' },
       { "version", no_argument, NULL, 'v' },
-      { "update", no_argument, NULL, 'U' },
       
       { "iface", required_argument, NULL, 'i' },
       { "iflist", no_argument, NULL, 'I' },
@@ -377,13 +374,6 @@ void parse_options(int argc, char **argv)
                   
          case 'a':
                   GBL_CONF->file = strdup(optarg);
-                  break;
-         
-         case 'U':
-                  /* load the conf for the connect timeout value */
-                  load_conf();
-                  global_update();
-                  /* NOT REACHED */
                   break;
                   
          case 'h':

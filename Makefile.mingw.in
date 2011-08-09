@@ -169,7 +169,7 @@ SOURCE = $(addprefix src/,                                                      
            ec_send.c        ec_services.c     ec_session.c       ec_signals.c    \
            ec_sniff.c       ec_sniff_bridge.c ec_sniff_unified.c ec_socket.c     \
            ec_stats.c       ec_streambuf.c    ec_strings.c       ec_threads.c    \
-           ec_sslwrap.c     ec_ui.c           ec_update.c)
+           ec_sslwrap.c     ec_ui.c)
 
 SOURCE += $(addprefix src/dissectors/,                                             \
             ec_bgp.c    ec_cvs.c     ec_dhcp.c  ec_dns.c     ec_vrrp.c   ec_x11.c  \

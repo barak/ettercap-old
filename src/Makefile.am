@@ -56,8 +56,7 @@ ettercap_SOURCES = ec_capture.c \
                    ec_streambuf.c \
                    ec_strings.c \
                    ec_threads.c \
-                   ec_ui.c \
-                   ec_update.c 
+                   ec_ui.c
 
 #
 # these cannot be compiled as a lib because
