@@ -13,7 +13,7 @@ EXTRA_DIST = AUTHORS \
              README \
              README.BINARIES \
              README.BUGS \
-             README.CVS \
+             README.GIT \
              README.PLATFORMS \
              THANKS \
              TODO \
@@ -27,8 +27,6 @@ EXTRA_DIST = AUTHORS \
 CLEANFILES = -R auto4te.cache *~ *.log *.out *.cache *.so ettercap etterlog etterfilter
 
 dist-hook:
-	rm -rf `find $(distdir)/doc -name CVS`
-	rm -rf `find $(distdir)/contrib -name CVS`
 	cat $(distdir)/Makefile.am.common | sed s/#no/no/g > $(distdir)/Makefile.am.common
 
 test: all
