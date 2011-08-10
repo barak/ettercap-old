@@ -27,12 +27,11 @@ AC_DEFUN([EC_CHECK_FUNC],
 [
    OLDLDFLAGS="${LDFLAGS}"
    OLDLIBS="${LIBS}"
-   LDFLAGS="$3"
+   LDFLAGS="${LDFLAGS} $3"
    LIBS="$4"
    AC_CHECK_LIB($1, $2, $5, $6)
    LDFLAGS="${OLDLDFLAGS}"
    LIBS="${OLDLIBS}"
-
 ])
 
 dnl
