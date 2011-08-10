@@ -5,7 +5,7 @@ LIBS =
 
 bin_PROGRAMS = etterfilter
 
-AM_YFLAGS = --defines
+AM_YFLAGS = -d
 
 etterfilter_SOURCES = ef_compiler.c \
                       ef_main.c \
