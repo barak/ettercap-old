@@ -49,15 +49,9 @@ AC_DEFUN([EC_PTHREAD_CHECK],
       AC_MSG_CHECKING(whether $CC accepts -pthread)
       LDFLAGS_store="$LDFLAGS"
       LDFLAGS="$LDFLAGS -pthread"
-      AC_TRY_LINK([
-         #include <pthread.h>
-         ],
-         [
-            int main(int argc, char **argv)
-            {
-               pthread_create(NULL, NULL, NULL, NULL);
-               return 0;
-            }
+      AC_LINK_IFELSE([
+         AC_LANG_PROGRAM([[#include <pthread.h>]],
+                         [[pthread_create(NULL, NULL, NULL, NULL);]])
          ],
          [AC_MSG_RESULT(yes)],
          [AC_MSG_RESULT(no)
@@ -142,25 +136,18 @@ AC_DEFUN([EC_GCC_MACRO],
 [
    AC_MSG_CHECKING(if your compiler supports __VA_ARGS__ in macro declarations)
    
-   AC_TRY_RUN([
-   
-      #include <stdio.h>
-
-      #define EXECUTE(x, ...) do{ if (x != NULL) x( __VA_ARGS__ ); }while(0)
-
-      void foo() { }
-      
-      int main(int argc, char **argv)
-      {
-         EXECUTE(foo);
-         return 0;
-      } 
-   ],
-   [ AC_MSG_RESULT(yes) ],
-   [ AC_MSG_RESULT(no) 
-     AC_ERROR(please use gcc >= 3.2.x)
-   ],
-     AC_MSG_RESULT(unkown when cross-compiling)
+   AC_LINK_IFELSE([
+      AC_LANG_PROGRAM([[
+            #include <stdio.h>
+            #define EXECUTE(x, ...) do{ if (x != NULL) x( __VA_ARGS__ ); }while(0)
+            void foo() { }
+         ]],
+         [[EXECUTE(foo);]])
+      ],
+      [ AC_MSG_RESULT(yes) ],
+      [ AC_MSG_RESULT(no) 
+        AC_ERROR(please use gcc >= 3.2.x)
+      ]
    )
 ])
 
@@ -176,17 +163,13 @@ AC_DEFUN([EC_NS_GET],
 [
    AC_CHECK_HEADERS(arpa/nameser.h)
    AC_MSG_CHECKING(for NS_GET32)
-   AC_TRY_RUN([
-      #include <arpa/nameser.h>
-
-      int main()
-      {
-         int i;
-         char *p = "\x01\x02\x03\x04";
-         NS_GET32(i, p);
-
-         return 0;
-      }
+   AC_RUN_IFELSE([
+      AC_LANG_PROGRAM([[#include <arpa/nameser.h>]],
+         [[
+            int i;
+            char *p = "\x01\x02\x03\x04";
+            NS_GET32(i, p);
+         ]])
    ],
    [  AC_MSG_RESULT(yes)
       AC_DEFINE(HAVE_NS_GET,1) ],
@@ -204,20 +187,16 @@ AC_DEFUN([EC_RESOLVE_CHECK],
    AC_SEARCH_LIBS(dn_expand, resolv c,
       [
          AC_MSG_CHECKING(for additional -lresolv needed by dn_expand)
-         AC_TRY_LINK([
+         AC_LINK_IFELSE([
+            AC_LANG_PROGRAM([[
                #include <sys/types.h>
                #include <netinet/in.h>
                #include <arpa/nameser.h>
-               #include <resolv.h>
-            ],
-            [
-               int main(int argc, char **argv)
-               {
-                  char *q;
-                  char p[NS_MAXDNAME];
-
+               #include <resolv.h>]],
+               [[
+                  char *q, p[NS_MAXDNAME];
                   dn_expand(q, q, q, p, sizeof(p));
-               } 
+               ]])
             ],
             [AC_MSG_RESULT(not needed)],
             [AC_MSG_RESULT(needed)
@@ -229,20 +208,17 @@ AC_DEFUN([EC_RESOLVE_CHECK],
          AC_SEARCH_LIBS(__dn_expand, resolv c, 
             [
                AC_MSG_CHECKING(for additional -lresolv needed by dn_expand)
-               AC_TRY_LINK([
-                     #include <sys/types.h>
-                     #include <netinet/in.h>
-                     #include <arpa/nameser.h>
-                     #include <resolv.h>
-                  ],
-                  [
-                     int main(int argc, char **argv)
-                     {
-                        char *q;
-                        char p[NS_MAXDNAME];
-
+               AC_LINK_IFELSE([
+                  AC_LANG_PROGRAM([[
+                        #include <sys/types.h>
+                        #include <netinet/in.h>
+                        #include <arpa/nameser.h>
+                        #include <resolv.h>
+                     ]],
+                     [[
+                        char *q, p[NS_MAXDNAME];
                         dn_expand(q, q, q, p, sizeof(p));
-                     } 
+                     ]])
                   ],
                   [AC_MSG_RESULT(not needed)],
                   [AC_MSG_RESULT(needed)
