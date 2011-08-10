@@ -462,44 +462,25 @@ dnl  libnet
 dnl ---------
 ac_ec_libnet=default
 
-AC_MSG_CHECKING(for libnet)
-AC_ARG_WITH(libnet, AS_HELP_STRING([--with-libnet=DIR],[use libnet in DIR]),
-[ case "$withval" in
-  no)
+AC_ARG_WITH(libnet-config, AS_HELP_STRING([--with-libnet-config=DIR],[use libnet-config in DIR]),
+  [LIBNET_CONFIG="$withval"],
+  [AC_PATH_PROG(LIBNET_CONFIG,libnet-config,no)])
+
+AC_MSG_CHECKING(for libnet libraries)
+if test "$LIBNET_CONFIG" != "no"; then
+  if ! $LIBNET_CONFIG --help > /dev/null 2>&1; then
      AC_MSG_RESULT(no)
-     AC_MSG_ERROR(["*** ettercap cannot operate without libnet. ***"])
-     ;;
-  *)
-     if test -f $withval/lnet.h; then
-        owd=`pwd`
-        if cd $withval; then withval=`pwd`; cd $owd; fi
-        LNETINC="-I$withval"
-        LNETLIB="-L$withval -lnet"
-        ac_ec_libnet=$withval
-        AC_MSG_RESULT($withval)
-     elif test -f $withval/include/libnet.h; then
-        owd=`pwd`
-        if cd $withval; then withval=`pwd`; cd $owd; fi
-        LNETINC="-I$withval/include"
-        LNETLIB="-L$withval/lib -L$withval/src -lnet"
-        ac_ec_libnet=$withval
-        AC_MSG_RESULT($withval)
-     else
-        AC_MSG_RESULT(no)
-        AC_MSG_ERROR([libnet.h not found in $withval])
-     fi
-     ;;
-  esac ],
-[ if test -f /usr/include/libnet.h; then
-     AC_MSG_RESULT(yes)
-     LNETINC=""
-     LNETLIB="-lnet"
-  else
-     AC_MSG_RESULT(no)
-     AC_MSG_ERROR([libnet >= 1.1.2.1 not found])
+     AC_MSG_ERROR(Could not find libnet-config anywhere (see config.log for details).)
   fi
-]
-)
+
+  LNETINC="`$LIBNET_CONFIG --cflags`"
+  LNETLIB="`$LIBNET_CONFIG --libs`"
+
+  AC_MSG_RESULT($LIBNET_CONFIG)
+  ac_ec_libnet=$LIBNET_CONFIG
+else
+  AC_MSG_ERROR(No libnet-config was specified (see config.log for details).)
+fi
 
 EC_CHECK_FUNC(net, libnet_adv_free_packet, $LNETLIB, $LIBS,, AC_MSG_ERROR([Incorrect libnet version. libnet >= 1.1.2.1 required]))
 
