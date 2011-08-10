@@ -23,14 +23,7 @@ AC_CONFIG_SRCDIR([src/ec_main.c])
 AC_CONFIG_MACRO_DIR([libltdl/m4])
 AC_CONFIG_AUX_DIR([libltdl/config])
 
-dnl Force autoconf 2.57 
-AC_PREREQ(2.57)
-
-dnl Force automake 1.7 or better
-dnl AM_INIT_AUTOMAKE(1.7.0)
-
-dnl Do not recompile configure Makefile et similia
-AM_MAINTAINER_MODE
+AC_PREREQ([2.68])
 
 VERSION=`grep EC_VERSION\  ./include/ec_version.h | cut -f2 -d"\""`
 SB=`./shtool echo -n -e %B`
@@ -47,7 +40,7 @@ dnl AC_CONFIG_HEADERS(include/config.h)
 
 AC_CONFIG_LIBOBJ_DIR(src/missing)
 
-dnl use pretty build output with automake >= 1.11                                                                                                                                               
+dnl use pretty build output with automake >= 1.11
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])],
 [AM_DEFAULT_VERBOSITY=1
  AC_SUBST(AM_DEFAULT_VERBOSITY)])
@@ -260,7 +253,6 @@ dnl   Check for libs
 dnl =====================
 
 
-AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
 EC_PTHREAD_CHECK()
 AC_CHECK_FUNCS(getifaddrs)
@@ -333,7 +325,7 @@ AH_TEMPLATE(DEBUG, [debug support])
 
 ac_ec_debug=no
 AC_MSG_CHECKING([if --enable-debug option was specified])
-AC_ARG_ENABLE(debug, AC_HELP_STRING(--enable-debug,create a file for debugging messages),
+AC_ARG_ENABLE(debug, AS_HELP_STRING([--enable-debug],[create a file for debugging messages]),
 [ case "$enableval" in
    yes)
       AC_DEFINE(DEBUG, 1)
@@ -362,7 +354,7 @@ check_plugins=0
 ac_ec_plugin=no
 AC_MSG_CHECKING([if --enable-plugins option was specified])
 if test $ac_ec_lt_dlopen = yes; then
-AC_ARG_ENABLE(plugins, AC_HELP_STRING(--enable-plugins,enable the use of plugins in ettercap),
+AC_ARG_ENABLE(plugins, AS_HELP_STRING([--enable-plugins],[enable the use of plugins in ettercap]),
 [ case "$enableval" in
    yes)
       AC_MSG_RESULT(yes)
@@ -394,7 +386,7 @@ dnl ---------
 ac_ec_libpcap=default
 
 AC_MSG_CHECKING(for libpcap)
-AC_ARG_WITH(libpcap, AC_HELP_STRING(--with-libpcap=DIR,use libpcap in DIR),
+AC_ARG_WITH(libpcap, AS_HELP_STRING([--with-libpcap=DIR],[use libpcap in DIR]),
 [ case "$withval" in
   no)
      AC_MSG_RESULT(no)
@@ -471,7 +463,7 @@ dnl ---------
 ac_ec_libnet=default
 
 AC_MSG_CHECKING(for libnet)
-AC_ARG_WITH(libnet, AC_HELP_STRING(--with-libnet=DIR,use libnet in DIR),
+AC_ARG_WITH(libnet, AS_HELP_STRING([--with-libnet=DIR],[use libnet in DIR]),
 [ case "$withval" in
   no)
      AC_MSG_RESULT(no)
@@ -520,7 +512,7 @@ AM_CONDITIONAL(OPENSSL, false)
 ac_ec_libssl="NO"
 
 AC_MSG_CHECKING(for openssl)
-AC_ARG_WITH(openssl, AC_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
+AC_ARG_WITH(openssl, AS_HELP_STRING([--with-openssl=DIR],[use openssl in DIR]),
 [ case "$withval" in
   yes|no)
      AC_MSG_RESULT(no)
@@ -571,7 +563,7 @@ AH_TEMPLATE(HAVE_PCRE, [perl compatible regex])
 ac_ec_pcre=no
 
 AC_MSG_CHECKING(for libpcre)
-AC_ARG_WITH(libpcre, AC_HELP_STRING(--with-libpcre=DIR,use libpcre in DIR),
+AC_ARG_WITH(libpcre, AS_HELP_STRING([--with-libpcre=DIR],[use libpcre in DIR]),
 [ case "$withval" in
   no)
      AC_MSG_RESULT(no)
@@ -624,7 +616,7 @@ AH_TEMPLATE(HAVE_UTF8, [support for UTF-8])
 ac_ec_utf8=no
 
 AC_MSG_CHECKING(for iconv)
-AC_ARG_WITH(iconv, AC_HELP_STRING(--with-iconv=DIR,use iconv in DIR),
+AC_ARG_WITH(iconv, AS_HELP_STRING([--with-iconv=DIR],[use iconv in DIR]),
 [ case "$withval" in
   no)
      AC_MSG_RESULT(no)
@@ -672,7 +664,7 @@ AM_CONDITIONAL(NCURSES, false)
 ac_ec_libncurses="NO"
 
 AC_MSG_CHECKING(for libncurses)
-AC_ARG_WITH(libncurses, AC_HELP_STRING(--with-libncurses=DIR,use libncurses in DIR),
+AC_ARG_WITH(libncurses, AS_HELP_STRING([--with-libncurses=DIR],[use libncurses in DIR]),
 [ case "$withval" in
   yes|no)
      AC_MSG_RESULT(no)
@@ -760,7 +752,7 @@ AM_CONDITIONAL(GTK, false)
 ac_ec_gtk="NO"
 
 AC_MSG_CHECKING(if --enable-gtk option was specified)
-AC_ARG_ENABLE(gtk, AC_HELP_STRING(--enable-gtk,enable the gtk interface),
+AC_ARG_ENABLE(gtk, AS_HELP_STRING([--enable-gtk],[enable the gtk interface]),
 [ case "$enableval" in
   no)
      AC_MSG_RESULT(no)
