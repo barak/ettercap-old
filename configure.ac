@@ -208,6 +208,7 @@ ac_ec_lt_dlopen=yes
 AC_SEARCH_LIBS(lt_dlopen,c dl ltdl,,ac_ec_lt_dlopen=no)
 AC_CHECK_HEADERS(dlfcn.h)
 AC_CHECK_HEADERS(ltdl.h)
+LTDL_INIT
 
 dnl ======================
 dnl   Machine Endianness
