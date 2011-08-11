@@ -214,7 +214,7 @@ ARP POISONING ATTACK
 
  these kernels uses a special neighbor system to prevent unsolicited arp
  replies (what ettercap sends to the victim).
- Oh shit is ettercap useless with that kernel ? the answer is NO !
+ Good gracious, is ettercap useless with that kernel ? the answer is NO !
  let's view why... in the same source code we find:
 
  /*
