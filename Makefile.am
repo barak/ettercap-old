@@ -2,7 +2,7 @@ include $(top_srcdir)/Makefile.am.common
 
 ACLOCAL_AMFLAGS = -I libltdl/m4
 
-SUBDIRS = man share include include src utils
+SUBDIRS = man share include include src utils desktop
 
 if PLUGINS
    SUBDIRS += plug-ins
@@ -25,12 +25,6 @@ EXTRA_DIST = AUTHORS \
              shtool \
              contrib/* \
              doc/*
-
-icondir = $(datadir)/icons/hicolor/32x32/apps/
-dist_icon_DATA = ettercap.xpm
-
-desktopdir = $(datadir)/applications
-dist_desktop_DATA = ettercap.desktop
 
 CLEANFILES = -R auto4te.cache *~ *.log *.out *.cache *.so ettercap etterlog etterfilter
 

@@ -829,6 +829,7 @@ AC_CONFIG_FILES(  Makefile
                   utils/Makefile
                   utils/etterlog/Makefile
                   utils/etterfilter/Makefile
+		  desktop/Makefile
                   plug-ins/Makefile
                   plug-ins/arp_cop/Makefile
                   plug-ins/autoadd/Makefile
