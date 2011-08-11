@@ -140,37 +140,6 @@ esac
 
 AC_SUBST(PL_LDFLAGS)
 
-dnl =====================================
-dnl   Save the path passed to configure
-dnl =====================================
-
-AC_PREFIX_DEFAULT(/usr/local)
-
-if test "$prefix" = "NONE"; then
-   prefix="/usr/local"
-fi
-if test "$exec_prefix" = "NONE"; then
-   exec_prefix=$prefix
-fi
-
-AH_TEMPLATE(INSTALL_PREFIX, [the prefix passed by configure])
-AC_DEFINE_UNQUOTED(INSTALL_PREFIX, "`eval echo $prefix`")
-
-AH_TEMPLATE(INSTALL_EXECPREFIX, [the exec_prefix passed by configure])
-AC_DEFINE_UNQUOTED(INSTALL_EXECPREFIX, "`eval echo $exec_prefix`")
-
-AH_TEMPLATE(INSTALL_SYSCONFDIR, [where can I find my sysconf file ?])
-AC_DEFINE_UNQUOTED(INSTALL_SYSCONFDIR, "`eval echo $sysconfdir`")
-
-AH_TEMPLATE(INSTALL_DATADIR, [where can I find my data file ?])
-AC_DEFINE_UNQUOTED(INSTALL_DATADIR, "`eval echo $datadir`")
-
-AH_TEMPLATE(INSTALL_LIBDIR, [where can I find my plugins ?])
-AC_DEFINE_UNQUOTED(INSTALL_LIBDIR, "`eval echo $libdir`")
-
-AH_TEMPLATE(INSTALL_BINDIR, [where can I find the ettercap executable ?])
-AC_DEFINE_UNQUOTED(INSTALL_BINDIR, "`eval echo $bindir`")
-
 dnl ========================
 dnl   Check the C compiler
 dnl ========================
