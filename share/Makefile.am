@@ -13,8 +13,11 @@ pkgdata_DATA = etter.dns \
                etter.ssl.crt \
                etterfilter.cnt \
                etterfilter.tbl \
-               etterlog.dtd \
-	            ettercap.png
+               etterlog.dtd
+
+if GTK
+pkgdata_DATA += ettercap.png
+endif
 
 sysconf_DATA = etter.conf
 
