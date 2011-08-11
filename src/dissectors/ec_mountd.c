@@ -59,7 +59,7 @@ FUNC_DECODER(dissector_mountd)
    /* don't complain about unused var */
    (void)end;
 
-   /* skip unuseful packets */
+   /* skip useless packets */
    if (PACKET->DATA.len < 24)
       return NULL;
    

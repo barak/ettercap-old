@@ -510,7 +510,7 @@ NG-0.7.0_pre1    20040415
       + Inet module totally rewritten and redesigned.
       + Downported to 2.0.x Linux Kernels (EXPERIMENTAL)
       + Added support for glibc 2.0.x  2.1.x  2.2.x
-      + Scroll back in sniffing window (*very* *very* usefull !!)
+      + Scroll back in sniffing window (*very* *very* useful !!)
       ! after injection the connections are cleanly RSTted
 
 

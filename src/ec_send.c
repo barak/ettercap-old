@@ -240,7 +240,7 @@ int send_to_bridge(struct packet_object *po)
 
 /*
  * we MUST not sniff packets sent by us at link layer.
- * expecially usefull in bridged sniffing.
+ * expecially useful in bridged sniffing.
  *
  * so we have to find a solution...
  */
