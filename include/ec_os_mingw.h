@@ -135,20 +135,8 @@ EC_API_EXTERN const char *ec_win_get_ec_dir (void);
 /* This is a stupid hack. How can we on compile time know the install location on a
  * on-Unix system?
  */
-#ifndef INSTALL_PREFIX
-   #define INSTALL_PREFIX  ec_win_get_ec_dir()
-#endif
-
-#ifndef INSTALL_EXECPREFIX
-   #define INSTALL_EXECPREFIX ec_win_get_ec_dir()
-#endif
-   
 #ifndef INSTALL_SYSCONFDIR
    #define INSTALL_SYSCONFDIR ec_win_get_ec_dir()
-#endif
-
-#ifndef INSTALL_BINDIR
-   #define INSTALL_BINDIR     ec_win_get_ec_dir()
 #endif
 
 #ifndef INSTALL_LIBDIR
