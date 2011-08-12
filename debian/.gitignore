@@ -1,0 +1,10 @@
+/*.debhelper
+/*.debhelper.log
+/*.substvars
+/autoreconf.after
+/autoreconf.before
+/ettercap-common/
+/ettercap-graphical/
+/ettercap-text-only/
+/files
+/tmp/
