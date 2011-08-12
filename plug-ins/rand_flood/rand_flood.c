@@ -16,8 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: rand_flood.c,v 1.4 2004/11/04 09:23:03 alor Exp $
 */
 
 
@@ -68,17 +66,17 @@ EC_THREAD_FUNC(flooder);
 
 struct plugin_ops rand_flood_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version = EC_VERSION,                        
    /* the name of the plugin */
-   name:             "rand_flood",  
+   .name =             "rand_flood",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Flood the LAN with random MAC addresses",  
+   .info =             "Flood the LAN with random MAC addresses",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   .version =          "1.0",   
    /* activation function */
-   init:             &rand_flood_init,
+   .init =             &rand_flood_init,
    /* deactivation function */                     
-   fini:             &rand_flood_fini,
+   .fini =             &rand_flood_fini,
 };
 
 /**********************************************************/

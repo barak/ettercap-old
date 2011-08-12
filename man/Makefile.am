@@ -1,6 +1,3 @@
-
-# $Id: Makefile.am,v 1.8 2004/09/22 15:53:10 alor Exp $
-
 include $(top_srcdir)/Makefile.am.common
 
 man_MANS = ettercap.8 ettercap_curses.8 etterlog.8 etterfilter.8 etter.conf.5

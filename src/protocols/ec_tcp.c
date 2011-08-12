@@ -16,8 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: ec_tcp.c,v 1.42 2004/09/28 09:56:13 alor Exp $
 */
 
 #include <ec.h>
@@ -65,7 +63,7 @@ struct tcp_header {
 
 
 /* Session identifier 
- * It has to be even-lenghted for session hash matching */
+ * It has to be even-lengthed for session hash matching */
 struct tcp_ident {
    u_int32 magic;
       #define TCP_MAGIC  0x0400e77e
@@ -116,7 +114,7 @@ FUNC_DECODER(decode_tcp)
    tcp = (struct tcp_header *)DECODE_DATA;
    
    opt_start = (u_char *)(tcp + 1);
-   opt_end = (u_char *)((int)tcp + tcp->off * 4);
+   opt_end = (u_char *)(((u_char *)tcp) + tcp->off * 4);
 
    DECODED_LEN = (u_int32)(tcp->off * 4);
 
@@ -445,7 +443,7 @@ size_t tcp_create_ident(void **i, struct packet_object *po)
    /* return the ident */
    *i = ident;
 
-   /* return the lenght of the ident */
+   /* return the length of the ident */
    return sizeof(struct tcp_ident);
 }
 

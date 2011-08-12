@@ -16,8 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: ec_capture.c,v 1.55 2004/07/13 16:24:51 alor Exp $
 */
 
 #include <ec.h>
@@ -229,8 +227,8 @@ void capture_init(void)
    /* set the alignment for the buffer */
    set_alignment(GBL_PCAP->dlt);
    
-   /* allocate the buffer for the packets (UINT16_MAX) */
-   SAFE_CALLOC(GBL_PCAP->buffer, UINT16_MAX + GBL_PCAP->align, sizeof(char));
+   /* allocate the buffer for the packets (UINT16_MAX) plus some extra space */
+   SAFE_CALLOC(GBL_PCAP->buffer, UINT16_MAX + GBL_PCAP->align + 256, sizeof(char));
   
    /* set the global descriptor for both the iface and the bridge */
    GBL_PCAP->pcap = pd;               
@@ -380,8 +378,12 @@ void get_hw_info(void)
    bpf_u_int32 network, netmask;
    char pcap_errbuf[PCAP_ERRBUF_SIZE];
  
-   /* dont touch the interface reading from file */
-   if (!GBL_LNET->lnet || GBL_OPTIONS->read) {
+   /* 
+    * dont touch the interface reading from file. 
+    * ...and if lnet_L3 is NULL we are sure that 
+    * unoffensive mode is on
+    */
+   if (!GBL_LNET->lnet_L3 || GBL_OPTIONS->read) {
       DEBUG_MSG("get_hw_info: skipping... (not initialized)");
       return;
    }
@@ -389,7 +391,7 @@ void get_hw_info(void)
    DEBUG_MSG("get_hw_info");
   
    /* get the ip address */
-   ip = libnet_get_ipaddr4(GBL_LNET->lnet);
+   ip = libnet_get_ipaddr4(GBL_LNET->lnet_L3);
    
    /* if ip is equal to -1 there was an error */
    if (ip != (u_long)~0) {

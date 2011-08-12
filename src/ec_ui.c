@@ -16,8 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: ec_ui.c,v 1.30 2004/09/28 13:50:37 alor Exp $
 */
 
 #include <ec.h>
@@ -336,7 +334,7 @@ void ui_register(struct ui_ops *ops)
    BUG_IF(ops->fatal_error == NULL);
    GBL_UI->fatal_error = ops->fatal_error;
    
-   BUG_IF(ops->input == NULL);
+   BUG_IF((ops->input == NULL)&&(ops->type != UI_DAEMONIZE));
    GBL_UI->input = ops->input;
    
    BUG_IF(ops->progress == NULL);

@@ -1,6 +1,3 @@
-
-# $Id: Makefile.am,v 1.11 2004/10/12 14:27:28 alor Exp $
-
 include $(top_srcdir)/Makefile.am.common
 
 SUBDIRS = widgets

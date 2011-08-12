@@ -1,6 +1,3 @@
-
-# $Id: Makefile.am,v 1.32 2004/06/27 12:51:01 alor Exp $
-
 include $(top_srcdir)/Makefile.am.common
 
 noinst_HEADERS = ec.h \
@@ -55,7 +52,6 @@ noinst_HEADERS = ec.h \
                  ec_strings.h \
                  ec_threads.h \
                  ec_ui.h \
-                 ec_update.h \
                  ec_version.h \
                  el.h \
                  el_functions.h \

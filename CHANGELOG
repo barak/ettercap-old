@@ -6,13 +6,24 @@ Legenda:
 
 =========================================
 
+NG-0.7.4         2005
+
+   + added the radius dissector
+   + go into unoffensive mode if libnet initialization fails
+   !! etterfilter now accepts empty blocks
+   !! the log files are closed on SIGTERM
+   !! fixed a compilation error under Mac OS X Tiger
+   !! fixed an improper handling of wdg_dynlist callback
+   !! fixed bound checking in some dissectors
+
+
 NG-0.7.3         20050528
 
    + added the INC (+=) and DEC (-=) operators to the filter engine
    !! fixed the compilation of some plugins
    !! fixed a segfault in the isolate plugin
    !! fixed a bug in the dhcp spoofing module
-   !! fixed a serious security bug
+   !! fixed a serious security bug (a format bug in the curses gui)
 
 
 NG-0.7.2         20041221
@@ -499,7 +510,7 @@ NG-0.7.0_pre1    20040415
       + Inet module totally rewritten and redesigned.
       + Downported to 2.0.x Linux Kernels (EXPERIMENTAL)
       + Added support for glibc 2.0.x  2.1.x  2.2.x
-      + Scroll back in sniffing window (*very* *very* usefull !!)
+      + Scroll back in sniffing window (*very* *very* useful !!)
       ! after injection the connections are cleanly RSTted
 
 

@@ -18,8 +18,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: search_promisc.c,v 1.4 2003/11/10 12:15:31 lordnaga Exp $
 */
 
 
@@ -50,17 +48,17 @@ static void parse_arp(struct packet_object *po);
 
 struct plugin_ops search_promisc_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version = EC_VERSION,                        
    /* the name of the plugin */
-   name:             "search_promisc",  
+   .name =             "search_promisc",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Search promisc NICs in the LAN",  
+   .info =             "Search promisc NICs in the LAN",  
    /* the plugin version. */ 
-   version:          "1.2",   
+   .version =          "1.2",   
    /* activation function */
-   init:             &search_promisc_init,
+   .init =             &search_promisc_init,
    /* deactivation function */                     
-   fini:             &search_promisc_fini,
+   .fini =             &search_promisc_fini,
 };
 
 /**********************************************************/

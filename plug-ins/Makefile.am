@@ -1,6 +1,3 @@
-
-# $Id: Makefile.am,v 1.28 2004/10/25 21:26:33 lordnaga Exp $
-
 include $(top_srcdir)/Makefile.am.common
 
 SUBDIRS =   arp_cop \

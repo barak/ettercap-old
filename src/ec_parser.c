@@ -16,8 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: ec_parser.c,v 1.65 2004/07/20 09:53:53 alor Exp $
 */
 
 
@@ -27,7 +25,6 @@
 #include <ec_send.h>
 #include <ec_log.h>
 #include <ec_format.h>
-#include <ec_update.h>
 #include <ec_mitm.h>
 #include <ec_filter.h>
 #include <ec_plugins.h>
@@ -73,12 +70,16 @@ void ec_usage(void)
    fprintf(stdout, "  -t, --proto <proto>         sniff only this proto (default is all)\n");
    
    fprintf(stdout, "\nUser Interface Type:\n");
-   fprintf(stdout, "  -T, --text                  use text only GUI\n");
+   fprintf(stdout, "  -T, --text                  use text only UI\n");
    fprintf(stdout, "       -q, --quiet                 do not display packet contents\n");
    fprintf(stdout, "       -s, --script <CMD>          issue these commands to the GUI\n");
-   fprintf(stdout, "  -C, --curses                use curses GUI\n");
+#ifdef HAVE_NCURSES
+   fprintf(stdout, "  -C, --curses                use curses UI\n");
+#endif
+#ifdef HAVE_GTK
    fprintf(stdout, "  -G, --gtk                   use GTK+ GUI\n");
-   fprintf(stdout, "  -D, --daemon                daemonize ettercap (no GUI)\n");
+#endif
+   fprintf(stdout, "  -D, --daemon                daemonize ettercap (no UI)\n");
    
    fprintf(stdout, "\nLogging options:\n");
    fprintf(stdout, "  -w, --write <file>          write sniffed data to pcapfile <file>\n");
@@ -107,7 +108,6 @@ void ec_usage(void)
    fprintf(stdout, "  -a, --config <config>       use the alterative config file <config>\n");
    
    fprintf(stdout, "\nStandard options:\n");
-   fprintf(stdout, "  -U, --update                updates the databases from ettercap website\n");
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
    fprintf(stdout, "  -h, --help                  this help screen\n");
 
@@ -124,7 +124,6 @@ void parse_options(int argc, char **argv)
    static struct option long_options[] = {
       { "help", no_argument, NULL, 'h' },
       { "version", no_argument, NULL, 'v' },
-      { "update", no_argument, NULL, 'U' },
       
       { "iface", required_argument, NULL, 'i' },
       { "iflist", no_argument, NULL, 'I' },
@@ -173,6 +172,18 @@ void parse_options(int argc, char **argv)
       { 0 , 0 , 0 , 0}
    };
 
+
+#ifdef HAVE_GTK 
+      if (strcmp(argv[0], "ettercap-gtk") == 0)
+          select_gtk_interface();
+#endif
+#ifdef HAVE_NCURSES 
+      if (strcmp(argv[0], "ettercap-curses") == 0)
+          select_curses_interface();
+#endif
+      if (strcmp(argv[0], "ettercap-text") == 0)
+          select_text_interface();
+
    for (c = 0; c < argc; c++)
       DEBUG_MSG("parse_options -- [%d] [%s]", c, argv[c]);
 
@@ -198,7 +209,7 @@ void parse_options(int argc, char **argv)
                   
          case 'o':
                   GBL_OPTIONS->only_mitm = 1;
-                  select_text_interface();
+                  //select_text_interface();
                   break;
                   
          case 'B':
@@ -215,11 +226,20 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'C':
+#ifdef HAVE_NCURSES 
                   select_curses_interface();
+#else
+            fprintf(stdout, "\nncurses-interface not supported.\n\n");
+            clean_exit(-1);
+#endif
                   break;
-                  
          case 'G':
+#ifdef HAVE_GTK
                   select_gtk_interface();
+#else
+            fprintf(stdout, "\nGTK-Interface not supported.\n\n");
+            clean_exit(-1);
+#endif
                   break;
          
          case 'D':
@@ -353,13 +373,6 @@ void parse_options(int argc, char **argv)
          case 'a':
                   GBL_CONF->file = strdup(optarg);
                   break;
-         
-         case 'U':
-                  /* load the conf for the connect timeout value */
-                  load_conf();
-                  global_update();
-                  /* NOT REACHED */
-                  break;
                   
          case 'h':
                   ec_usage();
@@ -429,16 +442,17 @@ void parse_options(int argc, char **argv)
    if (GBL_OPTIONS->read && GBL_OPTIONS->mitm)
       FATAL_ERROR("Cannot use mitm attacks while reading from file");
    
-   if (GBL_UI->init == NULL)
+   if (GBL_UI->init == NULL) {
       FATAL_ERROR("Please select an User Interface");
+    }
      
    /* force text interface for only mitm attack */
-   if (GBL_OPTIONS->only_mitm) {
-      if (GBL_OPTIONS->mitm)
-         select_text_interface();
-      else
-         FATAL_ERROR("Only mitm requires at least one mitm method");
-   }
+   //if (GBL_OPTIONS->only_mitm) {
+   //   if (GBL_OPTIONS->mitm)
+   //      select_text_interface();
+   //   else
+   //      FATAL_ERROR("Only mitm requires at least one mitm method");
+   //}
 
    DEBUG_MSG("parse_options: options combination looks good");
    

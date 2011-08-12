@@ -1,0 +1,11 @@
+AUTOMAKE_OPTIONS = foreign #no-dependencies
+
+AM_CPPFLAGS = \
+ -DINSTALL_PREFIX='"$(prefix)"' \
+ -DINSTALL_EXECPREFIX='"$(exec_prefix)"' \
+ -DINSTALL_SYSCONFDIR='"$(sysconfdir)"' \
+ -DINSTALL_DATADIR='"$(datadir)"' \
+ -DINSTALL_LIBDIR='"$(libdir)"' \
+ -DINSTALL_BINDIR='"$(bindir)"'
+
+DISTCLEANFILES = *~

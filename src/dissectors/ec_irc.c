@@ -16,8 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: ec_irc.c,v 1.10 2004/10/04 12:31:21 alor Exp $
 */
 
 #include <ec.h>
@@ -122,6 +120,10 @@ FUNC_DECODER(dissector_irc)
       PACKET->DISSECTOR.user = strdup(ptr);
       if ( (ptr = strchr(PACKET->DISSECTOR.user, ' ')) != NULL )
          *ptr = '\0';
+      else {
+         SAFE_FREE(PACKET->DISSECTOR.user);
+         return NULL;
+      }
      
       /* skip the " +k " */
       PACKET->DISSECTOR.pass = strdup(ptr + 4);
@@ -157,6 +159,10 @@ FUNC_DECODER(dissector_irc)
       PACKET->DISSECTOR.user = strdup(ptr);
       if ( (ptr = strchr(PACKET->DISSECTOR.user, ' ')) != NULL )
          *ptr = '\0';
+      else {
+         SAFE_FREE(PACKET->DISSECTOR.user);
+         return NULL;
+      }
      
       PACKET->DISSECTOR.pass = strdup(ptr + 1);
       if ( (ptr = strchr(PACKET->DISSECTOR.pass, '\r')) != NULL )
