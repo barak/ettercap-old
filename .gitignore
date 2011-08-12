@@ -16,6 +16,8 @@
 /include/stamp-h1
 /libltdl/
 /libtool
+/man/*.pdf
+/man/*.ps
 /man/etter.conf.5
 /man/ettercap.8
 /man/ettercap_curses.8
