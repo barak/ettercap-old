@@ -16,8 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: ec_icq.c,v 1.5 2003/10/29 20:41:07 alor Exp $
 */
 
 #include <ec.h>

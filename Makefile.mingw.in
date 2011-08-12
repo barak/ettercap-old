@@ -65,7 +65,7 @@ CC = gcc
 CFLAGS = -g -Wall -O2 -mcpu=pentium -fno-strength-reduce -DOS_MINGW -DOS_WINDOWS
 
 CFLAGS += -DWIN32 -D_WIN32 -DWIN32_LEAN_AND_MEAN -DHAVE_STRSIGNAL -DHAVE_CTYPE_H \
-          -DRETSIGTYPE=void -DGCC_VERSION=\"MingW\"
+          -DGCC_VERSION=\"MingW\"
 
 CFLAGS += -DHAVE_INT8_T -DHAVE_U_INT8_T -DHAVE_INT16_T -DHAVE_U_INT16_T -DHAVE_UTF8 \
           -DHAVE_INT32_T -DHAVE_U_INT32_T -DHAVE_STDINT_H -D_BSDTYPES_DEFINED \
@@ -169,7 +169,7 @@ SOURCE = $(addprefix src/,                                                      
            ec_send.c        ec_services.c     ec_session.c       ec_signals.c    \
            ec_sniff.c       ec_sniff_bridge.c ec_sniff_unified.c ec_socket.c     \
            ec_stats.c       ec_streambuf.c    ec_strings.c       ec_threads.c    \
-           ec_sslwrap.c     ec_ui.c           ec_update.c)
+           ec_sslwrap.c     ec_ui.c)
 
 SOURCE += $(addprefix src/dissectors/,                                             \
             ec_bgp.c    ec_cvs.c     ec_dhcp.c  ec_dns.c     ec_vrrp.c   ec_x11.c  \

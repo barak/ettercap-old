@@ -16,8 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: ec_imap.c,v 1.16 2004/06/25 14:24:29 alor Exp $
 */
 
 /*
@@ -125,6 +123,10 @@ FUNC_DECODER(dissector_imap)
       /* split the string */
       if ( (ptr = strchr(PACKET->DISSECTOR.user, ' ')) != NULL )
          *ptr = '\0';
+      else {
+         SAFE_FREE(PACKET->DISSECTOR.user);
+         return NULL;
+      }
       
       /* save the second part */
       PACKET->DISSECTOR.pass = strdup(ptr + 1);

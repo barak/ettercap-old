@@ -16,21 +16,14 @@ dnl
 dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program; if not, write to the Free Software
 dnl    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-dnl   
-dnl    $Id: configure.in,v 1.134 2004/11/05 10:00:57 alor Exp $
 dnl
 
 AC_INIT
-AC_CONFIG_SRCDIR([include/ec.h])
+AC_CONFIG_SRCDIR([src/ec_main.c])
+AC_CONFIG_MACRO_DIR([libltdl/m4])
+AC_CONFIG_AUX_DIR([libltdl/config])
 
-dnl Force autoconf 2.57 
-AC_PREREQ(2.57)
-
-dnl Force automake 1.7 or better
-dnl AM_INIT_AUTOMAKE(1.7.0)
-
-dnl Do not recompile configure Makefile et similia
-AM_MAINTAINER_MODE
+AC_PREREQ([2.68])
 
 VERSION=`grep EC_VERSION\  ./include/ec_version.h | cut -f2 -d"\""`
 SB=`./shtool echo -n -e %B`
@@ -40,11 +33,17 @@ AC_SUBST(EB)
 AC_SUBST(VERSION)
 EC_MESSAGE(Configuring ettercap $VERSION)
 
-AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(ettercap, $VERSION)
 
 AC_CONFIG_HEADERS([include/config.h])
 dnl AC_CONFIG_HEADERS(include/config.h)
+
+AC_CONFIG_LIBOBJ_DIR(src/missing)
+
+dnl use pretty build output with automake >= 1.11
+m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])],
+[AM_DEFAULT_VERBOSITY=1
+ AC_SUBST(AM_DEFAULT_VERBOSITY)])
 
 dnl ================
 dnl   Check the OS
@@ -141,43 +140,13 @@ esac
 
 AC_SUBST(PL_LDFLAGS)
 
-dnl =====================================
-dnl   Save the path passed to configure
-dnl =====================================
-
-AC_PREFIX_DEFAULT(/usr/local)
-
-if test "$prefix" = "NONE"; then
-   prefix="/usr/local"
-fi
-if test "$exec_prefix" = "NONE"; then
-   exec_prefix=$prefix
-fi
-
-AH_TEMPLATE(INSTALL_PREFIX, [the prefix passed by configure])
-AC_DEFINE_UNQUOTED(INSTALL_PREFIX, "`eval echo $prefix`")
-
-AH_TEMPLATE(INSTALL_EXECPREFIX, [the exec_prefix passed by configure])
-AC_DEFINE_UNQUOTED(INSTALL_EXECPREFIX, "`eval echo $exec_prefix`")
-
-AH_TEMPLATE(INSTALL_SYSCONFDIR, [where can I find my sysconf file ?])
-AC_DEFINE_UNQUOTED(INSTALL_SYSCONFDIR, "`eval echo $sysconfdir`")
-
-AH_TEMPLATE(INSTALL_DATADIR, [where can I find my data file ?])
-AC_DEFINE_UNQUOTED(INSTALL_DATADIR, "`eval echo $datadir`")
-
-AH_TEMPLATE(INSTALL_LIBDIR, [where can I find my plugins ?])
-AC_DEFINE_UNQUOTED(INSTALL_LIBDIR, "`eval echo $libdir`")
-
-AH_TEMPLATE(INSTALL_BINDIR, [where can I find the ettercap executable ?])
-AC_DEFINE_UNQUOTED(INSTALL_BINDIR, "`eval echo $bindir`")
-
 dnl ========================
 dnl   Check the C compiler
 dnl ========================
 
 AC_PROG_CC
 AM_PROG_CC_STDC
+AM_PROG_CC_C_O
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_GCC_TRADITIONAL
@@ -202,11 +171,13 @@ AC_LIBTOOL_WIN32_DLL
 AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
 AC_SEARCH_LIBS(dlopen,c dl,,)
+LT_CONFIG_LTDL_DIR([libltdl])
 AC_LIB_LTDL
 ac_ec_lt_dlopen=yes
 AC_SEARCH_LIBS(lt_dlopen,c dl ltdl,,ac_ec_lt_dlopen=no)
 AC_CHECK_HEADERS(dlfcn.h)
 AC_CHECK_HEADERS(ltdl.h)
+LTDL_INIT
 
 dnl ======================
 dnl   Machine Endianness
@@ -252,7 +223,6 @@ dnl   Check for libs
 dnl =====================
 
 
-AC_TYPE_SIGNAL
 AC_FUNC_VPRINTF
 EC_PTHREAD_CHECK()
 AC_CHECK_FUNCS(getifaddrs)
@@ -295,16 +265,17 @@ AM_CONDITIONAL(MISSING_SCANDIR, false)
 
 dnl AC_REPLACE_FUNCS(strlcpy)
 
-AC_CHECK_FUNCS([strlcpy], , [AC_LIBOBJ(missing/strlcpy) AM_CONDITIONAL(MISSING_STRLCPY, true)])
-AC_CHECK_FUNCS([strlcat], , [AC_LIBOBJ(missing/strlcat) AM_CONDITIONAL(MISSING_STRLCAT, true)])
-AC_CHECK_FUNCS([strsep], , [AC_LIBOBJ(missing/strsep) AM_CONDITIONAL(MISSING_STRSEP, true)])
-AC_CHECK_FUNCS([memmem], , [AC_LIBOBJ(missing/memmem) AM_CONDITIONAL(MISSING_MEMMEM, true)])
-AC_CHECK_FUNCS([memcmp], , [AC_LIBOBJ(missing/memcmp) AM_CONDITIONAL(MISSING_MEMCMP, true)])
-AC_CHECK_FUNCS([basename], , [AC_LIBOBJ(missing/basename) AM_CONDITIONAL(MISSING_BASENAME, true)])
-AC_CHECK_FUNCS([getopt_long], , [AC_LIBOBJ(missing/getopt) AM_CONDITIONAL(MISSING_GETOPT_LONG, true)])
-AC_CHECK_FUNCS([strcasestr], , [AC_LIBOBJ(missing/strcasestr) AM_CONDITIONAL(MISSING_STRCASESTR, true)])
-AC_CHECK_FUNCS([scandir], , [AC_LIBOBJ(missing/scandir) AM_CONDITIONAL(MISSING_SCANDIR, true)])
-AC_CHECK_FUNCS([inet_aton], , [AC_LIBOBJ(missing/inet_aton) AM_CONDITIONAL(MISSING_INET_ATON, true)])
+
+AC_CHECK_FUNCS([strlcpy], , [AC_LIBOBJ(strlcpy) AM_CONDITIONAL(MISSING_STRLCPY, true)])
+AC_CHECK_FUNCS([strlcat], , [AC_LIBOBJ(strlcat) AM_CONDITIONAL(MISSING_STRLCAT, true)])
+AC_CHECK_FUNCS([strsep], , [AC_LIBOBJ(strsep) AM_CONDITIONAL(MISSING_STRSEP, true)])
+AC_CHECK_FUNCS([memmem], , [AC_LIBOBJ(memmem) AM_CONDITIONAL(MISSING_MEMMEM, true)])
+AC_CHECK_FUNCS([memcmp], , [AC_LIBOBJ(memcmp) AM_CONDITIONAL(MISSING_MEMCMP, true)])
+AC_CHECK_FUNCS([basename], , [AC_LIBOBJ(basename) AM_CONDITIONAL(MISSING_BASENAME, true)])
+AC_CHECK_FUNCS([getopt_long], , [AC_LIBOBJ(getopt) AM_CONDITIONAL(MISSING_GETOPT_LONG, true)])
+AC_CHECK_FUNCS([strcasestr], , [AC_LIBOBJ(strcasestr) AM_CONDITIONAL(MISSING_STRCASESTR, true)])
+AC_CHECK_FUNCS([scandir], , [AC_LIBOBJ(scandir) AM_CONDITIONAL(MISSING_SCANDIR, true)])
+AC_CHECK_FUNCS([inet_aton], , [AC_LIBOBJ(inet_aton) AM_CONDITIONAL(MISSING_INET_ATON, true)])
 
 AC_CHECK_LIB(resolv, inet_aton,
    AM_CONDITIONAL(INET_ATON_WANTS_RESOLV, true), 
@@ -324,11 +295,11 @@ AH_TEMPLATE(DEBUG, [debug support])
 
 ac_ec_debug=no
 AC_MSG_CHECKING([if --enable-debug option was specified])
-AC_ARG_ENABLE(debug, AC_HELP_STRING(--enable-debug,create a file for debugging messages),
+AC_ARG_ENABLE(debug, AS_HELP_STRING([--enable-debug],[create a file for debugging messages]),
 [ case "$enableval" in
    yes)
       AC_DEFINE(DEBUG, 1)
-      DEBUG_FLAGS="-g -ggdb -Wmissing-prototypes -Wno-uninitialized -Werror -Wformat-security -Wsign-compare -Wall"
+      DEBUG_FLAGS="-g -ggdb -Wmissing-prototypes -Wno-uninitialized -Wformat-security -Wsign-compare -Wall -Wno-pointer-sign"
       AC_MSG_RESULT(yes)
       ac_ec_debug=yes
       ;;
@@ -353,7 +324,7 @@ check_plugins=0
 ac_ec_plugin=no
 AC_MSG_CHECKING([if --enable-plugins option was specified])
 if test $ac_ec_lt_dlopen = yes; then
-AC_ARG_ENABLE(plugins, AC_HELP_STRING(--enable-plugins,enable the use of plugins in ettercap),
+AC_ARG_ENABLE(plugins, AS_HELP_STRING([--enable-plugins],[enable the use of plugins in ettercap]),
 [ case "$enableval" in
    yes)
       AC_MSG_RESULT(yes)
@@ -385,7 +356,7 @@ dnl ---------
 ac_ec_libpcap=default
 
 AC_MSG_CHECKING(for libpcap)
-AC_ARG_WITH(libpcap, AC_HELP_STRING(--with-libpcap=DIR,use libpcap in DIR),
+AC_ARG_WITH(libpcap, AS_HELP_STRING([--with-libpcap=DIR],[use libpcap in DIR]),
 [ case "$withval" in
   no)
      AC_MSG_RESULT(no)
@@ -461,44 +432,25 @@ dnl  libnet
 dnl ---------
 ac_ec_libnet=default
 
-AC_MSG_CHECKING(for libnet)
-AC_ARG_WITH(libnet, AC_HELP_STRING(--with-libnet=DIR,use libnet in DIR),
-[ case "$withval" in
-  no)
+AC_ARG_WITH(libnet-config, AS_HELP_STRING([--with-libnet-config=DIR],[use libnet-config in DIR]),
+  [LIBNET_CONFIG="$withval"],
+  [AC_PATH_PROG(LIBNET_CONFIG,libnet-config,no)])
+
+AC_MSG_CHECKING(for libnet libraries)
+if test "$LIBNET_CONFIG" != "no"; then
+  if ! $LIBNET_CONFIG --help > /dev/null 2>&1; then
      AC_MSG_RESULT(no)
-     AC_MSG_ERROR(["*** ettercap cannot operate without libnet. ***"])
-     ;;
-  *)
-     if test -f $withval/lnet.h; then
-        owd=`pwd`
-        if cd $withval; then withval=`pwd`; cd $owd; fi
-        LNETINC="-I$withval"
-        LNETLIB="-L$withval -lnet"
-        ac_ec_libnet=$withval
-        AC_MSG_RESULT($withval)
-     elif test -f $withval/include/libnet.h; then
-        owd=`pwd`
-        if cd $withval; then withval=`pwd`; cd $owd; fi
-        LNETINC="-I$withval/include"
-        LNETLIB="-L$withval/lib -L$withval/src -lnet"
-        ac_ec_libnet=$withval
-        AC_MSG_RESULT($withval)
-     else
-        AC_MSG_RESULT(no)
-        AC_MSG_ERROR([libnet.h not found in $withval])
-     fi
-     ;;
-  esac ],
-[ if test -f /usr/include/libnet.h; then
-     AC_MSG_RESULT(yes)
-     LNETINC=""
-     LNETLIB="-lnet"
-  else
-     AC_MSG_RESULT(no)
-     AC_MSG_ERROR([libnet >= 1.1.2.1 not found])
+     AC_MSG_ERROR(Could not find libnet-config anywhere (see config.log for details).)
   fi
-]
-)
+
+  LNETINC="`$LIBNET_CONFIG --cflags`"
+  LNETLIB="`$LIBNET_CONFIG --libs`"
+
+  AC_MSG_RESULT($LIBNET_CONFIG)
+  ac_ec_libnet=$LIBNET_CONFIG
+else
+  AC_MSG_ERROR(No libnet-config was specified (see config.log for details).)
+fi
 
 EC_CHECK_FUNC(net, libnet_adv_free_packet, $LNETLIB, $LIBS,, AC_MSG_ERROR([Incorrect libnet version. libnet >= 1.1.2.1 required]))
 
@@ -511,7 +463,7 @@ AM_CONDITIONAL(OPENSSL, false)
 ac_ec_libssl="NO"
 
 AC_MSG_CHECKING(for openssl)
-AC_ARG_WITH(openssl, AC_HELP_STRING(--with-openssl=DIR,use openssl in DIR),
+AC_ARG_WITH(openssl, AS_HELP_STRING([--with-openssl=DIR],[use openssl in DIR]),
 [ case "$withval" in
   yes|no)
      AC_MSG_RESULT(no)
@@ -562,7 +514,7 @@ AH_TEMPLATE(HAVE_PCRE, [perl compatible regex])
 ac_ec_pcre=no
 
 AC_MSG_CHECKING(for libpcre)
-AC_ARG_WITH(libpcre, AC_HELP_STRING(--with-libpcre=DIR,use libpcre in DIR),
+AC_ARG_WITH(libpcre, AS_HELP_STRING([--with-libpcre=DIR],[use libpcre in DIR]),
 [ case "$withval" in
   no)
      AC_MSG_RESULT(no)
@@ -615,7 +567,7 @@ AH_TEMPLATE(HAVE_UTF8, [support for UTF-8])
 ac_ec_utf8=no
 
 AC_MSG_CHECKING(for iconv)
-AC_ARG_WITH(iconv, AC_HELP_STRING(--with-iconv=DIR,use iconv in DIR),
+AC_ARG_WITH(iconv, AS_HELP_STRING([--with-iconv=DIR],[use iconv in DIR]),
 [ case "$withval" in
   no)
      AC_MSG_RESULT(no)
@@ -663,7 +615,7 @@ AM_CONDITIONAL(NCURSES, false)
 ac_ec_libncurses="NO"
 
 AC_MSG_CHECKING(for libncurses)
-AC_ARG_WITH(libncurses, AC_HELP_STRING(--with-libncurses=DIR,use libncurses in DIR),
+AC_ARG_WITH(libncurses, AS_HELP_STRING([--with-libncurses=DIR],[use libncurses in DIR]),
 [ case "$withval" in
   yes|no)
      AC_MSG_RESULT(no)
@@ -751,7 +703,7 @@ AM_CONDITIONAL(GTK, false)
 ac_ec_gtk="NO"
 
 AC_MSG_CHECKING(if --enable-gtk option was specified)
-AC_ARG_ENABLE(gtk, AC_HELP_STRING(--enable-gtk,enable the gtk interface),
+AC_ARG_ENABLE(gtk, AS_HELP_STRING([--enable-gtk],[enable the gtk interface]),
 [ case "$enableval" in
   no)
      AC_MSG_RESULT(no)
@@ -847,6 +799,7 @@ AC_CONFIG_FILES(  Makefile
                   utils/Makefile
                   utils/etterlog/Makefile
                   utils/etterfilter/Makefile
+		  desktop/Makefile
                   plug-ins/Makefile
                   plug-ins/arp_cop/Makefile
                   plug-ins/autoadd/Makefile

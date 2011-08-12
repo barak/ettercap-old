@@ -1,6 +1,3 @@
-
-# $Id: Makefile.am,v 1.4 2005/01/14 09:02:37 alor Exp $
-
 include $(top_srcdir)/Makefile.am.common
 
 pkglib_LTLIBRARIES = ec_gre_relay.la

@@ -16,8 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: ec_log.c,v 1.41 2004/09/30 16:01:45 alor Exp $
 */
 
 #include <ec.h>
@@ -45,10 +43,10 @@ static struct log_fd fdi;
 
 int set_loglevel(int level, char *filename);
 int set_msg_loglevel(int level, char *filename);
-static void log_stop(void);
 
 int log_open(struct log_fd *fd, char *filename);
 void log_close(struct log_fd *fd);
+void log_stop(void);
 
 int log_write_header(struct log_fd *fd, int type);
 
@@ -163,7 +161,7 @@ int set_loglevel(int level, char *filename)
 /*
  * removes the hook points and closes the log files
  */
-static void log_stop(void)
+void log_stop(void)
 {
    DEBUG_MSG("log_stop");
    
@@ -190,7 +188,7 @@ int log_open(struct log_fd *fd, char *filename)
       if (fd->cfd == NULL)
          SEMIFATAL_ERROR("%s", gzerror(fd->cfd, &zerr));
    } else {
-      fd->fd = open(filename, O_CREAT | O_TRUNC | O_RDWR | O_BINARY);
+      fd->fd = open(filename, O_CREAT | O_TRUNC | O_RDWR | O_BINARY, S_IRUSR | S_IWUSR);
       if (fd->fd == -1)
          SEMIFATAL_ERROR("Can't create %s: %s", filename, strerror(errno));
    }

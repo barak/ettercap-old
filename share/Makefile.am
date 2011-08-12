@@ -1,6 +1,3 @@
-
-# $Id: Makefile.am,v 1.9 2004/04/15 20:57:32 alor Exp $
-
 include $(top_srcdir)/Makefile.am.common
 
 pkgdata_DATA = etter.dns \
@@ -16,8 +13,11 @@ pkgdata_DATA = etter.dns \
                etter.ssl.crt \
                etterfilter.cnt \
                etterfilter.tbl \
-               etterlog.dtd \
-	            ettercap.png
+               etterlog.dtd
+
+if GTK
+pkgdata_DATA += ettercap.png
+endif
 
 sysconf_DATA = etter.conf
 

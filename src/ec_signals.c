@@ -16,14 +16,13 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: ec_signals.c,v 1.28 2004/07/29 09:46:47 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_version.h>
 #include <ec_ui.h>
 #include <ec_mitm.h>
+#include <ec_log.h>
 #include <ec_threads.h>
 
 #include <signal.h>
@@ -42,9 +41,9 @@ typedef void handler_t(int);
 void signal_handler(void);
 
 static handler_t *signal_handle(int signo, handler_t *handler, int flags);
-static RETSIGTYPE signal_SEGV(int sig);
-static RETSIGTYPE signal_TERM(int sig);
-static RETSIGTYPE signal_CHLD(int sig);
+static void signal_SEGV(int sig);
+static void signal_TERM(int sig);
+static void signal_CHLD(int sig);
 
 /*************************************/
 
@@ -115,7 +114,7 @@ static handler_t *signal_handle(int signo, handler_t *handler, int flags)
 /*
  * received when something goes wrong ;)
  */
-static RETSIGTYPE signal_SEGV(int sig)
+static void signal_SEGV(int sig)
 {
 #ifdef DEBUG
 
@@ -185,7 +184,7 @@ static RETSIGTYPE signal_SEGV(int sig)
 /*
  * received on CTRL+C or SIGTERM
  */
-static RETSIGTYPE signal_TERM(int sig)
+static void signal_TERM(int sig)
 {
    #ifdef HAVE_STRSIGNAL
       DEBUG_MSG("Signal handler... (caught SIGNAL: %d) | %s", sig, strsignal(sig));
@@ -211,6 +210,9 @@ static RETSIGTYPE signal_TERM(int sig)
    /* stop the mitm process (if activated) */
    mitm_stop();
 
+   /* flush and close the log file */
+   log_stop();
+
    /* kill all the threads */
    ec_thread_kill_all();
   
@@ -222,7 +224,7 @@ static RETSIGTYPE signal_TERM(int sig)
 /*
  * received when a child exits
  */
-static RETSIGTYPE signal_CHLD(int sig)
+static void signal_CHLD(int sig)
 {
 #ifndef OS_WINDOWS
    int stat;

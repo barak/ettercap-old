@@ -1,6 +1,3 @@
-
-# $Id: Makefile.am,v 1.1 2004/02/02 16:44:50 lordnaga Exp $
-
 include $(top_srcdir)/Makefile.am.common
 
 pkglib_LTLIBRARIES = ec_dos_attack.la

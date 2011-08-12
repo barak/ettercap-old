@@ -101,7 +101,7 @@ ettercap NG configures and compiles without any issue.
 libnet 1.1.2.1 should be downloaded from http://www.packetfactory.net and
 compiled by your own.
 
-If you want to compile from the CVS, you will need to install the autotools in
+If you want to compile from the repo, you will need to install the autotools in
 order to be able to generate configuration scripts:
 
    - autoconf  2.57
@@ -150,7 +150,7 @@ doubt, go with the latest copy.
 
    if you encounter some linking problem compiling the tarball, it is due to
    the libtool version provided within our tarball. to solve the problem
-   re-libtoolize the package and recompile it or download the cvs version and 
+   re-libtoolize the package and recompile it or download the git version and 
    run the autogen.sh script.
 
    probably you will have to append the --with-iconv=/usr/local to the

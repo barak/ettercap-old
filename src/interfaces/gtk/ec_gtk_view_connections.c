@@ -16,8 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: ec_gtk_view_connections.c,v 1.42 2004/10/10 13:49:51 daten Exp $
 */
 
 #include <ec.h>
@@ -900,12 +898,10 @@ static void split_print_po(struct packet_object *po)
    ret = GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, dispbuf);
    dispbuf[ret] = 0;
         
-   gdk_threads_enter();
    if (!ip_addr_cmp(&po->L3.src, &curr_conn->L3_addr1))
       gtkui_data_print(1, dispbuf, 0);
    else
       gtkui_data_print(2, dispbuf, 0);
-   gdk_threads_leave();
 }
 
 /*
@@ -1066,13 +1062,11 @@ static void join_print_po(struct packet_object *po)
    /* format the data */
    ret = GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, dispbuf);
    dispbuf[ret] = 0;
-        
-   gdk_threads_enter();
+
    if (!ip_addr_cmp(&po->L3.src, &curr_conn->L3_addr1))
       gtkui_data_print(3, dispbuf, 1);
    else
       gtkui_data_print(3, dispbuf, 2);
-   gdk_threads_leave();
 }
 
 /*

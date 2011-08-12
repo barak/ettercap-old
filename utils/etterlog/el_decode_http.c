@@ -16,8 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: el_decode_http.c,v 1.5 2004/11/04 10:37:16 alor Exp $
 */
 
 #include <el.h>
@@ -95,10 +93,10 @@ FUNC_EXTRACTOR(extractor_http)
 
          fprintf(stdout, "\n\tExtracting file: %s  ", header);
 
-         /* search the lenght of the file */
+         /* search the length of the file */
          ret2 = stream_search(STREAM, "Content-Length: ", 16, server);
 
-         /* we need content lenght, if not found, skip it */
+         /* we need content length, if not found, skip it */
          if (ret2 == NULL) {
             close(fd);
             continue;

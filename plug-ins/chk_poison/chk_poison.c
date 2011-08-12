@@ -19,8 +19,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: chk_poison.c,v 1.4 2004/07/28 08:06:31 alor Exp $
 */
 
 
@@ -57,17 +55,17 @@ static void parse_icmp(struct packet_object *po);
 
 struct plugin_ops chk_poison_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version = EC_VERSION,                        
    /* the name of the plugin */
-   name:             "chk_poison",  
+   .name =             "chk_poison",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Check if the poisoning had success",  
+   .info =             "Check if the poisoning had success",  
    /* the plugin version. */ 
-   version:          "1.1",   
+   .version =          "1.1",   
    /* activation function */
-   init:             &chk_poison_init,
+   .init =             &chk_poison_init,
    /* deactivation function */                     
-   fini:             &chk_poison_fini,
+   .fini =             &chk_poison_fini,
 };
 
 /**********************************************************/
@@ -151,7 +149,7 @@ static int chk_poison_init(void *dummy)
    if (!poison_any) 
       INSTANT_USER_MSG("chk_poison: No poisoning at all :(\n");   
    else if (poison_full) 
-      INSTANT_USER_MSG("chk_poison: Poisoning process succesful!\n");
+      INSTANT_USER_MSG("chk_poison: Poisoning process successful!\n");
    else 
       SLIST_FOREACH(p, &poison_table, next) {
          for (i=0; i<=1; i++)

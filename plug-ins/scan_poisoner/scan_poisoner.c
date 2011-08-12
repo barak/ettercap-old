@@ -20,8 +20,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: scan_poisoner.c,v 1.4 2004/05/27 10:59:52 alor Exp $
 */
 
 
@@ -44,17 +42,17 @@ static void parse_icmp(struct packet_object *po);
 
 struct plugin_ops scan_poisoner_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version = EC_VERSION,                        
    /* the name of the plugin */
-   name:             "scan_poisoner",  
+   .name =             "scan_poisoner",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Actively search other poisoners",  
+   .info =             "Actively search other poisoners",  
    /* the plugin version. */ 
-   version:          "1.0",   
+   .version =          "1.0",   
    /* activation function */
-   init:             &scan_poisoner_init,
+   .init =             &scan_poisoner_init,
    /* deactivation function */                     
-   fini:             &scan_poisoner_fini,
+   .fini =             &scan_poisoner_fini,
 };
 
 /**********************************************************/

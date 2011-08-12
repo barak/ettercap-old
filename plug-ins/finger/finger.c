@@ -18,8 +18,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: finger.c,v 1.12 2004/06/25 14:24:28 alor Exp $
 */
 
 
@@ -53,17 +51,17 @@ static void do_fingerprint(void);
 
 struct plugin_ops finger_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   ettercap_version: EC_VERSION,                        
+   .ettercap_version = EC_VERSION,                        
    /* the name of the plugin */
-   name:             "finger",  
+   .name =             "finger",  
     /* a short description of the plugin (max 50 chars) */                    
-   info:             "Fingerprint a remote host",  
+   .info =             "Fingerprint a remote host",  
    /* the plugin version. */ 
-   version:          "1.6",   
+   .version =          "1.6",   
    /* activation function */
-   init:             &finger_init,
+   .init =             &finger_init,
    /* deactivation function */                     
-   fini:             &finger_fini,
+   .fini =             &finger_fini,
 };
 
 /**********************************************************/

@@ -16,8 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: ef_compiler.c,v 1.7 2003/10/04 14:58:34 alor Exp $
 */
 
 #include <ef.h>
@@ -366,8 +364,11 @@ static void unfold_ifblk(struct block **blk)
    ue->label = a;
    TAILQ_INSERT_TAIL(&unfolded_tree, ue, next);
 
-   /* recursively compile the main block */
-   unfold_blk(&ifblk->blk);
+   /* check if the block is empty. i.e.  { } */
+   if (ifblk->blk != NULL) {
+      /* recursively compile the main block */
+      unfold_blk(&ifblk->blk);
+   }
 
    /* 
     * if there is the else block, we have to skip it

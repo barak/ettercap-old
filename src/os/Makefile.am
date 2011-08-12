@@ -1,6 +1,3 @@
-
-# $Id: Makefile.am,v 1.2 2004/06/27 12:51:02 alor Exp $
-
 include $(top_srcdir)/Makefile.am.common
 
 noinst_LIBRARIES = libec_os.a

@@ -1,6 +1,3 @@
-
-# $Id: Makefile.am,v 1.2 2003/10/14 14:06:09 alor Exp $
-
 include $(top_srcdir)/Makefile.am.common
 
 noinst_HEADERS = ec_text.h

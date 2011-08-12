@@ -16,8 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: ec_strings.c,v 1.14 2004/07/20 09:53:53 alor Exp $
 */
 
 #include <ec.h>
@@ -283,7 +281,7 @@ int str_replace(char **text, const char *s, const char *d)
       if (diff > 0)
          size = strlen(q) + diff + 1;
       else 
-         size = strlen(q);
+         size = strlen(q) + 1;
      
       SAFE_REALLOC(*text, size);
       

@@ -1,6 +1,3 @@
-
-# $Id: Makefile.am,v 1.15 2004/02/22 12:00:54 alor Exp $
-
 include $(top_srcdir)/Makefile.am.common
 
 noinst_HEADERS = wdg.h

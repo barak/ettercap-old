@@ -1,6 +1,3 @@
-
-# $Id: Makefile.am,v 1.1 2004/01/10 13:27:20 lordnaga Exp $
-
 include $(top_srcdir)/Makefile.am.common
 
 pkglib_LTLIBRARIES = ec_stp_mangler.la

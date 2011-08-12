@@ -16,14 +16,13 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-    $Id: ec_gtk_view.c,v 1.10 2004/05/21 14:25:22 alor Exp $
 */
 
 #include <ec.h>
 #include <ec_gtk.h>
 #include <ec_format.h>
 #include <ec_parser.h>
+#include <inttypes.h>
 
 /* proto */
 
@@ -258,21 +257,21 @@ static gboolean refresh_stats(gpointer data)
    if (!GTK_WIDGET_VISIBLE(stats_window))
       return FALSE;
 
-   snprintf(line, 50, "%8lld", GBL_STATS->ps_recv);
+   snprintf(line, 50, "%8"PRId64"", GBL_STATS->ps_recv);
    gtk_label_set_text(GTK_LABEL (packets_recv), line);
-   snprintf(line, 50, "%8lld  %.2f %%", GBL_STATS->ps_drop, 
+   snprintf(line, 50, "%8"PRId64"  %.2f %%", GBL_STATS->ps_drop, 
          (GBL_STATS->ps_recv) ? (float)GBL_STATS->ps_drop * 100 / GBL_STATS->ps_recv : 0 );
    gtk_label_set_text(GTK_LABEL (packets_drop), line);
-   snprintf(line, 50, "%8lld  bytes: %8lld ", GBL_STATS->ps_sent, GBL_STATS->bs_sent);
+   snprintf(line, 50, "%8"PRId64"  bytes: %8"PRId64" ", GBL_STATS->ps_sent, GBL_STATS->bs_sent);
    gtk_label_set_text(GTK_LABEL (packets_forw), line);
    snprintf(line, 50, "%d/%d ", GBL_STATS->queue_curr, GBL_STATS->queue_max);
    gtk_label_set_text(GTK_LABEL (queue_len), line);
    snprintf(line, 50, "%d ", GBL_CONF->sampling_rate);
    gtk_label_set_text(GTK_LABEL (sample_rate), line);
-   snprintf(line, 50, "pck: %8lld  bytes: %8lld", 
+   snprintf(line, 50, "pck: %8"PRId64"  bytes: %8"PRId64"", 
          GBL_STATS->bh.pck_recv, GBL_STATS->bh.pck_size);
    gtk_label_set_text(GTK_LABEL (recv_bottom), line);
-   snprintf(line, 50, "pck: %8lld  bytes: %8lld", 
+   snprintf(line, 50, "pck: %8"PRId64"  bytes: %8"PRId64"", 
          GBL_STATS->th.pck_recv, GBL_STATS->th.pck_size);
    gtk_label_set_text(GTK_LABEL (recv_top), line);
    snprintf(line, 50, "%.2f %%",

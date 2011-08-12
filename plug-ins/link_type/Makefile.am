@@ -1,6 +1,3 @@
-
-# $Id: Makefile.am,v 1.3 2004/01/03 11:07:43 alor Exp $
-
 include $(top_srcdir)/Makefile.am.common
 
 pkglib_LTLIBRARIES = ec_link_type.la

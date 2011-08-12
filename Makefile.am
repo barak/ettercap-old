@@ -1,9 +1,8 @@
-
-# $Id: Makefile.am,v 1.22 2004/09/02 13:17:35 alor Exp $
-
 include $(top_srcdir)/Makefile.am.common
 
-SUBDIRS = man share include include src utils
+ACLOCAL_AMFLAGS = -I libltdl/m4
+
+SUBDIRS = man share include include src utils desktop
 
 if PLUGINS
    SUBDIRS += plug-ins
@@ -16,7 +15,7 @@ EXTRA_DIST = AUTHORS \
              README \
              README.BINARIES \
              README.BUGS \
-             README.CVS \
+             README.GIT \
              README.PLATFORMS \
              THANKS \
              TODO \
@@ -30,8 +29,6 @@ EXTRA_DIST = AUTHORS \
 CLEANFILES = -R auto4te.cache *~ *.log *.out *.cache *.so ettercap etterlog etterfilter
 
 dist-hook:
-	rm -rf `find $(distdir)/doc -name CVS`
-	rm -rf `find $(distdir)/contrib -name CVS`
 	cat $(distdir)/Makefile.am.common | sed s/#no/no/g > $(distdir)/Makefile.am.common
 
 test: all
