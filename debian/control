@@ -5,6 +5,7 @@ Maintainer: Barak A. Pearlmutter <bap@debian.org>
 Uploaders: Murat Demirten <murat@debian.org>
 Build-Depends: debhelper (>= 8),
 	dh-autoreconf,
+	bison | bison++ | byacc | byacc-j | yacc | btyacc,
 	libgtk2.0-dev,
 	libltdl3-dev,
 	libncurses-dev,
@@ -51,7 +52,22 @@ Replaces: ettercap-gtk, ettercap-graphical, ettercap (<= 1:0.7.3)
 Conflicts: ettercap-gtk, ettercap-graphical, ettercap (<= 1:0.7.3)
 Provides: ettercap
 Description: Ettercap console-mode executable
- Ettercap text-mode-only executable.
+ Ettercap supports active and passive dissection of many protocols 
+ (even encrypted ones) and includes many feature for network and host 
+ analysis.
+ .
+ Data injection in an established connection and filtering (substitute
+ or drop a packet) on the fly is also possible, keeping the connection
+ synchronized.
+ .
+ Many sniffing modes are implemented, for a powerful and complete 
+ sniffing suite. It is possible to sniff in four modes: IP Based, MAC Based,
+ ARP Based (full-duplex) and PublicARP Based (half-duplex).
+ .
+ Ettercap also has the ability to detect a switched LAN, and to use OS
+ fingerprints (active or passive) to find the geometry of the LAN.
+ .
+ This package contains the ettercap text-mode-only executable.
 
 Package: ettercap-graphical
 Architecture: any
@@ -61,4 +77,19 @@ Conflicts: ettercap-gtk, ettercap-text-only, ettercap (<= 1:0.7.3)
 Provides: ettercap
 Recommends: gksu
 Description: Ettercap GUI-enabled executable
- Ettercap GUI-enabled executable.
+ Ettercap supports active and passive dissection of many protocols 
+ (even encrypted ones) and includes many feature for network and host 
+ analysis.
+ .
+ Data injection in an established connection and filtering (substitute
+ or drop a packet) on the fly is also possible, keeping the connection
+ synchronized.
+ .
+ Many sniffing modes are implemented, for a powerful and complete 
+ sniffing suite. It is possible to sniff in four modes: IP Based, MAC Based,
+ ARP Based (full-duplex) and PublicARP Based (half-duplex).
+ .
+ Ettercap also has the ability to detect a switched LAN, and to use OS
+ fingerprints (active or passive) to find the geometry of the LAN.
+ .
+ This package contains the ettercap GUI-enabled executable.

@@ -1,3 +1,10 @@
+ettercap (1:0.7.4-2) unstable; urgency=low
+
+  * Add build dependency on bison or other yacc provider
+  * Expand description in executable packages
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Fri, 12 Aug 2011 22:25:44 +0200
+
 ettercap (1:0.7.4-1) unstable; urgency=low
 
   * Add new maintainer
