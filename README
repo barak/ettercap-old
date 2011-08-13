@@ -60,6 +60,17 @@ OPTIONAL:
       - Atk       >= 1.2.4
       - Pango     >= 1.2.3
 
+==============================================================================
+                     R E Q U I R E D   P R O G R A M S
+==============================================================================
+
+C compiler
+
+flex (or other lex-compatible parser generator)
+
+bison (or other yacc-compatible parser generator)
+
+autotools suite (this phase can be run on any host, need not be the target)
 
 ============================================================================
                                    LICENSE
@@ -85,6 +96,8 @@ OPTIONAL:
 ============================================================================
 
  The easiest way to compile ettercap is in the form:
+
+    ./autogen.sh     # this can be run on any host
 
     ./configure
 
