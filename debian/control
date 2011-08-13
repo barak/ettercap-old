@@ -6,6 +6,7 @@ Uploaders: Murat Demirten <murat@debian.org>
 Build-Depends: debhelper (>= 8),
 	dh-autoreconf,
 	bison | bison++ | byacc | byacc-j | yacc | btyacc,
+	flex | lex,
 	libgtk2.0-dev,
 	libltdl3-dev,
 	libncurses-dev,
