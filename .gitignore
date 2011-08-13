@@ -15,6 +15,7 @@
 /include/config.h.in
 /include/stamp-h1
 /libltdl/
+!/libltdl/m4/acltx_prog_ps2pdf.m4
 /libtool
 /man/*.pdf
 /man/*.ps
