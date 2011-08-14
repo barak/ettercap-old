@@ -873,7 +873,6 @@ and 10. The 'remote' option is needed to be able to sniff the remote traffic
 the hosts make through the gateway.
 
 .TP
-<<<<<<< HEAD
 .B ettercap \-Tzq //110
 .Sp
 Sniff only the pop3 protocol from every hosts.
