@@ -87,7 +87,7 @@ struct log_header_packet {
  *
  * [header][user][pass][info][banner][header][user][pass]....
  *
- * every header contains in the structur "variable" the lenght
+ * every header contains in the structure "variable" the length
  * of the successive banner, user, pass and info fields.
  */
 struct log_header_info {

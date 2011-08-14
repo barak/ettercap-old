@@ -96,7 +96,7 @@ struct accepted_entry {
 };
 
 /* Session identifier 
- * It has to be even-lenghted for session hash matching */
+ * It has to be even-lengthed for session hash matching */
 struct sslw_ident {
    u_int32 magic;
       #define SSLW_MAGIC  0x0501e77e
@@ -1168,7 +1168,7 @@ static size_t sslw_create_ident(void **i, struct packet_object *po)
    /* return the ident */
    *i = ident;
 
-   /* return the lenght of the ident */
+   /* return the length of the ident */
    return sizeof(struct sslw_ident);
 }
 
