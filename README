@@ -105,7 +105,7 @@ autotools suite (this phase can be run on any host, need not be the target)
 
     make install
 
- read INSTALL for further details... and REAME.PLATFORMS for any issue
+ read INSTALL for further details... and README.PLATFORMS for any issue
  regarding your operating system.
  
 ============================================================================
