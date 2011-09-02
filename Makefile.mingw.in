@@ -177,7 +177,7 @@ SOURCE += $(addprefix src/dissectors/,                                          
             ec_mountd.c ec_msn.c     ec_mysql.c ec_napster.c ec_nntp.c   ec_ospf.c \
             ec_pop.c    ec_portmap.c ec_rcon.c  ec_rip.c     ec_rlogin.c ec_smb.c  \
             ec_smtp.c   ec_snmp.c    ec_socks.c ec_telnet.c  ec_vnc.c  \
-            ec_ymsg.c   ec_ssh.c)
+            ec_ymsg.c   ec_ssh.c     ec_gg.c)
 
 ifeq ($(USE_SSL),1)
   SOURCE += src/dissectors/ec_ssh.c

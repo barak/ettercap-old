@@ -15,7 +15,10 @@
 /include/config.h.in
 /include/stamp-h1
 /libltdl/
+!/libltdl/m4/acltx_prog_ps2pdf.m4
 /libtool
+/man/*.pdf
+/man/*.ps
 /man/etter.conf.5
 /man/ettercap.8
 /man/ettercap_curses.8
