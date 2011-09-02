@@ -40,13 +40,13 @@ dnl
 
 AC_DEFUN([EC_PTHREAD_CHECK],
 [
-   AC_SEARCH_LIBS(pthread_create, c_r pthread,,)
-   
    if test "$OS" = "SOLARIS"; then
       AC_SEARCH_LIBS(_getfp, pthread,,)
    elif test "$OS" != "MACOSX" -a "$OS" != "WINDOWS"; then
       AC_MSG_CHECKING(whether $CC accepts -pthread)
+      CPPFLAGS_store="$CPPFLAGS"
       LDFLAGS_store="$LDFLAGS"
+      CPPFLAGS="$CPPFLAGS -pthread"
       LDFLAGS="$LDFLAGS -pthread"
       AC_LINK_IFELSE([
          AC_LANG_PROGRAM([[#include <pthread.h>]],
@@ -54,13 +54,19 @@ AC_DEFUN([EC_PTHREAD_CHECK],
          ],
          [AC_MSG_RESULT(yes)],
          [AC_MSG_RESULT(no)
+            CPPFLAGS="$CFLAGS_store"
             LDFLAGS="$LDFLAGS_store"
-            AC_MSG_WARN(***************************);
-            AC_MSG_WARN(* PTHREAD ARE REQUIRED !! *);
-            AC_MSG_WARN(***************************);
-            exit
+            AC_SEARCH_LIBS([pthread_create], [c_r pthread],,[
+               AC_MSG_WARN(***************************);
+               AC_MSG_WARN(* PTHREAD ARE REQUIRED !! *);
+               AC_MSG_WARN(***************************);
+               exit
+            ])
          ])
+      unset CPPFLAGS_store
       unset LDFLAGS_store
+   else
+      AC_SEARCH_LIBS([pthread_create], [c_r pthread])
    fi
 
 ])

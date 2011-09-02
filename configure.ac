@@ -219,6 +219,14 @@ AC_TYPE_SIZE_T
 AC_C_CONST
 
 dnl =====================
+dnl   Check for programs
+dnl =====================
+
+ACLTX_PROG_PS2PDF(AC_MSG_WARN([Cannot find ps2pdf]))
+AM_CONDITIONAL([PS2PDF], [test x$ps2pdf != xno])
+
+
+dnl =====================
 dnl   Check for libs
 dnl =====================
 

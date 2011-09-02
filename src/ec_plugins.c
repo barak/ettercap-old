@@ -139,7 +139,7 @@ int plugin_filter(const struct dirent *d)
 }
 
 /*
- * search and load all plugins in INSTALL_PREFIX/lib
+ * search and load all plugins in INSTALL_LIBDIR
  */
 
 void plugin_load_all(void)

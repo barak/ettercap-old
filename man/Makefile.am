@@ -10,15 +10,18 @@ EXTRA_DIST = $(man_MANS)
 
 CLEANFILES = *.8 *.5 *.ps *.pdf
 
-pdf: $(man_MANS:.8=.ps) $(man_MANS:.5=.ps)
+MAN2PS = groff -mandoc -Tps
 
-%.ps: %.8
-	groff -mandoc -Tps $< > $@;
-	ps2pdf13 $@ $(*F).pdf;
-	rm -f *.ps
+if PS2PDF
+pdf: $(addsuffix .pdf, $(basename $(man_MANS)))
+	echo $(addsuffix .pdf, $(basename $(man_MANS)))
+.PHONY: pdf
+%.pdf: %.ps
+	$(ps2pdf) $< > $@
+endif
 
 %.ps: %.5
-	groff -mandoc -Tps $< > $@;
-	ps2pdf13 $@ $(*F).pdf;
-	rm -f *.ps
+	$(MAN2PS) $< > $@
 
+%.ps: %.8
+	$(MAN2PS) $< > $@

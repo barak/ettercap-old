@@ -121,7 +121,8 @@ ettercap_SOURCES += dissectors/ec_socks.c \
 				        dissectors/ec_vnc.c \
 				        dissectors/ec_vrrp.c \
 				        dissectors/ec_x11.c \
-				        dissectors/ec_ymsg.c 
+				        dissectors/ec_ymsg.c \
+				        dissectors/ec_gg.c
 
 
 ettercap_CFLAGS = @EC_CFLAGS@

@@ -873,7 +873,6 @@ and 10. The 'remote' option is needed to be able to sniff the remote traffic
 the hosts make through the gateway.
 
 .TP
-<<<<<<< HEAD
 .B ettercap \-Tzq //110
 .Sp
 Sniff only the pop3 protocol from every hosts.
@@ -887,6 +886,13 @@ Sniff telnet, ftp and ssh connections to 10.0.0.1.
 .B ettercap \-P list
 .Sp
 Prints the list of all available plugins
+
+
+.SH FILES
+.TP
+.B ~/.config/ettercap_gtk
+.Sp
+Stores persistent information (e.g., window placement) between sessions.
 
 
 .SH AUTHORS
