@@ -125,6 +125,7 @@ ettercap_SOURCES += dissectors/ec_socks.c \
 				        dissectors/ec_gg.c
 
 ettercap_SOURCES += missing/getopt.c \
+				        missing/memcmp.c \
 				        missing/scandir.c
 
 
