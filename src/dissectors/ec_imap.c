@@ -270,6 +270,7 @@ FUNC_DECODER(dissector_imap)
    
    if (!strcmp(s->data, "PLAIN")) {
       char *cred;
+      char *cred_end;
       char *p;
       int i;
      
@@ -280,13 +281,15 @@ FUNC_DECODER(dissector_imap)
       /* password is encoded in base64 */
       i = base64_decode(cred, ptr);
       p = cred;
-      /* for some reason, we start on \0? */
-      if (i && !*p) { p++; i--; }
+      cred_end = cred+i;
+      /* move to the username right after the first \0  */
+      while(*p && p!=cred_end) p++;
+      if (p!=cred_end) p++;
       /* fill the structure */
       PACKET->DISSECTOR.user = strdup(p);
       /* now find the password right after the first \0 in cred */
-      while(*p && --i) p++;
-      if (i &&!*p) { p++; i--; }
+      while(*p && p!=cred_end) p++;
+      if (p!=cred_end) p++;
       PACKET->DISSECTOR.pass = strdup(p);
       
       SAFE_FREE(cred);
