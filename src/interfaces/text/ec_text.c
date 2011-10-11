@@ -519,6 +519,9 @@ static void text_run_filter(void) {
       }
    };
 
+   /* disable buffered input */
+   tcsetattr(0, TCSANOW, &new_tc);
+
    /* continue the visualization */
    if (restore)
       text_stop_cont();
