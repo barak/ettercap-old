@@ -2,6 +2,7 @@
 *.la
 *.lo
 *.o
+*.so
 .deps/
 .dirstamp
 .libs/
@@ -34,3 +35,6 @@
 Makefile
 Makefile.in
 TAGS
+/ettercap
+/etterfilter
+/etterlog
