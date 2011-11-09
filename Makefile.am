@@ -28,9 +28,6 @@ EXTRA_DIST = AUTHORS \
 
 CLEANFILES = -R auto4te.cache *~ *.log *.out *.cache *.so ettercap etterlog etterfilter
 
-dist-hook:
-	cat $(distdir)/Makefile.am.common | sed s/#no/no/g > $(distdir)/Makefile.am.common
-
 test: all
 	rm -f ettercap etterfilter etterlog *.so
 	ln -fs ./src/ettercap ./
