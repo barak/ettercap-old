@@ -25,20 +25,19 @@ AC_CONFIG_AUX_DIR([libltdl/config])
 
 AC_PREREQ([2.68])
 
-VERSION=`grep EC_VERSION\  ./include/ec_version.h | cut -f2 -d"\""`
-SB=`./shtool echo -n -e %B`
-EB=`./shtool echo -n -e %b`
+VERSION=$(grep EC_VERSION\  ./include/ec_version.h | cut -f2 -d"\"")
+SB=$(./shtool echo -n -e %B)
+EB=$(./shtool echo -n -e %b)
 AC_SUBST(SB)
 AC_SUBST(EB)
 AC_SUBST(VERSION)
-EC_MESSAGE(Configuring ettercap $VERSION)
+EC_MESSAGE([Configuring ettercap $VERSION])
 
-AM_INIT_AUTOMAKE(ettercap, $VERSION)
+AM_INIT_AUTOMAKE([ettercap], [$VERSION])
 
 AC_CONFIG_HEADERS([include/config.h])
-dnl AC_CONFIG_HEADERS(include/config.h)
 
-AC_CONFIG_LIBOBJ_DIR(src/missing)
+AC_CONFIG_LIBOBJ_DIR([src/missing])
 
 dnl use pretty build output with automake >= 1.11
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])],
@@ -145,14 +144,13 @@ dnl   Check the C compiler
 dnl ========================
 
 AC_PROG_CC
-AM_PROG_CC_STDC
 AM_PROG_CC_C_O
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_GCC_TRADITIONAL
 EC_GCC_MACRO
 AH_TEMPLATE(GCC_VERSION, [gcc version])
-gcc_ver=`$CC -dumpversion`
+gcc_ver=$($CC -dumpversion)
 AC_DEFINE_UNQUOTED(GCC_VERSION, "$gcc_ver")
 
 dnl ========================
@@ -167,17 +165,13 @@ dnl   Libtool related...
 dnl ========================
 
 AC_DISABLE_STATIC
-AC_LIBTOOL_WIN32_DLL
-AC_LIBTOOL_DLOPEN
-AM_PROG_LIBTOOL
+LT_INIT([dlopen win32-dll])
 AC_SEARCH_LIBS(dlopen,c dl,,)
 LT_CONFIG_LTDL_DIR([libltdl])
-AC_LIB_LTDL
-ac_ec_lt_dlopen=yes
-AC_SEARCH_LIBS(lt_dlopen,c dl ltdl,,ac_ec_lt_dlopen=no)
-AC_CHECK_HEADERS(dlfcn.h)
-AC_CHECK_HEADERS(ltdl.h)
 LTDL_INIT
+ac_ec_lt_dlopen=yes
+AC_SEARCH_LIBS([lt_dlopen],[c dl ltdl],,[ac_ec_lt_dlopen=no])
+AC_CHECK_HEADERS([dlfcn.h ltdl.h])
 
 dnl ======================
 dnl   Machine Endianness
@@ -189,7 +183,6 @@ dnl =====================
 dnl   Check for headers
 dnl =====================
 
-AC_HEADER_STDC
 AC_HEADER_TIME
 AC_HEADER_DIRENT
 
@@ -372,8 +365,8 @@ AC_ARG_WITH(libpcap, AS_HELP_STRING([--with-libpcap=DIR],[use libpcap in DIR]),
      ;;
   *)
      if test -f $withval/pcap.h; then
-        owd=`pwd`
-        if cd $withval; then withval=`pwd`; cd $owd; fi
+        owd=$(pwd)
+        if cd $withval; then withval=$(pwd); cd $owd; fi
         PCAPINC="-I$withval"
         if test "$OS" = "WINDOWS"; then
            PCAPLIB="-L$withval -lwpcap -lpacket"
@@ -383,8 +376,8 @@ AC_ARG_WITH(libpcap, AS_HELP_STRING([--with-libpcap=DIR],[use libpcap in DIR]),
         ac_ec_libpcap=$withval
         AC_MSG_RESULT($withval)
      elif test -f $withval/include/pcap.h; then
-        owd=`pwd`
-        if cd $withval; then withval=`pwd`; cd $owd; fi
+        owd=$(pwd)
+        if cd $withval; then withval=$(pwd); cd $owd; fi
         PCAPINC="-I$withval/include"
         if test "$OS" = "WINDOWS"; then
            PCAPLIB="-L$withval/lib -lwpcap -lpacket"
@@ -451,8 +444,8 @@ if test "$LIBNET_CONFIG" != "no"; then
      AC_MSG_ERROR(Could not find libnet-config anywhere (see config.log for details).)
   fi
 
-  LNETINC="`$LIBNET_CONFIG --cflags`"
-  LNETLIB="`$LIBNET_CONFIG --libs`"
+  LNETINC="$($LIBNET_CONFIG --cflags)"
+  LNETLIB="$($LIBNET_CONFIG --libs)"
 
   AC_MSG_RESULT($LIBNET_CONFIG)
   ac_ec_libnet=$LIBNET_CONFIG
@@ -478,8 +471,8 @@ AC_ARG_WITH(openssl, AS_HELP_STRING([--with-openssl=DIR],[use openssl in DIR]),
      ;;
   *)
      if test -f $withval/include/openssl/ssl.h; then
-        owd=`pwd`
-        if cd $withval; then withval=`pwd`; cd $owd; fi
+        owd=$(pwd)
+        if cd $withval; then withval=$(pwd); cd $owd; fi
         SSLINC="-I$withval/include"
         SSLLIB="-L$withval/lib -lssl -lcrypto"
         AC_DEFINE(HAVE_OPENSSL, 1)
@@ -487,8 +480,8 @@ AC_ARG_WITH(openssl, AS_HELP_STRING([--with-openssl=DIR],[use openssl in DIR]),
         ac_ec_libssl=$withval
         AC_MSG_RESULT($withval)
      elif test -f $withval/ssl/include/openssl/ssl.h; then
-        owd=`pwd`
-        if cd $withval; then withval=`pwd`; cd $owd; fi
+        owd=$(pwd)
+        if cd $withval; then withval=$(pwd); cd $owd; fi
         SSLINC="-I$withval/ssl/include"
         SSLLIB="-L$withval/ssl/lib -lssl -lcrypto"
         AC_DEFINE(HAVE_OPENSSL, 1)
@@ -529,8 +522,8 @@ AC_ARG_WITH(libpcre, AS_HELP_STRING([--with-libpcre=DIR],[use libpcre in DIR]),
      ;;
   *)
      if test -f $withval/pcre.h; then 
-        owd=`pwd`
-        if cd $withval; then withval=`pwd`; cd $owd; fi
+        owd=$(pwd)
+        if cd $withval; then withval=$(pwd); cd $owd; fi
         PCREINC="-I$withval/"
         PCRELIB="-L$withval/ -lpcre"
         AM_CONDITIONAL(HAVE_PCRE, true) 
@@ -538,8 +531,8 @@ AC_ARG_WITH(libpcre, AS_HELP_STRING([--with-libpcre=DIR],[use libpcre in DIR]),
         ac_ec_pcre=yes
         AC_MSG_RESULT($withval)
      elif test -f $withval/include/pcre.h; then
-        owd=`pwd`
-        if cd $withval; then withval=`pwd`; cd $owd; fi
+        owd=$(pwd)
+        if cd $withval; then withval=$(pwd); cd $owd; fi
         PCREINC="-I$withval/include"
         PCRELIB="-L$withval/lib -lpcre"
         AM_CONDITIONAL(HAVE_PCRE, true) 
@@ -582,14 +575,14 @@ AC_ARG_WITH(iconv, AS_HELP_STRING([--with-iconv=DIR],[use iconv in DIR]),
      ;;
   *)
      if test -f $withval/iconv.h; then 
-        owd=`pwd`
-        if cd $withval; then withval=`pwd`; cd $owd; fi
+        owd=$(pwd)
+        if cd $withval; then withval=$(pwd); cd $owd; fi
         ICONVINC="-I$withval/"
         ICONVLIB="-L$withval/ -liconv"
         AC_MSG_RESULT($withval)
      elif test -f $withval/include/iconv.h; then
-        owd=`pwd`
-        if cd $withval; then withval=`pwd`; cd $owd; fi
+        owd=$(pwd)
+        if cd $withval; then withval=$(pwd); cd $owd; fi
         ICONVINC="-I$withval/include"
         ICONVLIB="-L$withval/lib -liconv"
         AC_MSG_RESULT($withval)
@@ -633,8 +626,8 @@ AC_ARG_WITH(libncurses, AS_HELP_STRING([--with-libncurses=DIR],[use libncurses i
              -a -f $withval/panel.h \
              -a -f $withval/form.h \
              -a -f $withval/menu.h; then
-        owd=`pwd`
-        if cd $withval; then withval=`pwd`; cd $owd; fi
+        owd=$(pwd)
+        if cd $withval; then withval=$(pwd); cd $owd; fi
         NCURSINC="-I$withval"
         NCURSLIB="-L$withval -lpanel -lmenu -lform -lncurses"
         AC_DEFINE(HAVE_NCURSES, 1)
@@ -645,8 +638,8 @@ AC_ARG_WITH(libncurses, AS_HELP_STRING([--with-libncurses=DIR],[use libncurses i
                -a -f $withval/include/panel.h \
                -a -f $withval/include/menu.h \
                -a -f $withval/include/form.h; then
-        owd=`pwd`
-        if cd $withval; then withval=`pwd`; cd $owd; fi
+        owd=$(pwd)
+        if cd $withval; then withval=$(pwd); cd $owd; fi
         NCURSINC="-I$withval/include"
         NCURSLIB="-L$withval/lib -lpanel -lmenu -lform -lncurses"
         AC_DEFINE(HAVE_NCURSES, 1)
@@ -657,8 +650,8 @@ AC_ARG_WITH(libncurses, AS_HELP_STRING([--with-libncurses=DIR],[use libncurses i
                -a -f $withval/include/ncurses/panel.h \
                -a -f $withval/include/ncurses/menu.h \
                -a -f $withval/include/ncurses/form.h; then
-        owd=`pwd`
-        if cd $withval; then withval=`pwd`; cd $owd; fi
+        owd=$(pwd)
+        if cd $withval; then withval=$(pwd); cd $owd; fi
         NCURSINC="-I$withval/include/ncurses"
         NCURSLIB="-L$withval/lib -lpanel -lmenu -lform -lncurses"
         AC_DEFINE(HAVE_NCURSES, 1)
@@ -807,7 +800,7 @@ AC_CONFIG_FILES(  Makefile
                   utils/Makefile
                   utils/etterlog/Makefile
                   utils/etterfilter/Makefile
-		  desktop/Makefile
+                  desktop/Makefile
                   plug-ins/Makefile
                   plug-ins/arp_cop/Makefile
                   plug-ins/autoadd/Makefile
@@ -831,7 +824,7 @@ AC_CONFIG_FILES(  Makefile
                   plug-ins/rand_flood/Makefile
                   plug-ins/remote_browser/Makefile
                   plug-ins/reply_arp/Makefile
-		  plug-ins/repoison_arp/Makefile
+                  plug-ins/repoison_arp/Makefile
                   plug-ins/scan_poisoner/Makefile
                   plug-ins/search_promisc/Makefile
                   plug-ins/smb_clear/Makefile
