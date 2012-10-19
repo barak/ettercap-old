@@ -1,26 +1,19 @@
 #!/usr/bin/make -f
 
-dh_targets=binary binary-arch binary-indep build build-arch build-indep clean install
-
-$(dh_targets) %:
-	dh $@ --with autoreconf --parallel
-
-.PHONY: $(dh_targets)
-
-override_dh_autoreconf:
-	mkdir -p libltdl/m4
-	dh_autoreconf
+%:
+	dh $@ --parallel
 
 override_dh_auto_configure:
 	@echo main configuration deferred until build, as it must be done twice
 
+# add this when suitable libnet hits Debian: -DENABLE_IPV6=ON
 override_dh_auto_build:
-	dh_auto_configure -- --enable-https --enable-plugins --disable-gtk
-	$(MAKE) -C src
-	cp src/ettercap ettercap-text-only
-	$(MAKE) -C src clean
-	dh_auto_configure -- --enable-https --enable-plugins --enable-gtk
-	$(MAKE)
+	dh_auto_configure -- -DENABLE_GTK=OFF
+	dh_auto_build
+	mkdir tmp
+	mv obj*/src/ettercap ettercap-text-only
+	dh_auto_configure -- -DENABLE_GTK=ON
+	dh_auto_build
 
 override_dh_auto_install:
 	dh_auto_install
@@ -34,3 +27,10 @@ override_dh_install:
 	 debian/tmp/usr/sbin/ettercap-text-only \
 	 debian/ettercap-text-only/usr/sbin/ettercap
 	-rm --verbose debian/ettercap-common/usr/share/ettercap/ettercap.png
+
+override_dh_link:
+	@rm --verbose debian/ettercap-graphical/usr/share/doc/ettercap-graphical/*
+	@rmdir --verbose debian/ettercap-graphical/usr/share/doc/ettercap-graphical
+	@rm --verbose debian/ettercap-text-only/usr/share/doc/ettercap-text-only/*
+	@rmdir --verbose debian/ettercap-text-only/usr/share/doc/ettercap-text-only
+	dh_link

@@ -2,15 +2,11 @@ This work was packaged for Debian by:
 
     Murat Demirten <murat@debian.org> on Wed, 12 Jul 2003 12:50:15 +0200
 
-It was downloaded from:
+The upstream development repository is
 
-    http://ettercap.sourceforge.net
+    git://github.com/Ettercap/ettercap
 
-More recent versions (the "new" upstream, post-0.7.3) are available from:
-
-    git://github.com/drizztbsd/ettercap.git
-
-Fedora patches (all 0.7.3 patches were incorporated upstream in 0.7.4):
+Some Fedora patches
 
     git://pkgs.fedoraproject.org/ettercap.git
 
@@ -18,7 +14,13 @@ Upstream Authors:
 
     Alberto Ornaghi <alor@users.sourceforge.net>
     Marco Valleri <crwm@freemail.it>
-    Timothy Redaelli <timothy@redaelli.eu> (post 0.7.3)
+
+    Timothy Redaelli <timothy@redaelli.eu>
+
+    Emilio Escobar <eescobar@gmail.com>
+    Eric Milam <jbrax.hax@gmail.com>
+    Bryan Schneiders <daten@dnetc.org>
+    Gianfranco Costamagna <costamagnagianfranco@yahoo.it>
 
 Copyright:
 
