@@ -1,4 +1,5 @@
 
+/* $Id: ec_format.h,v 1.10 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_FORMAT_H
 #define EC_FORMAT_H

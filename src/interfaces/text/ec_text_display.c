@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_text_display.c,v 1.5 2005/06/17 08:26:18 alor Exp $
 */
 
 #include <ec.h>
@@ -93,7 +95,7 @@ static void display_headers(struct packet_object *po)
    fprintf(stdout, "\n\n");
    
    /* remove the final '\n' */
-   strcpy(time, ctime((time_t *)&po->ts.tv_sec));
+   strncpy(time, ctime((time_t *)&po->ts.tv_sec), 28);
    time[strlen(time)-1] = 0;
    
    /* displat the date */
@@ -117,10 +119,10 @@ static void display_headers(struct packet_object *po)
    /* determine the proto */
    switch(po->L4.proto) {
       case NL_TYPE_TCP:
-         strcpy(proto, "TCP");
+         strncpy(proto, "TCP", 3);
          break;
       case NL_TYPE_UDP:
-         strcpy(proto, "UDP");
+         strncpy(proto, "UDP", 3);
          break;
    }
    

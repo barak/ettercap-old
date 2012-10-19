@@ -6,11 +6,11 @@
        @@        @@@     @@@   @@      @@   @@ @@      @@   @@ @@   @@
        @@@@@@    @@@     @@@   @@@@@@  @@@@@@  @@      @@@@@@@ @@@@@@
        @@        @@@     @@@   @@      @@  @@  @@      @@   @@ @@
-       @@@@@@@   @@@     @@@   @@@@@@@ @@  @@@ @@@@@@@ @@   @@ @@     NG
+       @@@@@@@   @@@     @@@   @@@@@@@ @@  @@@ @@@@@@@ @@   @@ @@     
 
                    A suite for man in the middle attacks
 
-                      Copyright 2001-2004 ALoR & NaGA
+                      Copyright 2001-2012 The Ettercap Dev Team
 
 ==============================================================================
 ==============================================================================
@@ -60,17 +60,6 @@ OPTIONAL:
       - Atk       >= 1.2.4
       - Pango     >= 1.2.3
 
-==============================================================================
-                     R E Q U I R E D   P R O G R A M S
-==============================================================================
-
-C compiler
-
-flex (or other lex-compatible parser generator)
-
-bison (or other yacc-compatible parser generator)
-
-autotools suite (this phase can be run on any host, need not be the target)
 
 ============================================================================
                                    LICENSE
@@ -78,7 +67,7 @@ autotools suite (this phase can be run on any host, need not be the target)
 
    GNU GENERAL PUBLIC LICENSE.
 
-   see COPYING for details...
+   see LICENSE for details...
 
 
 ============================================================================
@@ -96,16 +85,14 @@ autotools suite (this phase can be run on any host, need not be the target)
 ============================================================================
 
  The easiest way to compile ettercap is in the form:
-
-    ./autogen.sh     # this can be run on any host
-
-    ./configure
-
-    make
-
+    mkdir build
+    cd build
+    cmake ..
+    (Use ccmake . to change options such as disabling IPv6 support, add
+    plugins support, etc).
     make install
 
- read INSTALL for further details... and README.PLATFORMS for any issue
+ read INSTALL for further details... and REAME.PLATFORMS for any issue
  regarding your operating system.
  
 ============================================================================
@@ -126,7 +113,7 @@ autotools suite (this phase can be run on any host, need not be the target)
 THE HOST LIST
 
  Sending one ARP REQUEST for each ip in the lan (looking at the current ip
- and netmask), it is possible to get the ARP REPLIES and than make the
+ and netmask), it is possible to get the ARP REPLIES and then make the
  list of the hosts that are responding on the lan. With this method even
  windows hosts, reply to the call-for-reply (they don't reply on
  broadcast-ping).
@@ -149,7 +136,13 @@ UNIFIED SNIFFING
 
 BRIDGED SNIFFING
 
+ Uses two network interfaces and forwards the traffic between them while performing
+ sniffing and content filtrating. This sniffing method is very stealthy as there
+ is no way to to detect that someone is in the middle. You can look at this as a layer
+ one attack. Don't use it on gateways or it will transform your gateway into a bridge.
  
+ HINT: You can use the content filtering engine to drop packets that should not pass.
+ This way ettercap will work as an inline IPS ;)
 
 
 ARP POISONING ATTACK
@@ -225,9 +218,9 @@ ARP POISONING ATTACK
     devices (strip is candidate)
  */
 
- these kernels uses a special neighbor system to prevent unsolicited arp
+ these kernels use a special neighbor system to prevent unsolicited arp
  replies (what ettercap sends to the victim).
- Good gracious, is ettercap useless with that kernel ? the answer is NO !
+ Oh shit is ettercap not useable with that kernel ? the answer is NO !
  let's view why... in the same source code we find:
 
  /*
@@ -247,7 +240,7 @@ ARP POISONING ATTACK
  *  cache.
  */
 
- so, if the kernel receive a REQUEST it will cache the host...
+ so, if the kernel receives a REQUEST it will cache the host...
  what does that mean ? if ettercap sends spoofed REQUESTS instead of
  REPLIES the kernel will cache them ? the answer is YES !!
 
@@ -292,7 +285,7 @@ PORT STEALING
  "stealing" packet is the same as the attacker's one (other NICs won't see these 
  packets), the source MAC address will be one of the MACs of the victims.
  This process "steals" the switch's port of each victim. 
- Using low delays, packets destined for "stolen" MAC addresses will be received 
+ Using low delays, packets destined to "stolen" MAC addresses will be received 
  by the attacker, winning the race condition with the real port owner. 
  When the attacker receives packets for "stolen" hosts, it stops the flooding 
  process and performs an ARP request for the real destination of the packet. 
@@ -419,7 +412,7 @@ OPEN PORTS
  For the udp ports the question is a little bit difficult because no syn or
  ack packet are present in the udp protocol, so ettercap assumes that a udp
  port < 1024 that sends packets is opened. We know that in this way we cannot
- discover open ports > 1024 but they can be misdetected as open when a client
+ discover open ports > 1024 but they can go undetected as open when a client
  sends packet to a server.
 
 

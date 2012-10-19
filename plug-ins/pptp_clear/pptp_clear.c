@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: pptp_clear.c,v 1.3 2003/12/10 13:08:53 lordnaga Exp $
 */
 
 
@@ -58,17 +60,17 @@ static void obfuscate_options(u_char * buffer, int16 tot_len);
 /* plugin operations */
 struct plugin_ops pptp_clear_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   .ettercap_version = EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   .name =             "pptp_clear",  
+   .name =              "pptp_clear",  
     /* a short description of the plugin (max 50 chars) */                    
-   .info =             "PPTP: Tries to force cleartext tunnel",  
+   .info =              "PPTP: Tries to force cleartext tunnel",  
    /* the plugin version. */ 
-   .version =          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   .init =             &pptp_clear_init,
+   .init =              &pptp_clear_init,
    /* deactivation function */                     
-   .fini =             &pptp_clear_fini,
+   .fini =              &pptp_clear_fini,
 };
 
 /**********************************************************/

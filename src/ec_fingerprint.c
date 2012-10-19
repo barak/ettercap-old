@@ -17,6 +17,8 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+    $Id: ec_fingerprint.c,v 1.23 2004/06/25 14:24:29 alor Exp $
+
 */
 
 #include <ec.h>
@@ -47,7 +49,6 @@ struct entry {
 static void fingerprint_discard(void);
 int fingerprint_init(void);
 int fingerprint_search(const char *f, char *dst);
-
 void fingerprint_default(char *finger);
 void fingerprint_push(char *finger, int param, int value);
 u_int8 TTL_PREDICTOR(u_int8 x);
@@ -139,7 +140,7 @@ int fingerprint_search(const char *f, char *dst)
    struct entry *l;
 
    if (!strcmp(f, "")) {
-      strcpy(dst, "UNKNOWN");
+      strncpy(dst, "UNKNOWN", 7);
       return ESUCCESS;
    }
    
@@ -153,7 +154,7 @@ int fingerprint_search(const char *f, char *dst)
    
       /* this is exact match */
       if ( memcmp(l->finger, f, FINGER_LEN) == 0) {
-         strcpy(dst, l->os);
+         strncpy(dst, l->os, OS_LEN+1);
          return ESUCCESS;
       }
       
@@ -168,7 +169,7 @@ int fingerprint_search(const char *f, char *dst)
          char pattern[FINGER_LEN+1];
          
          /* the is the next in the list */
-         strcpy(dst, l->os);  
+         strncpy(dst, l->os, OS_LEN+1);  
         
          strncpy(win, f, FINGER_MSS);
          win[FINGER_MSS-1] = '\0';
@@ -177,13 +178,13 @@ int fingerprint_search(const char *f, char *dst)
           *
           *  0000:*:TT:WS:0:0:0:0:F:LT
           */
-         sprintf(pattern, "%s:*:%s", win, f + FINGER_TTL);
+         snprintf(pattern, FINGER_LEN+1, "%s:*:%s", win, f + FINGER_TTL);
 
          /* search for equal WINDOW but wildcarded MSS */
          while (l != SLIST_END(&finger_head) && !strncmp(l->finger, win, 4)) {
             if (match_pattern(l->finger, pattern)) {
                /* save the nearest one (wildcarded MSS) */
-               strcpy(dst, l->os); 
+               strncpy(dst, l->os, OS_LEN+1); 
                return -ENOTFOUND;
             }
             l = SLIST_NEXT(l, next);
@@ -192,6 +193,8 @@ int fingerprint_search(const char *f, char *dst)
       }
    }
 
+   if(GBL_CONF->submit_fingerprint)
+   	fingerprint_submit((char *)f, "Unknown");
    return -ENOTFOUND;
 }
 
@@ -206,7 +209,7 @@ void fingerprint_default(char *finger)
     *
     * WWWW:_MSS:TT:WS:S:N:D:T:F:LT
     */
-   strcpy(finger,"0000:_MSS:TT:WS:0:0:0:0:F:LT");  
+   strncpy(finger,"0000:_MSS:TT:WS:0:0:0:0:F:LT", 29);  
 }
 
 /*
@@ -261,7 +264,7 @@ void fingerprint_push(char *finger, int param, int value)
          break;
       case FINGER_LT:
          /*
-          * since the LENGTH is the sum of the IP header
+          * since the LENGHT is the sum of the IP header
           * and the TCP header, we have to calculate it
           * in two steps. (decoders are unaware of other layers)
           */
@@ -339,8 +342,9 @@ int fingerprint_submit(char *finger, char *os)
          os_encoded[i] = '+';
       
    /* prepare the HTTP request */
-   snprintf(getmsg, sizeof(getmsg), "GET %s?finger=%s&os=%s HTTP/1.0\r\n"
+   snprintf(getmsg, sizeof(getmsg), "POST %s?finger=%s&os=%s HTTP/1.1\r\n"
                                      "Host: %s\r\n"
+                                     "Accept: */*\r\n"
                                      "User-Agent: %s (%s)\r\n"
                                      "\r\n", page, finger, os_encoded, host, GBL_PROGRAM, GBL_VERSION );
   
@@ -360,7 +364,6 @@ int fingerprint_submit(char *finger, char *os)
 
    return ESUCCESS;
 }
-
 
 /* EOF */
 

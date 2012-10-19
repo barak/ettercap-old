@@ -14,6 +14,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_mingw.c,v 1.11 2004/12/21 11:24:03 alor Exp $
     
     Various functions needed for native Windows compilers (not CygWin I guess??)
     We export these (for the plugins) with a "ec_win_" prefix in order not to accidentally
@@ -497,7 +499,7 @@ const char *ec_win_strsignal (int signo)
          return ("SIGXFSZ");
 #endif
   }
-  strcpy (buf, "Unknown ");
+  strncpy (buf, "Unknown ", 9);
   itoa (signo, buf+8, 10);
   return (buf);
 }
@@ -1015,7 +1017,7 @@ char *ec_win_strerror (int err)
   if (!get_winsock_error (err, buf, sizeof(buf)) &&
         !FormatMessage (flags, NULL, err,
                         lang, buf, sizeof(buf)-1, NULL))
-     sprintf (buf, "Unknown error %d (%#x)", err, err);
+     snprintf (buf, 512, "Unknown error %d (%#x)", err, err);
   }
             
 
@@ -1141,7 +1143,7 @@ static void setup_console (void)
   if (!attached_to_console && !AllocConsole()) {
      char error[256];
 
-     sprintf (error, "AllocConsole failed; error %lu", GetLastError());
+     snprintf (error, 256, "AllocConsole failed; error %lu", GetLastError());
      MessageBox (NULL, error, "Fatal", MB_ICONEXCLAMATION | MB_SETFOREGROUND);
      exit (-1);
   }

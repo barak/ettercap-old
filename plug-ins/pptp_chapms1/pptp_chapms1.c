@@ -17,6 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: pptp_chapms1.c,v 1.3 2004/01/10 12:07:19 lordnaga Exp $
 */
 
 
@@ -53,17 +55,17 @@ static u_char *parse_option(u_char * buffer, u_char option, int16 tot_len);
 /* plugin operations */
 struct plugin_ops pptp_chapms1_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   .ettercap_version = EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   .name =             "pptp_chapms1",  
+   .name =              "pptp_chapms1",  
     /* a short description of the plugin (max 50 chars) */                    
-   .info =             "PPTP: Forces chapms-v1 from chapms-v2",  
+   .info =              "PPTP: Forces chapms-v1 from chapms-v2",  
    /* the plugin version. */ 
-   .version =          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   .init =             &pptp_chapms1_init,
+   .init =              &pptp_chapms1_init,
    /* deactivation function */                     
-   .fini =             &pptp_chapms1_fini,
+   .fini =              &pptp_chapms1_fini,
 };
 
 /**********************************************************/
@@ -109,7 +111,7 @@ static void parse_ppp(struct packet_object *po)
    char tmp[MAX_ASCII_ADDR_LEN];
    u_char *chcode;
 
-   /* It is useless to modify packets that won't be forwarded */
+   /* It's unuseful to modify packets that won't be forwarded */
    if (!(po->flags & PO_FORWARDABLE)) 
       return; 
 

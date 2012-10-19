@@ -1,4 +1,5 @@
 
+/* $Id: ec_log.h,v 1.24 2005/06/17 08:02:53 alor Exp $ */
 
 #ifndef EC_LOG_H
 #define EC_LOG_H
@@ -86,7 +87,7 @@ struct log_header_packet {
  *
  * [header][user][pass][info][banner][header][user][pass]....
  *
- * every header contains in the structure "variable" the length
+ * every header contains in the structur "variable" the lenght
  * of the successive banner, user, pass and info fields.
  */
 struct log_header_info {

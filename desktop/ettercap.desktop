@@ -1,9 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=ettercap
-GenericName=Ettercap
-Comment=Multipurpose sniffer/interceptor/logger
-Icon=ettercap
-Exec=su-to-root -c "/usr/sbin/ettercap --gtk"
-Terminal=false
-Categories=Network;System;Security;GTK;

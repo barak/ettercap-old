@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_dissect.c,v 1.27 2004/10/30 13:19:41 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -42,9 +44,9 @@ void dissect_del(char *name);
 int dissect_modify(int mode, char *name, u_int32 port);
 
 int dissect_match(void *id_sess, void *id_curr);
-void dissect_create_session(struct ec_session **s, struct packet_object *po, u_int32 code);
-size_t dissect_create_ident(void **i, struct packet_object *po, u_int32 code);            
-void dissect_wipe_session(struct packet_object *po, u_int32 code);
+void dissect_create_session(struct ec_session **s, struct packet_object *po, u_int64 code);
+size_t dissect_create_ident(void **i, struct packet_object *po, u_int64 code);            
+void dissect_wipe_session(struct packet_object *po, u_int64 code);
 
 int dissect_on_port(char *name, u_int16 port);
 
@@ -99,7 +101,7 @@ int dissect_match(void *id_sess, void *id_curr)
  * for a dissector.
  */
 
-void dissect_create_session(struct ec_session **s, struct packet_object *po, u_int32 code)
+void dissect_create_session(struct ec_session **s, struct packet_object *po, u_int64 code)
 {
    void *ident;
 
@@ -122,7 +124,7 @@ void dissect_create_session(struct ec_session **s, struct packet_object *po, u_i
  * create the ident for a session
  */
 
-size_t dissect_create_ident(void **i, struct packet_object *po, u_int32 code)
+size_t dissect_create_ident(void **i, struct packet_object *po, u_int64 code)
 {
    struct dissect_ident *ident;
    
@@ -144,14 +146,14 @@ size_t dissect_create_ident(void **i, struct packet_object *po, u_int32 code)
    /* return the ident */
    *i = ident;
 
-   /* return the length of the ident */
+   /* return the lenght of the ident */
    return sizeof(struct dissect_ident);
 }
 
 /*
  * totally destroy the session bound to this connection
  */
-void dissect_wipe_session(struct packet_object *po, u_int32 code)
+void dissect_wipe_session(struct packet_object *po, u_int64 code)
 {
    void *ident;
    struct ec_session *s;   

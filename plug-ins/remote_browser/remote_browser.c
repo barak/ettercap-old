@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: remote_browser.c,v 1.6 2004/08/03 19:33:53 alor Exp $
 */
 
 
@@ -39,17 +41,17 @@ static int good_page(char *str);
 
 struct plugin_ops remote_browser_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   .ettercap_version = EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   .name =             "remote_browser",  
+   .name =              "remote_browser",  
     /* a short description of the plugin (max 50 chars) */                    
-   .info =             "Sends visited URLs to the browser",  
+   .info =              "Sends visited URLs to the browser",  
    /* the plugin version. */ 
-   .version =          "1.2",   
+   .version =           "1.2",   
    /* activation function */
-   .init =             &remote_browser_init,
+   .init =              &remote_browser_init,
    /* deactivation function */                     
-   .fini =             &remote_browser_fini,
+   .fini =              &remote_browser_fini,
 };
 
 /**********************************************************/

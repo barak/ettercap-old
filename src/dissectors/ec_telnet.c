@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_telnet.c,v 1.22 2005/07/04 10:24:21 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -139,7 +141,7 @@ FUNC_DECODER(dissector_telnet)
             memset(str, 0, sizeof(str));
 
             /* concat the char to the previous one */
-            sprintf(str, "%s%s", (char *)s->data, ptr);
+            snprintf(str, strlen(s->data) + PACKET->DATA.disp_len + 2, "%s%s", (char *)s->data, ptr);
             
             /* parse the string for backspaces and erase as wanted */
             for (p = str, i = 0; i < strlen(str); i++) {

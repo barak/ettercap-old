@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_streambuf.c,v 1.6 2003/11/08 14:59:44 alor Exp $
 */
 
 #include <ec.h>
@@ -134,7 +136,7 @@ int streambuf_get(struct stream_buf *sb, u_char *buf, size_t len, int mode)
       if (size >= len)
          break;
      
-      /* calculate the length to be copied */
+      /* calculate the lenght to be copied */
       if (len - size < p->size)
          to_copy = len - size;
       else
@@ -197,7 +199,7 @@ int streambuf_read(struct stream_buf *sb, u_char *buf, size_t len, int mode)
       if (size >= len)
          break;
      
-      /* calculate the length to be copied */
+      /* calculate the lenght to be copied */
       if (len - size < p->size)
          to_copy = len - size;
       else

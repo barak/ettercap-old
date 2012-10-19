@@ -1,4 +1,5 @@
 
+/* $Id: ec_session_tcp.h,v 1.2 2004/07/24 10:43:21 alor Exp $ */
 
 #ifndef EC_SESSION_TCP_H
 #define EC_SESSION_TCP_H

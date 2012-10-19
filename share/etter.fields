@@ -10,6 +10,8 @@
 #  (at your option) any later version.                                     #
 #                                                                          #
 ############################################################################
+#  Version         : $Revision: 1.6 $                                      # 
+############################################################################
 #                                                                          # 
 #  This file contains the form fields recognized as user or password by    #
 #  the HTTP dissector. You can add your own fields in the right section    #
@@ -21,6 +23,7 @@
 [USER]
 
 login
+unickname
 user
 email
 username
@@ -59,3 +62,4 @@ upassword
 login_password
 passwort
 passwrd
+upasswd

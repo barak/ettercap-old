@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_profiles.c,v 1.43 2004/12/21 20:27:15 alor Exp $
 */
 
 #include <ec.h>
@@ -68,6 +70,9 @@ void __init profiles_init(void)
    
    /* add the hook for ICMP packets */
    hook_add(HOOK_PACKET_ICMP, &profile_parse);
+
+   /* add the hook for ICMPv6 packets */
+   hook_add(HOOK_PACKET_ICMP6, &profile_parse);
    
    /* add the hook for DHCP packets */
    hook_add(HOOK_PROTO_DHCP_PROFILE, &profile_parse);
@@ -117,7 +122,8 @@ void profile_parse(struct packet_object *po)
     *    - DNS packets that contain GW information (they use fake icmp po)
     */
    if ( po->L3.proto == htons(LL_TYPE_ARP) ||                     /* arp packets */
-        po->L4.proto == NL_TYPE_ICMP                              /* icmp packets */
+        po->L4.proto == NL_TYPE_ICMP ||                           /* icmp packets */
+        po->L4.proto == NL_TYPE_ICMP6
       )
       profile_add_host(po);
       
@@ -164,6 +170,11 @@ static int profile_add_host(struct packet_object *po)
     * only in the latter.
     */
    if (ip_addr_is_zero(&po->L3.src))
+      return 0;
+   
+   /* We don't need a profile on ourselves, do we? */
+   if(!memcmp(&po->L2.src, &GBL_IFACE->mac, MEDIA_ADDR_LEN) ||
+      !memcmp(&po->L2.src, &GBL_BRIDGE->mac, MEDIA_ADDR_LEN))
       return 0;
    
    /* 
@@ -634,7 +645,7 @@ int profile_dump_to_file(char *filename)
    DEBUG_MSG("profile_dump_to_file: %s", filename);
 
    /* append the extension */
-   sprintf(eci, "%s.eci", filename);
+   snprintf(eci, strlen(filename)+5, "%s.eci", filename);
    
    if (GBL_OPTIONS->compress)
       fd.type = LOG_COMPRESSED;

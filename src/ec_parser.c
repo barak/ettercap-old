@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_parser.c,v 1.65 2004/07/20 09:53:53 alor Exp $
 */
 
 
@@ -25,10 +27,12 @@
 #include <ec_send.h>
 #include <ec_log.h>
 #include <ec_format.h>
+#include <ec_update.h>
 #include <ec_mitm.h>
 #include <ec_filter.h>
 #include <ec_plugins.h>
 #include <ec_conf.h>
+#include <ec_strings.h>
 
 #include <ctype.h>
 
@@ -45,6 +49,7 @@ void parse_options(int argc, char **argv);
 
 int expand_token(char *s, u_int max, void (*func)(void *t, u_int n), void *t );
 int set_regex(char *regex);
+static char **parse_iflist(char *list);
 
 /* from the ec_wifi.c decoder */
 extern int set_wep_key(u_char *string);
@@ -56,13 +61,15 @@ void ec_usage(void)
 
    fprintf(stdout, "\nUsage: %s [OPTIONS] [TARGET1] [TARGET2]\n", GBL_PROGRAM);
 
-   fprintf(stdout, "\nTARGET is in the format MAC/IPs/PORTs (see the man for further detail)\n");
+   fprintf(stdout, "\nTARGET is in the format MAC/IP/IPv6/PORTs (see the man for further detail)\n");
    
    fprintf(stdout, "\nSniffing and Attack options:\n");
    fprintf(stdout, "  -M, --mitm <METHOD:ARGS>    perform a mitm attack\n");
    fprintf(stdout, "  -o, --only-mitm             don't sniff, only perform the mitm attack\n");
+   fprintf(stdout, "  -b, --broadcast             sniff packets coming from broadcast\n");
    fprintf(stdout, "  -B, --bridge <IFACE>        use bridged sniff (needs 2 ifaces)\n");
    fprintf(stdout, "  -p, --nopromisc             do not put the iface in promisc mode\n");
+   fprintf(stdout, "  -S, --nosslmitm             do not forge SSL certificates\n");
    fprintf(stdout, "  -u, --unoffensive           do not forward packets\n");
    fprintf(stdout, "  -r, --read <file>           read data from pcapfile <file>\n");
    fprintf(stdout, "  -f, --pcapfilter <string>   set the pcap filter <string>\n");
@@ -70,16 +77,13 @@ void ec_usage(void)
    fprintf(stdout, "  -t, --proto <proto>         sniff only this proto (default is all)\n");
    
    fprintf(stdout, "\nUser Interface Type:\n");
-   fprintf(stdout, "  -T, --text                  use text only UI\n");
+   fprintf(stdout, "  -T, --text                  use text only GUI\n");
    fprintf(stdout, "       -q, --quiet                 do not display packet contents\n");
    fprintf(stdout, "       -s, --script <CMD>          issue these commands to the GUI\n");
-#ifdef HAVE_NCURSES
-   fprintf(stdout, "  -C, --curses                use curses UI\n");
-#endif
-#ifdef HAVE_GTK
+   fprintf(stdout, "  -C, --curses                use curses GUI\n");
+   fprintf(stdout, "  -D, --daemon                daemonize ettercap (no GUI)\n");
    fprintf(stdout, "  -G, --gtk                   use GTK+ GUI\n");
-#endif
-   fprintf(stdout, "  -D, --daemon                daemonize ettercap (no UI)\n");
+
    
    fprintf(stdout, "\nLogging options:\n");
    fprintf(stdout, "  -w, --write <file>          write sniffed data to pcapfile <file>\n");
@@ -97,7 +101,8 @@ void ec_usage(void)
    
    fprintf(stdout, "\nGeneral options:\n");
    fprintf(stdout, "  -i, --iface <iface>         use this network interface\n");
-   fprintf(stdout, "  -I, --iflist                show all the network interfaces\n");
+   fprintf(stdout, "  -I, --liface                show all the network interfaces\n");
+   fprintf(stdout, "  -Y, --secondary <ifaces>    list of secondary network interfaces\n");
    fprintf(stdout, "  -n, --netmask <netmask>     force this <netmask> on iface\n");
    fprintf(stdout, "  -A, --address <address>     force this local <address> on iface\n");
    fprintf(stdout, "  -P, --plugin <plugin>       launch this <plugin>\n");
@@ -109,12 +114,14 @@ void ec_usage(void)
    fprintf(stdout, "  -a, --config <config>       use the alterative config file <config>\n");
    
    fprintf(stdout, "\nStandard options:\n");
+   fprintf(stdout, "  -U, --update                updates the databases from ettercap website\n");
    fprintf(stdout, "  -v, --version               prints the version and exit\n");
    fprintf(stdout, "  -h, --help                  this help screen\n");
 
    fprintf(stdout, "\n\n");
 
-   clean_exit(0);
+   //clean_exit(0);
+   exit(0);
 }
 
 
@@ -125,9 +132,10 @@ void parse_options(int argc, char **argv)
    static struct option long_options[] = {
       { "help", no_argument, NULL, 'h' },
       { "version", no_argument, NULL, 'v' },
+      { "update", no_argument, NULL, 'U' },
       
       { "iface", required_argument, NULL, 'i' },
-      { "iflist", no_argument, NULL, 'I' },
+      { "lifaces", no_argument, NULL, 'I' },
       { "netmask", required_argument, NULL, 'n' },
       { "address", required_argument, NULL, 'A' },
       { "write", required_argument, NULL, 'w' },
@@ -146,6 +154,7 @@ void parse_options(int argc, char **argv)
       { "script", required_argument, NULL, 's' },
       { "silent", no_argument, NULL, 'z' },
       { "unoffensive", no_argument, NULL, 'u' },
+      { "nosslmitm", no_argument, NULL, 'S' },
       { "load-hosts", required_argument, NULL, 'j' },
       { "save-hosts", required_argument, NULL, 'k' },
       { "wep-key", required_argument, NULL, 'W' },
@@ -163,28 +172,20 @@ void parse_options(int argc, char **argv)
       
       { "text", no_argument, NULL, 'T' },
       { "curses", no_argument, NULL, 'C' },
-      { "gtk", no_argument, NULL, 'G' },
       { "daemon", no_argument, NULL, 'D' },
+      { "gtk", no_argument, NULL, 'G' },
+
       
       { "mitm", required_argument, NULL, 'M' },
       { "only-mitm", no_argument, NULL, 'o' },
       { "bridge", required_argument, NULL, 'B' },
+      { "broadcast", required_argument, NULL, 'b' },
       { "promisc", no_argument, NULL, 'p' },
+      { "gateway", required_argument, NULL, 'Y' },
+
       
       { 0 , 0 , 0 , 0}
    };
-
-
-#ifdef HAVE_GTK 
-      if (strcmp(argv[0], "ettercap-gtk") == 0)
-          select_gtk_interface();
-#endif
-#ifdef HAVE_NCURSES 
-      if (strcmp(argv[0], "ettercap-curses") == 0)
-          select_curses_interface();
-#endif
-      if (strcmp(argv[0], "ettercap-text") == 0)
-          select_text_interface();
 
    for (c = 0; c < argc; c++)
       DEBUG_MSG("parse_options -- [%d] [%s]", c, argv[c]);
@@ -194,12 +195,13 @@ void parse_options(int argc, char **argv)
    
    GBL_PCAP->promisc = 1;
    GBL_FORMAT = &ascii_format;
+   GBL_OPTIONS->ssl_mitm = 1;
 
 /* OPTIONS INITIALIZED */
    
    optind = 0;
 
-   while ((c = getopt_long (argc, argv, "A:a:B:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:Tt:UuV:vW:w:z", long_options, (int *)0)) != EOF) {
+   while ((c = getopt_long (argc, argv, "A:a:bB:CchDdEe:F:f:GhIi:j:k:L:l:M:m:n:oP:pQqiRr:s:STt:UuV:vW:w:Y:z", long_options, (int *)0)) != EOF) {
       /* used for parsing arguments */
       char *opt_end = optarg;
       while (opt_end && *opt_end) opt_end++;
@@ -216,8 +218,12 @@ void parse_options(int argc, char **argv)
                   
          case 'o':
                   GBL_OPTIONS->only_mitm = 1;
-                  //select_text_interface();
+                  select_text_interface();
                   break;
+
+         case 'b':
+                  GBL_OPTIONS->broadcast = 1;
+		  break;
                   
          case 'B':
                   GBL_OPTIONS->iface_bridge = strdup(optarg);
@@ -233,22 +239,14 @@ void parse_options(int argc, char **argv)
                   break;
                   
          case 'C':
-#ifdef HAVE_NCURSES 
                   select_curses_interface();
-#else
-            fprintf(stdout, "\nncurses-interface not supported.\n\n");
-            clean_exit(-1);
-#endif
                   break;
+
          case 'G':
-#ifdef HAVE_GTK
                   select_gtk_interface();
-#else
-            fprintf(stdout, "\nGTK-Interface not supported.\n\n");
-            clean_exit(-1);
-#endif
                   break;
-         
+
+                  
          case 'D':
                   select_daemon_interface();
                   break;
@@ -278,7 +276,11 @@ void parse_options(int argc, char **argv)
          case 'I':
                   /* this option is only useful in the text interface */
                   select_text_interface();
-                  GBL_OPTIONS->iflist = 1;
+                  GBL_OPTIONS->lifaces = 1;
+                  break;
+
+         case 'Y':
+                  GBL_OPTIONS->secondary = parse_iflist(optarg);
                   break;
          
          case 'n':
@@ -357,7 +359,11 @@ void parse_options(int argc, char **argv)
          case 'u':
                   GBL_OPTIONS->unoffensive = 1;
                   break;
-                  
+
+         case 'S':
+                  GBL_OPTIONS->ssl_mitm = 0;
+                  break;
+ 
          case 'd':
                   GBL_OPTIONS->resolve = 1;
                   break;
@@ -388,6 +394,13 @@ void parse_options(int argc, char **argv)
                   
          case 'a':
                   GBL_CONF->file = strdup(optarg);
+                  break;
+         
+         case 'U':
+                  /* load the conf for the connect timeout value */
+                  load_conf();
+                  global_update();
+                  /* NOT REACHED */
                   break;
                   
          case 'h':
@@ -458,17 +471,16 @@ void parse_options(int argc, char **argv)
    if (GBL_OPTIONS->read && GBL_OPTIONS->mitm)
       FATAL_ERROR("Cannot use mitm attacks while reading from file");
    
-   if (GBL_UI->init == NULL) {
+   if (GBL_UI->init == NULL)
       FATAL_ERROR("Please select an User Interface");
-    }
      
    /* force text interface for only mitm attack */
-   //if (GBL_OPTIONS->only_mitm) {
-   //   if (GBL_OPTIONS->mitm)
-   //      select_text_interface();
-   //   else
-   //      FATAL_ERROR("Only mitm requires at least one mitm method");
-   //}
+   if (GBL_OPTIONS->only_mitm) {
+      if (GBL_OPTIONS->mitm)
+         select_text_interface();
+      else
+         FATAL_ERROR("Only mitm requires at least one mitm method");
+   }
 
    DEBUG_MSG("parse_options: options combination looks good");
    
@@ -574,7 +586,20 @@ int set_regex(char *regex)
    return ESUCCESS;
 }
 
+static char **parse_iflist(char *list)
+{
+   int i, n;
+   char **r, *t, *p;
 
+   for(i = 0, n = 1; list[i] != '\0'; list[i++] == ',' ? n++ : n);
+   SAFE_CALLOC(r, n + 1, sizeof(char*));
+
+   /* its self-explaining */
+   for(r[i=0]=ec_strtok(list,",",&p);i<n&&(t=ec_strtok(NULL,",",&p))!=NULL;r[++i]=strdup(t));
+   r[n] = NULL;
+
+   return r;
+}
 
 /* EOF */
 

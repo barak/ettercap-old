@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_msn.c,v 1.7 2004/06/25 14:24:29 alor Exp $
 */
 
 #include <ec.h>
@@ -29,7 +31,6 @@
 
 FUNC_DECODER(dissector_msn);
 void msn_init(void);
-void decode_pwd(char *pwd, char *outpwd);
 
 /************************************************/
 
@@ -108,7 +109,7 @@ FUNC_DECODER(dissector_msn)
             
             /* save the challenge after the login */
             SAFE_REALLOC(s->data, strlen(s->data) + strlen(ptr) + 2);
-            sprintf(s->data + strlen(s->data), " %s", ptr + strlen("MD5 S "));
+            snprintf(s->data + strlen(s->data), strlen(s->data) + strlen(ptr)+2, " %s", ptr + strlen("MD5 S "));
             
             /* tuncate at the \r */
             if ( (ptr = strchr(s->data,'\r')) != NULL )
@@ -159,7 +160,7 @@ FUNC_DECODER(dissector_msn)
          
          /* save the challenge after the login */
          SAFE_REALLOC(s->data, strlen(s->data) + strlen(ptr) + 2);
-         sprintf(s->data + strlen(s->data), " %s", ptr + strlen("MD5 S "));
+         snprintf(s->data + strlen(s->data), strlen(s->data)+strlen(ptr)+2, " %s", ptr + strlen("MD5 S "));
          
          /* tuncate at the \r */
          if ( (ptr = strchr(s->data,'\r')) != NULL )

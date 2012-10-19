@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_smtp.c,v 1.6 2004/06/25 14:24:29 alor Exp $
 */
 
 #include <ec.h>
@@ -149,7 +151,7 @@ FUNC_DECODER(dissector_smtp)
       /* store the username in the session */
       SAFE_CALLOC(s->data, strlen("AUTH USER ") + i + 1, sizeof(char) );
       
-      sprintf(s->data, "AUTH USER %s", user);
+      snprintf(s->data, strlen("AUTH USER ") + i + 1, "AUTH USER %s", user);
       
       SAFE_FREE(user);
 

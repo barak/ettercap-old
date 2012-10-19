@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_udp.c,v 1.22 2005/07/03 10:10:27 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -93,7 +95,7 @@ FUNC_DECODER(decode_udp)
    if (GBL_CONF->checksum_check) {
       if (!GBL_OPTIONS->unoffensive && (sum = L4_checksum(PACKET)) != CSUM_RESULT) {
          char tmp[MAX_ASCII_ADDR_LEN];
-#if defined(OS_DARWIN) || defined(OS_WINDOWS)
+#if defined(OS_DARWIN) || defined(OS_WINDOWS) || defined(OS_LINUX)
          /* 
           * XXX - hugly hack here !  Mac OS X really sux
           * 
@@ -110,7 +112,7 @@ FUNC_DECODER(decode_udp)
           *
           * if the source is the ettercap host, don't display the message 
           */
-         if (!ip_addr_cmp(&PACKET->L3.src, &GBL_IFACE->ip))
+         if (!ip_addr_is_ours(&PACKET->L3.src) == EFOUND)
             return NULL;
 #endif
          if (GBL_CONF->checksum_warning)

@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_gtk_view_connections.c,v 1.42 2004/10/10 13:49:51 daten Exp $
 */
 
 #include <ec.h>
@@ -357,7 +359,8 @@ static gboolean refresh_connections(gpointer data)
       /* extract changing values from conntrack_print string */
       flags[0] = desc[0];
       strncpy(status, desc+50, 7);
-      sscanf(desc+62, "%u", &xferred);
+      int i =sscanf(desc+62, "%u", &xferred);
+      BUG_IF(i!=1);  
 
       gtk_list_store_set (ls_conns, &iter, 0, flags, 7, status, 8, xferred, -1);
 
@@ -365,7 +368,8 @@ static gboolean refresh_connections(gpointer data)
       if(bottom.conn == list)
          break;
    } while(gtk_tree_model_iter_next(model, &iter));
-   
+  
+   SAFE_FREE(desc); 
    return(TRUE);
 }
 
@@ -396,9 +400,13 @@ static struct row_pairs *gtkui_connections_add(char *desc, void *conn, struct ro
    strncpy(dst, desc+26, 15);
    strncpy(status, desc+50, 7);
 
-   sscanf(desc+18, "%u", &src_port);
-   sscanf(desc+42, "%u", &dst_port);
+   int i=0;
+   i=sscanf(desc+18, "%u", &src_port);
+   BUG_IF(i!=1);
+   i=sscanf(desc+42, "%u", &dst_port);
+   BUG_IF(i!=1);
    sscanf(desc+62, "%u", &xferred);
+   BUG_IF(i!=1);
 
    /* trim off leading spaces */
    for(src_ptr = src; *src_ptr == ' '; src_ptr++);
@@ -1062,7 +1070,7 @@ static void join_print_po(struct packet_object *po)
    /* format the data */
    ret = GBL_FORMAT(po->DATA.disp_data, po->DATA.disp_len, dispbuf);
    dispbuf[ret] = 0;
-
+        
    if (!ip_addr_cmp(&po->L3.src, &curr_conn->L3_addr1))
       gtkui_data_print(3, dispbuf, 1);
    else
@@ -1216,7 +1224,7 @@ static void gtkui_connection_inject(void)
       /* advance end iter to end of text, 500 char max */
       gtk_text_iter_forward_chars(&end, 500);
       
-      strcpy(injectbuf, gtk_text_buffer_get_text(buf, &start, &end, FALSE));
+      strncpy(injectbuf, gtk_text_buffer_get_text(buf, &start, &end, FALSE), 501);
 
       if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (button1)))
          gtkui_inject_user(1);
@@ -1249,7 +1257,7 @@ static void gtkui_connection_inject_file(void)
    GtkWidget *dialog, *label, *vbox, *hbox;
    GtkWidget *button1, *button2, *button, *entry;
    char tmp[MAX_ASCII_ADDR_LEN];
-   char *filename = NULL;
+   const char *filename = NULL;
    gint response = 0;
    
    DEBUG_MSG("gtk_connection_inject_file");

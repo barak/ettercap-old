@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_ssh.c,v 1.25 2004/05/27 10:59:52 alor Exp $
 */
 
 #include <ec.h>
@@ -24,6 +26,9 @@
 #include <ec_session.h>
 #include <ec_streambuf.h>
 #include <ec_checksum.h>
+
+#ifdef HAVE_OPENSSL
+
 
 /* don't include kreberos. RH sux !! */
 #define OPENSSL_NO_KRB5 1
@@ -744,6 +749,7 @@ static void rsa_private_decrypt(BIGNUM *out, BIGNUM *in, RSA *key)
    free(inbuf);
 }
 
+#endif
 
 /* EOF */
 

@@ -1,4 +1,5 @@
 
+/* $Id: el_functions.h,v 1.23 2004/11/04 09:23:03 alor Exp $ */
 
 #ifndef EL_FUNCTIONS_H
 #define EL_FUNCTIONS_H

@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_ui.c,v 1.30 2004/09/28 13:50:37 alor Exp $
 */
 
 #include <ec.h>
@@ -99,6 +101,14 @@ int ui_progress(char *title, int value, int max)
    return UI_PROGRESS_UPDATED;
 }
 
+/* send an update notification */
+void ui_update(int target)
+{
+   if(GBL_UI->update) {
+      DEBUG_MSG("ui_update");
+      GBL_UI->update(target);
+   }
+}
 
 /*
  * the FATAL_MSG error handling function
@@ -250,14 +260,19 @@ int ui_msg_flush(int max)
 {
    int i = 0;
    struct ui_message *msg;
-   
+  
+
+   /* sanity checks */
+   if (!GBL_UI->initialized)
+      return 0;
+     
+   if (STAILQ_EMPTY(&messages_queue))
+	return 0; 
+
    /* the queue is updated by other threads */
    UI_MSG_LOCK;
    
-   /* sanity check */
-   if (!GBL_UI->initialized)
-      return 0;
-      
+
    while ( (msg = STAILQ_FIRST(&messages_queue)) != NULL) {
 
       /* diplay the message */
@@ -334,11 +349,13 @@ void ui_register(struct ui_ops *ops)
    BUG_IF(ops->fatal_error == NULL);
    GBL_UI->fatal_error = ops->fatal_error;
    
-   BUG_IF((ops->input == NULL)&&(ops->type != UI_DAEMONIZE));
+   BUG_IF(ops->input == NULL);
    GBL_UI->input = ops->input;
    
    BUG_IF(ops->progress == NULL);
    GBL_UI->progress = ops->progress;
+
+   GBL_UI->update = ops->update;
 
    GBL_UI->type = ops->type;
 }

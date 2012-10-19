@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_daemon.c,v 1.12 2004/09/28 13:50:37 alor Exp $
 */
 
 #include <ec.h>
@@ -28,6 +30,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <time.h>
 
 static int fd;
 
@@ -134,6 +137,12 @@ static void daemon_error(const char *msg)
 void daemon_interface(void)
 {
    DEBUG_MSG("daemon_interface");
+
+#if !defined(OS_WINDOWS)
+   struct timespec ts; 
+   ts.tv_sec = 1;
+   ts.tv_nsec = 0;
+#endif
    
    /* check if the plugin exists */
    if (GBL_OPTIONS->plugin && search_plugin(GBL_OPTIONS->plugin) != ESUCCESS)
@@ -156,7 +165,11 @@ void daemon_interface(void)
    /* discard the messages */
    LOOP {
       CANCELLATION_POINT();
-      sleep(1); 
+#if !defined(OS_WINDOWS)
+      nanosleep(&ts, NULL);
+#else
+      usleep(1000);
+#endif
       ui_msg_flush(MSG_ALL);
    }
    /* NOT REACHED */   

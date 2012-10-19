@@ -16,12 +16,15 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_curses_hosts.c,v 1.11 2004/03/21 14:16:48 alor Exp $
 */
 
 #include <ec.h>
 #include <wdg.h>
 #include <ec_curses.h>
 #include <ec_scan.h>
+#include <ec_threads.h>
 
 /* proto */
 
@@ -31,6 +34,7 @@ static void load_hosts(char *path, char *file);
 static void curses_save_hosts(void);
 static void save_hosts(void);
 static void curses_host_list(void);
+void curses_hosts_update(void);
 static void curses_hosts_destroy(void);
 static void curses_create_hosts_array(void);
 static void curses_delete_host(void *host);
@@ -64,6 +68,7 @@ static void curses_scan(void)
 
    /* no target defined...  force a full scan */
    if (GBL_TARGET1->all_ip && GBL_TARGET2->all_ip &&
+       GBL_TARGET1->all_ip6 && GBL_TARGET2->all_ip6 &&
       !GBL_TARGET1->scan_all && !GBL_TARGET2->scan_all) {
       GBL_TARGET1->scan_all = 1;
       GBL_TARGET2->scan_all = 1;
@@ -71,10 +76,6 @@ static void curses_scan(void)
    
    /* perform a new scan */
    build_hosts_list();
-   
-   /* if the window is open, refresh it */
-   if (wdg_hosts)
-      curses_host_list();
 }
 
 /*
@@ -111,7 +112,7 @@ static void load_hosts(char *path, char *file)
    SAFE_CALLOC(tmp, strlen(path)+strlen(file)+2, sizeof(char));
 
    /* get the current working directory */
-   getcwd(current, PATH_MAX); 
+   getcwd(current, PATH_MAX);
 
    /* we are opening a file in the current dir.
     * use the relative path, so we can open files
@@ -213,6 +214,12 @@ static void curses_host_list(void)
 static void curses_hosts_destroy(void)
 {
    wdg_hosts = NULL;
+}
+
+void curses_hosts_update()
+{
+   if(wdg_hosts)
+      curses_host_list();
 }
 
 static void curses_hosts_help(void *dummy)

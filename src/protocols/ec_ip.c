@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_ip.c,v 1.44 2005/06/30 08:42:19 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -182,7 +184,7 @@ FUNC_DECODER(decode_ip)
    }
 
    /* calculate if the dest is local or not */
-   switch (ip_addr_is_local(&PACKET->L3.src)) {
+   switch (ip_addr_is_local(&PACKET->L3.src, NULL)) {
       case ESUCCESS:
          PACKET->PASSIVE.flags &= ~FP_HOST_NONLOCAL;
          PACKET->PASSIVE.flags |= FP_HOST_LOCAL;
@@ -200,7 +202,7 @@ FUNC_DECODER(decode_ip)
    hook_point(HOOK_PACKET_IP, po);
 
    /* don't save the sessions in unoffensive mode */
-   if (!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
+   if (GBL_FILTERS && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read) {
    
       /* Find or create the correct session */
       ip_create_ident(&ident, PACKET);
@@ -223,7 +225,7 @@ FUNC_DECODER(decode_ip)
    EXECUTE_DECODER(next_decoder);
    
    /* don't save the sessions in unoffensive mode */
-   if (!GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read && (PACKET->flags & PO_FORWARDABLE)) {
+   if (GBL_FILTERS && !GBL_OPTIONS->unoffensive && !GBL_OPTIONS->read && (PACKET->flags & PO_FORWARDABLE)) {
       /* 
        * Modification checks and adjustments.
        * - ip->id according to number of injected/dropped packets
@@ -280,7 +282,7 @@ FUNC_INJECTOR(inject_ip)
    iph->tos      = 0;
    iph->csum     = CSUM_INIT;
    iph->frag_off = 0;            
-   iph->ttl      = 125;   
+   iph->ttl      = 64;   
    iph->protocol = PACKET->L4.proto; 
    iph->saddr    = ip_addr_to_int32(PACKET->L3.src.addr);   
    iph->daddr    = ip_addr_to_int32(PACKET->L3.dst.addr);   
@@ -330,7 +332,9 @@ FUNC_INJECTOR(inject_ip)
       PACKET->fwd_packet = PACKET->packet;
       PACKET->fwd_len = PACKET->L3.len;
    }
-   
+ 
+   /* Injectors executed, no need to keep the session */ 
+   session_del(s->ident, IP_IDENT_LEN); 
    return ESUCCESS;
 }
 
@@ -381,7 +385,7 @@ size_t ip_create_ident(void **i, struct packet_object *po)
    /* return the ident */
    *i = ident;
 
-   /* return the length of the ident */
+   /* return the lenght of the ident */
    return sizeof(struct ip_ident);
 }
 

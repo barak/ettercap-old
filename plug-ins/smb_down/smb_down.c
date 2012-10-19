@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: smb_down.c,v 1.2 2004/06/25 14:24:29 alor Exp $
 */
 
 
@@ -54,17 +56,17 @@ static void parse_smb(struct packet_object *po);
 
 struct plugin_ops smb_down_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   .ettercap_version = EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   .name =             "smb_down",  
+   .name =              "smb_down",  
     /* a short description of the plugin (max 50 chars) */                    
-   .info =             "Tries to force SMB to not use NTLM2 key auth",  
+   .info =              "Tries to force SMB to not use NTLM2 key auth",  
    /* the plugin version. */ 
-   .version =          "1.0",   
+   .version =           "1.0",   
    /* activation function */
-   .init =             &smb_down_init,
+   .init =              &smb_down_init,
    /* deactivation function */                     
-   .fini =             &smb_down_fini,
+   .fini =              &smb_down_fini,
 };
 
 /**********************************************************/
@@ -111,7 +113,7 @@ static void parse_smb(struct packet_object *po)
    u_int32 *Flags;
    char tmp[MAX_ASCII_ADDR_LEN];
    
-   /* It is useless to modify packets that won't be forwarded */
+   /* It's unuseful to modify packets that won't be forwarded */
    if (!(po->flags & PO_FORWARDABLE)) 
       return; 
       

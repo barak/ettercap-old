@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_filter.c,v 1.57 2005/01/04 14:30:49 alor Exp $
 */
 
 #include <ec.h>
@@ -1149,19 +1151,19 @@ static void reconstruct_strings(struct filter_env *fenv, struct filter_header *f
       switch(fop[i].opcode) {
          case FOP_FUNC:
             if (fop[i].op.func.slen)
-               fop[i].op.func.string = (char *)(fenv->map + fh->data + (int)fop[i].op.func.string);
+               fop[i].op.func.string = (char *)(fenv->map + fh->data + (size_t)fop[i].op.func.string);
             if (fop[i].op.func.rlen)
-               fop[i].op.func.replace = (char *)(fenv->map + fh->data + (int)fop[i].op.func.replace);
+               fop[i].op.func.replace = (char *)(fenv->map + fh->data + (size_t)fop[i].op.func.replace);
             break;
             
          case FOP_TEST:
             if (fop[i].op.test.slen)
-               fop[i].op.test.string = (char *)(fenv->map + fh->data + (int)fop[i].op.test.string);
+               fop[i].op.test.string = (char *)(fenv->map + fh->data + (size_t)fop[i].op.test.string);
             break;
          
          case FOP_ASSIGN:
             if (fop[i].op.assign.slen)
-               fop[i].op.assign.string = (char *)(fenv->map + fh->data + (int)fop[i].op.assign.string);
+               fop[i].op.assign.string = (char *)(fenv->map + fh->data + (size_t)fop[i].op.assign.string);
             break;
       }
       

@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_gtk_conf.c,v 1.2 2004/09/30 02:09:27 daten Exp $
 */
 
 #include <ec.h>
@@ -63,13 +65,11 @@ short gtkui_conf_get(char *name) {
 
 void gtkui_conf_read(void) {
    FILE *fd;
-   char *path;
+   const char *path;
    char line[100], name[30];
    short value;
 
-   /* If you launch ettercap using sudo, then the config file is your user config dir */
    path = g_get_user_config_dir();
-
    filename = g_build_filename(path, "ettercap_gtk", NULL);
 
    DEBUG_MSG("gtkui_conf_read: %s", filename);
@@ -80,7 +80,7 @@ void gtkui_conf_read(void) {
 
    while(fgets(line, 100, fd)) {
       char *p = strchr(line, '=');
-      if(!p)
+     if(!p)
          continue;
       *p = '\0';
       snprintf(name, sizeof(name), "%s", line);

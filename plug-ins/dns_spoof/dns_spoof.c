@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: dns_spoof.c,v 1.14 2004/11/23 08:45:13 alor Exp $
 */
 
 
@@ -94,17 +96,17 @@ static void dns_spoof_dump(void);
 
 struct plugin_ops dns_spoof_ops = { 
    /* ettercap version MUST be the global EC_VERSION */
-   .ettercap_version = EC_VERSION,                        
+   .ettercap_version =  EC_VERSION,                        
    /* the name of the plugin */
-   .name =             "dns_spoof",  
+   .name =              "dns_spoof",  
     /* a short description of the plugin (max 50 chars) */                    
-   .info =             "Sends spoofed dns replies",  
+   .info =              "Sends spoofed dns replies",  
    /* the plugin version. */ 
-   .version =          "1.1",   
+   .version =           "1.1",   
    /* activation function */
-   .init =             &dns_spoof_init,
+   .init =              &dns_spoof_init,
    /* deactivation function */                     
-   .fini =             &dns_spoof_fini,
+   .fini =              &dns_spoof_fini,
 };
 
 /**********************************************************/
@@ -158,7 +160,7 @@ static int load_db(void)
    int lines = 0, type;
    
    /* open the file */
-   f = open_data("share", ETTER_DNS, FOPEN_READ_TEXT);
+   f = open_data("etc", ETTER_DNS, FOPEN_READ_TEXT);
    if (f == NULL) {
       USER_MSG("Cannot open %s", ETTER_DNS);
       return -EINVALID;

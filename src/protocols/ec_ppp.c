@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_ppp.c,v 1.11 2004/02/01 16:48:51 alor Exp $
 */
 
 #include <ec.h>
@@ -159,7 +161,7 @@ FUNC_DECODER(decode_ppp)
                schallenge[0]=0;
                version = 1;
                for (i=0; i<8; i++) {
-                  sprintf(dummy, "%02X", chapch->value.challenge_v1[i]);
+                  snprintf(dummy, 3, "%02X", chapch->value.challenge_v1[i]);
                   strcat(schallenge, dummy);
                }	    
             } else if (chapch->size == 16) {

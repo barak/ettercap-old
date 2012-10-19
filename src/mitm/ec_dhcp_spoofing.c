@@ -16,6 +16,8 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+    $Id: ec_dhcp_spoofing.c,v 1.10 2005/05/28 11:06:46 lordnaga Exp $
 */
 
 #include <ec.h>
@@ -91,10 +93,10 @@ static int dhcp_spoofing_start(char *args)
    for (p = strsep(&args, "/"); p != NULL; p = strsep(&args, "/")) {
       /* first parameter (the ip_pool) */
       if (i == 1) {
-         char tmp[strlen(p)+3];
+         char tmp[strlen(p)+4];
 
          /* add the / to be able to use the target parsing function */
-         sprintf(tmp, "/%s/", p);
+         snprintf(tmp, strlen(p)+4, "/%s//", p);
 
          if (compile_target(tmp, &dhcp_ip_pool) != ESUCCESS)
             break;
