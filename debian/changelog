@@ -1,3 +1,19 @@
+ettercap (1:0.7.5-1) unstable; urgency=low
+
+  * New upstream release from new upstream team
+    - switch to cmake build system
+    - various fiddly fixes (closes: #691465)
+  * Modify packaging scripts for new cmake build system.
+  * General packaging updates.
+  * Depend on menu for su-to-root in menu file (closes: #670840)
+  * Misc patches, including
+    - gadu-gadu plugin, so avoid removing functionality
+    - spelling and man page fixes
+    - desktop file and scalable icon
+    - post-release upstream patch avoiding sslstrip.so promiscuous linkage
+
+ -- Barak A. Pearlmutter <bap@debian.org>  Fri, 26 Oct 2012 00:20:00 +0100
+
 ettercap (1:0.7.4.2-1) unstable; urgency=low
 
   * New upstream release
