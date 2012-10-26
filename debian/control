@@ -26,7 +26,7 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Recommends: ettercap-graphical | ettercap-text-only
 Replaces: ettercap-plugins
-Conflicts: ettercap-plugins, ettercap
+Conflicts: ettercap-plugins, ettercap (<= 1:0.7.3)
 Description: Multipurpose sniffer/interceptor/logger for switched LAN
  Ettercap supports active and passive dissection of many protocols 
  (even encrypted ones) and includes many feature for network and host 
@@ -52,7 +52,7 @@ Package: ettercap-text-only
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, ettercap-common (= ${binary:Version})
 Replaces: ettercap-gtk, ettercap-graphical, ettercap
-Conflicts: ettercap-gtk, ettercap-graphical, ettercap
+Conflicts: ettercap-gtk, ettercap-graphical, ettercap (<= 1:0.7.3)
 Provides: ettercap
 Description: Ettercap console-mode executable
  Ettercap supports active and passive dissection of many protocols 
@@ -76,7 +76,7 @@ Package: ettercap-graphical
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, ettercap-common (= ${binary:Version}), menu
 Replaces: ettercap-gtk, ettercap-text-only, ettercap
-Conflicts: ettercap-gtk, ettercap-text-only, ettercap
+Conflicts: ettercap-gtk, ettercap-text-only, ettercap (<= 1:0.7.3)
 Provides: ettercap
 Recommends: gksu
 Description: Ettercap GUI-enabled executable
